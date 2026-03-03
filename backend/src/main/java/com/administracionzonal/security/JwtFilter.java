@@ -38,22 +38,20 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtUtil.isTokenValid(token)) {
                 String cedula = jwtUtil.extractCedula(token);
-                String role = jwtUtil.extractRole(token); // YA ES ROLE_ADMIN
+                
+                List<String> roles = jwtUtil.extractRoles(token);
 
-                if (role != null && !role.startsWith("ROLE_")) {
-                    role = "ROLE_" + role;
-                }
+                List<SimpleGrantedAuthority> authorities =
+                    roles.stream()
+                        .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                        .toList();
 
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                         cedula,
                         null,
-                        List.of(new SimpleGrantedAuthority(role))
+                        authorities
                     );
-
-                authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-                );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../utils/api";
 import type { ReservaUsuario } from "../types/ReservaUsuario";
 
-const API = "http://localhost:8083/api/privado/mis-reservas";
+const API = `${import.meta.env.VITE_API_URL}/api/privado/mis-reservas`;
 
 export function useMisReservas() {
   const [reservas, setReservas] = useState<ReservaUsuario[]>([]);
@@ -19,7 +20,7 @@ export function useMisReservas() {
       }
 
       try {
-        const res = await fetch(API, {
+        const res = await apiFetch(API, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

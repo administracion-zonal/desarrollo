@@ -11,7 +11,7 @@ import MisReservas from "./pages/MisReservas";
 import PublicLayout from "./components/layout/PublicLayout";
 import PrivateLayout from "./components/layout/PrivateLayout";
 import CambiarPassword from "./pages/CambiarPassword";
-
+import AdminRoute from "./components/layout/AdminRoute";
 import AuthProvider from "./context/AuthProvider";
 import { useAuth } from "./context/useAuth";
 import Footer from "./components/Footer";
@@ -112,11 +112,11 @@ function AppContent() {
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <PrivateLayout>
                 <Dashboard />
               </PrivateLayout>
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
 

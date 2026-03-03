@@ -4,8 +4,9 @@ import {
   validarCorreo,
   validarPassword,
 } from "../utils/validaciones";
+import { apiFetch } from "../utils/api";
 
-const API = "http://localhost:8083/api/auth/register";
+const API = `${import.meta.env.VITE_API_URL}/api/auth/register`;
 
 export default function Register() {
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export default function Register() {
       return;
     }
 
-    const res = await fetch(API, {
+    const res = await apiFetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),

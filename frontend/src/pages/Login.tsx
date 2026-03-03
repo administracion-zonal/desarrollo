@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { apiFetch } from "../utils/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,11 +15,14 @@ export default function Login() {
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:8083/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cedula, password }),
-      });
+      const res = await apiFetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cedula, password }),
+        },
+      );
 
       if (!res.ok) {
         setError("Credenciales incorrectas");
@@ -30,25 +34,24 @@ export default function Login() {
       console.log("RESPUESTA LOGIN 👉", data);
 
       // 🔐 Guardar sesión
-      localStorage.setItem("id", data.idUsuario.toString());
+
       localStorage.setItem("token", data.token);
-      localStorage.setItem("rol", data.rol);
-      localStorage.setItem("nombres", data.nombres);
-      localStorage.setItem("fotoPerfil", data.fotoPerfil || "");
-      if (res.status === 428) {
-        navigate("/cambiar-password");
+      localStorage.setItem("user", JSON.stringify(data));
+
+      setUser(data);
+
+      // 🚦 REDIRECCIÓN
+      if (data.debeCambiarPassword) {
+        navigate("/cambiar-password", { replace: true });
         return;
       }
 
-      setUser({
-        id: data.idUsuario,
-        nombres: data.nombres,
-        rol: data.rol,
-        fotoPerfil: data.fotoPerfil,
-      });
+      if (!data.aceptaAcuerdo) {
+        navigate("/reservas/coworking", { replace: true });
+        return;
+      }
 
-      // 🚦 REDIRECCIÓN
-      if (data.rol === "ADMIN") {
+      if (data.roles.includes("ADMIN")) {
         navigate("/dashboard", { replace: true });
       } else {
         navigate("/perfil", { replace: true });

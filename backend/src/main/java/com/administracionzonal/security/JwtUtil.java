@@ -10,11 +10,8 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // ⚠️ mínimo 32 caracteres
-    private static final String SECRET_KEY =
-            "administracionzonal_super_secret_key_2026";
-
-    private static final long EXPIRATION_MS = 1000 * 60 * 60 * 8; // 8 horas
+    @Value("${jwt.secret}")
+private String SECRET_KEY;
 
     // ✅ ESTE MÉTODO SOLUCIONA EL ERROR getKey()
     private Key getKey() {
@@ -22,15 +19,15 @@ public class JwtUtil {
     }
 
     // ✅ ESTE MÉTODO SOLUCIONA EL ERROR generateToken()
-    public String generateToken(String cedula, String rol) {
-        return Jwts.builder()
-                .setSubject(cedula)
-                .claim("rol", rol)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+    public String generateToken(String cedula, List<String> roles) {
+    return Jwts.builder()
+            .setSubject(cedula)
+            .claim("roles", roles)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+            .signWith(getKey(), SignatureAlgorithm.HS256)
+            .compact();
+}
 
     public String extractCedula(String token) {
         return Jwts.parserBuilder()

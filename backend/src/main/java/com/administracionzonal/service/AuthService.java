@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -35,16 +36,16 @@ public class AuthService {
         }
 
 // Tomamos el primer rol (por ahora)
-    String rol = usuario.getRoles()
+    List<String> roles = usuario.getRoles()
         .stream()
         .map(Rol::getNombre)
-        .anyMatch(r -> r.equals("ADMIN"))
-            ? "ADMIN"
-            : "PRIVADO";
+        .toList();
 
-        String token = jwtUtil.generateToken(usuario.getCedula(), "ROLE_" + rol);
+    String token = jwtUtil.generateToken(usuario.getCedula(), roles);
 
-        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), rol, usuario.getFotoPerfil());
+        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil()
+                usuario.getDebeCambiarPassword(),
+                usuario.getAceptaAcuerdo());
     }
 
     public AuthResponseDTO register(RegisterRequest request) {
@@ -66,12 +67,21 @@ public class AuthService {
             passwordEncoder.encode(request.getPassword())
         );
         usuario.setDebeCambiarPassword(true);
-        String rol = "PRIVADO";
+        usuario.setAceptaAcuerdo(false);
+
+        Rol rol = rolRepository.findByNombre("PRIVADO")
+                .orElseThrow(() -> new RuntimeException("Rol PRIVADO no existe"));
+
+        usuario.getRoles().add(rol);
         
         usuarioRepository.save(usuario);
-        // 🎟️ TOKEN
-        String token = jwtUtil.generateToken(usuario.getCedula(), "ROLE_" + rol);
 
-        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), rol, usuario.getFotoPerfil());
+
+
+ List<String> roles = List.of("PRIVADO");
+        String token = jwtUtil.generateToken(usuario.getCedula(), roles);
+
+
+        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(), true, false);
     }
 }

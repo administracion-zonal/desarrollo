@@ -1,9 +1,7 @@
-import type React from "react";
-
 export type RolUsuario =
-  | "EXTERNO"
-  | "SERVIDOR"
   | "ADMIN"
+  | "SERVIDOR"
+  | "SERVIDOR_AZVCH"
   | "PRIVADO"
   | "ESTUDIANTE";
 
@@ -11,9 +9,11 @@ export interface AuthUser {
   id: number;
   cedula: string;
   nombres: string;
-  rol: RolUsuario;
   correo: string;
+  roles: RolUsuario[];
   fotoPerfil?: string;
+  debeCambiarPassword: boolean;
+  aceptaAcuerdo: boolean;
 }
 
 export interface AuthContextType {

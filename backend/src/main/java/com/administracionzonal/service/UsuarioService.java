@@ -28,7 +28,6 @@ public class UsuarioService {
             String cedula,
             String nombres,
             String institucion,
-            String tipoUsuario,
             String correo
     ) {
 

@@ -20,7 +20,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return User.builder()
                 .username(u.getCedula())
                 .password(u.getPassword())
-                .authorities("USER")
+                .authorities(
+                        u.getRoles()
+                                .stream()
+                                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getNombre()))
+                                .collect(Collectors.toList())
+                )
                 .build();
     }
 }

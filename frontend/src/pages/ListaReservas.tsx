@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Reserva } from "../types/Reserva";
+import { apiFetch } from "../utils/api";
 
-const API_URL = "http://localhost:8083/api/reservas";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/reservas`;
 
 export default function ListaReservas() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
@@ -9,7 +10,7 @@ export default function ListaReservas() {
   const [mensaje, setMensaje] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(API_URL)
+    apiFetch(API_URL)
       .then((res) => res.json())
       .then((data: Reserva[]) => setReservas(data))
       .catch(() => setMensaje("Error al cargar reservas"));
@@ -22,7 +23,7 @@ export default function ListaReservas() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/validar-qr/${token}`);
+      const res = await apiFetch(`${API_URL}/validar-qr/${token}`);
 
       const msg = await res.text();
       setMensaje(msg);

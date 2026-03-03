@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AuthContext } from "./AuthContext";
-import type { AuthUser, RolUsuario } from "../types/Auth";
+import type { AuthUser } from "../types/Auth";
 
 export default function AuthProvider({
   children,
@@ -8,31 +8,18 @@ export default function AuthProvider({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
-    const id = localStorage.getItem("id");
-    const rol = localStorage.getItem("rol");
-    const nombres = localStorage.getItem("nombres");
-    const fotoPerfil = localStorage.getItem("fotoPerfil");
-
-    if (rol && nombres && id) {
-      return {
-        id: Number(id),
-        nombres,
-        rol: rol as RolUsuario,
-        fotoPerfil: fotoPerfil || undefined,
-      };
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      return JSON.parse(stored);
     }
-
     return null;
   });
 
   const loading = false; // ya no necesitas loading dinámico
 
   const logout = () => {
-    localStorage.removeItem("id");
+    localStorage.removeItem("user");
     localStorage.removeItem("token");
-    localStorage.removeItem("nombres");
-    localStorage.removeItem("rol");
-    localStorage.removeItem("fotoPerfil");
     setUser(null);
   };
 

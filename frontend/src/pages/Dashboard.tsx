@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
 import { useMemo } from "react";
 import { formatearFecha } from "../utils/validaciones";
+import { apiFetch } from "../utils/api";
 
-const API_RESERVAS = "http://localhost:8083/api/admin/reservas/todas";
+const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/admin/reservas/todas`;
 export default function Dashboard() {
   const token = localStorage.getItem("token");
 
@@ -22,12 +23,15 @@ export default function Dashboard() {
 
   const marcarAsistencia = async (id: number) => {
     try {
-      await fetch(`http://localhost:8083/api/admin/reservas/${id}/asistir`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await apiFetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/reservas/${id}/asistir`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       // refrescar lista
       setReservas((prev) =>
@@ -42,8 +46,8 @@ export default function Dashboard() {
     if (!codigoQR || !reservaQR) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:8083/api/admin/reservas/validar-qr/${codigoQR}`,
+      const res = await apiFetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/reservas/validar-qr/${codigoQR}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,7 +127,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!token) return;
 
-    fetch(API_RESERVAS, {
+    apiFetch(API_RESERVAS, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

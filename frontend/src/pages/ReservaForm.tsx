@@ -3,9 +3,10 @@ import type { Reserva } from "../types/Reserva";
 import { QRCodeCanvas } from "qrcode.react";
 import { validarCedula } from "../utils/validaciones";
 import "../App.css";
+import { apiFetch } from "../utils/api";
 
-const API_URL = "http://localhost:8083/api/reservas";
-const API_USUARIOS = "http://localhost:8083/api/usuarios/cedula";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/reservas`;
+const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios/cedula`;
 
 const initialForm = {
   cedula: "",
@@ -30,7 +31,7 @@ export default function ReservaForm() {
 
   const cedulaRef = useRef<HTMLInputElement>(null);
 
-  const BACKEND_URL = "http://localhost:8083";
+  const BACKEND_URL = `${import.meta.env.VITE_API_URL}`;
 
   const HORA_MIN = "08:00";
   const HORA_MAX = "16:00";
@@ -58,7 +59,7 @@ export default function ReservaForm() {
     }
     setMostrarFormulario(true);
     try {
-      const res = await fetch(`${API_USUARIOS}/${form.cedula}`);
+      const res = await apiFetch(`${API_USUARIOS}/${form.cedula}`);
 
       if (res.ok) {
         const usuario = await res.json();
@@ -80,7 +81,7 @@ export default function ReservaForm() {
   useEffect(() => {
     if (!form.nombreArea || !form.fecha) return;
 
-    fetch(
+    apiFetch(
       `${API_URL}/disponibilidad?nombreArea=${form.nombreArea}&fecha=${form.fecha}`,
     )
       .then((res) => res.json())
@@ -159,7 +160,7 @@ export default function ReservaForm() {
     }
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

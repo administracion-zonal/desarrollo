@@ -22,9 +22,6 @@ public class ReservaCoworking {
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
-    @Column(name = "tipo_usuario", nullable = false)
-    private String tipoUsuario;
-
     @Column(name = "nombre_institucion", nullable = false)
     private String nombreInstitucion;
 

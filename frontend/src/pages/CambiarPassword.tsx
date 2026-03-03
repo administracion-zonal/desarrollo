@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../utils/api";
 
 export default function CambiarPassword() {
   const [passwordActual, setPasswordActual] = useState("");
@@ -25,8 +26,8 @@ export default function CambiarPassword() {
     }
 
     try {
-      const res = await fetch(
-        "http://localhost:8083/api/auth/cambiar-password",
+      const res = await apiFetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/cambiar-password`,
         {
           method: "POST",
           headers: {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import incognito from "../assets/incognito-ini.jpg";
 import ImageCropper from "../components/ImageCropper";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../utils/api";
 
 export default function Perfil() {
   const { user } = useAuth();
@@ -12,7 +13,7 @@ export default function Perfil() {
   const [imagenTemporal, setImagenTemporal] = useState<string | null>(null);
   const navigate = useNavigate();
   const fotoUrl = user?.fotoPerfil
-    ? `http://localhost:8083/${user.fotoPerfil}`
+    ? `${import.meta.env.VITE_API_URL}/${user.fotoPerfil}`
     : incognito;
 
   return (
@@ -49,7 +50,7 @@ export default function Perfil() {
         <div className="perfil-info-container">
           <h2 className="perfil-nombre">{user?.nombres}</h2>
 
-          <p className="perfil-extra">{user?.rol}</p>
+          <p className="perfil-extra">{user?.roles.join(", ")}</p>
         </div>
       </div>
 
@@ -68,7 +69,7 @@ export default function Perfil() {
 
             <div className="perfil-item">
               <label>Rol</label>
-              <span>{user?.rol}</span>
+              <span>{user?.roles.join(", ")}</span>
             </div>
 
             <button onClick={() => setEditando(true)} className="btn-primary">
@@ -128,8 +129,8 @@ export default function Perfil() {
 
             formData.append("file", blob, "perfil.jpg");
 
-            const res = await fetch(
-              `http://localhost:8083/api/usuarios/subir-foto/${user?.id}`,
+            const res = await apiFetch(
+              `${import.meta.env.VITE_API_URL}/api/usuarios/subir-foto/${user?.id}`,
               {
                 method: "POST",
                 body: formData,

@@ -32,16 +32,13 @@ public class Usuario {
     @Column(name = "debe_cambiar_password", nullable = false)
     private Boolean debeCambiarPassword = true;
 
-    @Column(name = "tipo_usuario")
-    private String tipoUsuario;
-
     @Column(name = "acepta_acuerdo")
     private Boolean aceptaAcuerdo = false;
 
 @Column(name="foto_perfil")
 private String fotoPerfil;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(apiFetch = FetchType.EAGER)
     @JoinTable(
         name = "usuarios_roles",
         schema = "administracionzonal",

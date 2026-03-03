@@ -39,26 +39,22 @@ public class SecurityConfig {
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
 
-            // 🔥 permitir acceso a uploads SIN autenticación
-            .requestMatchers(org.springframework.http.HttpMethod.GET, "/uploads/**").permitAll()
-
-            // permitir subir foto
-            .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/usuarios/subir-foto/**").permitAll()
-
-
-            // permitir auth y públicos
+ // permitir auth y públicos
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/public/**").permitAll()
-            .requestMatchers("/areas/**").permitAll()
-.requestMatchers("/api/usuarios/cedula/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+            // permitir subir foto
+.requestMatchers("/api/usuarios/subir-foto/**").authenticated()
+           
+ // ADMIN
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-            // permitir OPTIONS
-            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+            // reservas administrativas
+            .requestMatchers("/api/reservas/**").hasAnyRole("ADMIN", "SERVIDOR", "SERVIDOR_AZVCH")
 
-            // tus reglas existentes
-            .requestMatchers("/api/admin/**").authenticated()
-            .requestMatchers("/api/reservas/**").hasRole("ADMIN")
+            // privado
             .requestMatchers("/api/privado/**").hasRole("PRIVADO")
 
             .anyRequest().authenticated()

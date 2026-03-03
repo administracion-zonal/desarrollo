@@ -16,7 +16,7 @@ export default function Menu() {
     <nav className="menu">
       <Link to="/perfil">Perfil</Link>
 
-      {user.rol === "ADMIN" && <Link to="/dashboard">Dashboard</Link>}
+      {user.roles.includes("ADMIN") && <Link to="/dashboard">Dashboard</Link>}
 
       <Link to="/mis-reservas">Mis reservas</Link>
 

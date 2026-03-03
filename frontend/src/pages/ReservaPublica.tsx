@@ -6,10 +6,10 @@ import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
 import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { useAuth } from "../context/useAuth";
 import "../App.css";
+import { apiFetch } from "../utils/api";
 
-// const API_RESERVAS = "http://localhost:8083/api/admin/reservas";
-const API_RESERVAS = "http://localhost:8083/api/public/reservas";
-const API_USUARIOS = "http://localhost:8083/api/usuarios";
+const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
+const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios`;
 
 const initialForm = {
   cedula: "",
@@ -32,7 +32,6 @@ export default function ReservaPublica() {
         ...initialForm,
         cedula: user.cedula,
         nombres: user.nombres,
-        tipoUsuario: user.rol,
         correo: user.correo,
       };
     }
@@ -56,7 +55,7 @@ export default function ReservaPublica() {
 
   const [reseteando, setReseteando] = useState(false);
 
-  const BACKEND_URL = "http://localhost:8083";
+  const BACKEND_URL = `${import.meta.env.VITE_API_URL}`;
 
   const HORA_MIN = "08:00";
   const HORA_MAX = "16:00";
@@ -172,7 +171,7 @@ export default function ReservaPublica() {
     }
 
     try {
-      const res = await fetch(`${API_USUARIOS}/cedula/${form.cedula}`);
+      const res = await apiFetch(`${API_USUARIOS}/cedula/${form.cedula}`);
 
       if (res.ok) {
         const usuario = await res.json();
@@ -207,7 +206,7 @@ export default function ReservaPublica() {
   useEffect(() => {
     if (!form.nombreArea || !form.fecha) return;
 
-    fetch(
+    apiFetch(
       `${API_RESERVAS}/disponibilidad?nombreArea=${form.nombreArea}&fecha=${form.fecha}`,
     )
       .then((res) => res.json())
@@ -291,8 +290,8 @@ export default function ReservaPublica() {
 
     const token = localStorage.getItem("token");
 
-    //const res = await fetch(API_RESERVAS, {
-    const res = await fetch(`${API_RESERVAS}/reservar`, {
+    //const res = await apiFetch(API_RESERVAS, {
+    const res = await apiFetch(`${API_RESERVAS}/reservar`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

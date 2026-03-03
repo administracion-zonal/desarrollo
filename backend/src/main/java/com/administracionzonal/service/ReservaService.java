@@ -40,13 +40,10 @@ public class ReservaService {
                 dto.getCedula(),
                 dto.getNombres(),
                 dto.getNombreInstitucion(),
-                dto.getTipoUsuario(), 
                 dto.getCorreo()
         );
 
         validarCapacidadPorBloques(dto);
-
-        String tipoUsuarioFinal = usuario.getTipoUsuario();
 
         if (!Boolean.TRUE.equals(usuario.getAceptaAcuerdo())) {
 
@@ -62,7 +59,6 @@ public class ReservaService {
 
         ReservaCoworking r = new ReservaCoworking();
         r.setUsuario(usuario);
-        r.setTipoUsuario(tipoUsuarioFinal);
         r.setNombreInstitucion(dto.getNombreInstitucion());
         r.setNombreArea(dto.getNombreArea());
         r.setFecha(dto.getFecha());
@@ -232,7 +228,6 @@ public class ReservaService {
 
             dto.setNombreArea(r.getNombreArea());
             dto.setNombreInstitucion(r.getNombreInstitucion());
-            dto.setTipoUsuario(r.getTipoUsuario());
 
             dto.setAsistio(r.isAsistio());
             dto.setNoAsistio(r.isNoAsistio());

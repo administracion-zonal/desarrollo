@@ -8,7 +8,6 @@ import lombok.Data;
 public class ReservaDTO {
     private String cedula;
     private String nombres;
-    private String tipoUsuario;
     private String nombreInstitucion;
     private String nombreArea;
     private LocalDate fecha;
