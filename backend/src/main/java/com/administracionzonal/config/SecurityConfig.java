@@ -2,7 +2,7 @@ package com.administracionzonal.config;
 
 import com.administracionzonal.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,6 +42,7 @@ public class SecurityConfig {
  // permitir auth y públicos
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/public/**").permitAll()
+            .requestMatchers("/api/usuarios/cedula/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -75,7 +76,11 @@ public class SecurityConfig {
 
         // 🔥 ORIGEN EXACTO DE REACT
         config.setAllowedOrigins(
-            List.of("http://localhost:5173")
+            List.of(
+                "http://localhost:5173",
+                "http://172.7.20.210",
+                "http://172.7.20.210:5173"
+            )
         );
 
         config.setAllowedMethods(

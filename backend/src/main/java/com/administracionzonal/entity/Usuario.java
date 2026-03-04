@@ -2,7 +2,7 @@ package com.administracionzonal.entity;
 
 import java.util.HashSet;
 import java.util.Set;
-
+import java.util.List;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,7 +38,7 @@ public class Usuario {
 @Column(name="foto_perfil")
 private String fotoPerfil;
 
-    @ManyToMany(apiFetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "usuarios_roles",
         schema = "administracionzonal",

@@ -33,10 +33,6 @@ public class UsuarioService {
 
         return usuarioRepo.findByCedula(cedula).orElseGet(() -> {
 
-        if (!tipoUsuario.equals("PRIVADO")
-                        && !tipoUsuario.equals("ESTUDIANTE")) {
-                    throw new RuntimeException("Tipo de usuario no permitido");
-                }
 
             if (correo == null || correo.isBlank()) {
                 throw new RuntimeException("El correo es obligatorio");
@@ -46,7 +42,6 @@ public class UsuarioService {
             u.setCedula(cedula);
             u.setNombres(nombres);
             u.setInstitucion(institucion);
-            u.setTipoUsuario(tipoUsuario);
 u.setCorreo(correo.toLowerCase());
             u.setPassword(passwordEncoder.encode("Quito2026"));
             

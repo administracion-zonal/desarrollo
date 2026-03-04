@@ -8,10 +8,11 @@ import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.entity.Rol;
 import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.security.JwtUtil;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.administracionzonal.repository.RolRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -43,12 +44,16 @@ public class AuthService {
 
     String token = jwtUtil.generateToken(usuario.getCedula(), roles);
 
-        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil()
+        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(),
                 usuario.getDebeCambiarPassword(),
                 usuario.getAceptaAcuerdo());
     }
 
     public AuthResponseDTO register(RegisterRequest request) {
+
+         if (!Boolean.TRUE.equals(request.getAceptaAcuerdo())) {
+            throw new RuntimeException("Debe aceptar el acuerdo de responsabilidad");
+        }
 
         if (usuarioRepository.existsByCedula(request.getCedula())) {
             throw new IllegalArgumentException("La cédula ya está registrada");
@@ -67,7 +72,7 @@ public class AuthService {
             passwordEncoder.encode(request.getPassword())
         );
         usuario.setDebeCambiarPassword(true);
-        usuario.setAceptaAcuerdo(false);
+        usuario.setAceptaAcuerdo(true);
 
         Rol rol = rolRepository.findByNombre("PRIVADO")
                 .orElseThrow(() -> new RuntimeException("Rol PRIVADO no existe"));
@@ -82,6 +87,6 @@ public class AuthService {
         String token = jwtUtil.generateToken(usuario.getCedula(), roles);
 
 
-        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(), true, false);
+        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(), true, true);
     }
 }

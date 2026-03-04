@@ -1,5 +1,6 @@
 package com.administracionzonal.security;
-
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.stream.Collectors;
 import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;

@@ -51,11 +51,7 @@ export default function Login() {
         return;
       }
 
-      if (data.roles.includes("ADMIN")) {
-        navigate("/dashboard", { replace: true });
-      } else {
-        navigate("/perfil", { replace: true });
-      }
+      navigate("/perfil", { replace: true });
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
