@@ -6,7 +6,7 @@ export type RolUsuario =
   | "ESTUDIANTE";
 
 export interface AuthUser {
-  id: number;
+  idUsuario: number;
   cedula: string;
   nombres: string;
   correo: string;

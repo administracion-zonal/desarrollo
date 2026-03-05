@@ -43,7 +43,7 @@ public class UsuarioController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file
     ) {
-
+        System.out.println("Archivo recibido: " + file.getOriginalFilename());
         try {
 
             /* VALIDAR ARCHIVO */

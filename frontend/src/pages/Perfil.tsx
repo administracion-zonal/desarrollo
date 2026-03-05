@@ -11,9 +11,10 @@ export default function Perfil() {
   const [editando, setEditando] = useState(false);
 
   const [imagenTemporal, setImagenTemporal] = useState<string | null>(null);
+  const [cacheBust, setCacheBust] = useState(0);
   const navigate = useNavigate();
   const fotoUrl = user?.fotoPerfil
-    ? `${import.meta.env.VITE_API_URL}/${user.fotoPerfil}`
+    ? `${import.meta.env.VITE_API_URL}/${user.fotoPerfil}?v=${cacheBust}`
     : incognito;
 
   return (
@@ -127,21 +128,30 @@ export default function Perfil() {
           onComplete={async (blob) => {
             const formData = new FormData();
 
-            formData.append("file", blob, "perfil.jpg");
+            formData.append(
+              "file",
+              new File([blob], "perfil.jpg", { type: "image/jpeg" }),
+            );
 
             const res = await apiFetch(
-              `${import.meta.env.VITE_API_URL}/api/usuarios/subir-foto/${user?.id}`,
+              `${import.meta.env.VITE_API_URL}/api/usuarios/subir-foto/${user?.idUsuario}`,
               {
                 method: "POST",
                 body: formData,
               },
             );
 
+            if (!res.ok) {
+              alert("Error subiendo foto");
+              return;
+            }
+
             const ruta = await res.text();
 
             localStorage.setItem("fotoPerfil", ruta);
 
-            window.location.reload();
+            setCacheBust((prev) => prev + 1);
+            setImagenTemporal(null);
           }}
         />
       )}
