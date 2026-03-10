@@ -1,5 +1,6 @@
 package com.administracionzonal.dto;
 
+import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
@@ -22,4 +23,5 @@ public class ReservaAdminDTO {
     private boolean noAsistio;
     private boolean usado;
     private String qrToken;
+    private LocalDateTime fechaCreacion;
 }

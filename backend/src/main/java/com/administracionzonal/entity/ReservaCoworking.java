@@ -1,5 +1,6 @@
 package com.administracionzonal.entity;
 
+import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,8 +38,9 @@ public class ReservaCoworking {
     @Column(name = "hora_fin", nullable = false)
     private LocalTime horaFin;
 
-    @Column(name = "fecha_creacion")
-    private LocalDateTime fechaCreacion;
+    @CreationTimestamp
+@Column(name = "fecha_creacion", updatable = false)
+private LocalDateTime fechaCreacion;
 
     @Column(name = "qr_token", unique = true)
     private String qrToken;
@@ -47,4 +49,5 @@ public class ReservaCoworking {
 
     private boolean asistio = false;
     private boolean noAsistio = false;
+
 }

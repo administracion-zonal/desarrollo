@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
 
 import ReservaPublica from "./pages/ReservaPublica";
+import ReservaForm from "./pages/ReservaForm";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
@@ -139,13 +140,13 @@ function AppContent() {
            NUEVA RUTA → RESERVAS COWORKING
            ADMIN Y USUARIOS PUEDEN RESERVAR
         ========================= */}
+        <Route path="/coworking" element={<ReservaPublica />} />
+
         <Route
-          path="/reservas/coworking"
+          path="/reservar"
           element={
             <PrivateRoute>
-              <PrivateLayout>
-                <ReservaPublica />
-              </PrivateLayout>
+              <ReservaForm />
             </PrivateRoute>
           }
         />

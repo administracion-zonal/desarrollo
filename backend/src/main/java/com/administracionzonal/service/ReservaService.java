@@ -41,7 +41,13 @@ public class ReservaService {
                 dto.getNombres(),
                 dto.getNombreInstitucion(),
                 dto.getCorreo()
+                
         );
+
+        if (dto.getTipoUsuario() != null && !dto.getTipoUsuario().isEmpty()) {
+            usuario.setTipoUsuario(dto.getTipoUsuario());
+            usuarioService.save(usuario);
+        }
 
         validarCapacidadPorBloques(dto);
 
@@ -233,6 +239,7 @@ public class ReservaService {
             dto.setNoAsistio(r.isNoAsistio());
             dto.setQrToken(r.getQrToken());
             dto.setUsado(r.isUsado());
+            
             return dto;
         }).toList();
     }

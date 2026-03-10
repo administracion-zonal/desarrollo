@@ -38,6 +38,9 @@ public class Usuario {
 @Column(name="foto_perfil")
 private String fotoPerfil;
 
+@Column(name = "tipo_usuario")
+private String tipoUsuario;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "usuarios_roles",

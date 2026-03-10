@@ -15,4 +15,6 @@ public class AuthResponseDTO {
     private String fotoPerfil;
     private Boolean cambiarPassword;
     private Boolean aceptaAcuerdo;
+    private String cedula;
+private String correo;
 }

@@ -7,6 +7,7 @@ import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabil
 import { useAuth } from "../context/useAuth";
 import "../App.css";
 import { apiFetch } from "../utils/api";
+import { useNavigate } from "react-router-dom";
 
 const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
 const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios`;
@@ -25,6 +26,15 @@ const initialForm = {
 
 export default function ReservaPublica() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/reservar");
+    }
+  }, [user, navigate]);
+
+  const [usuarioAceptoAcuerdo, setUsuarioAceptoAcuerdo] = useState(false);
 
   const [form, setForm] = useState(() => {
     if (user) {
@@ -47,7 +57,7 @@ export default function ReservaPublica() {
 
   const [horasBloqueadas, setHorasBloqueadas] = useState<string[]>([]);
   const [reservaCreada, setReservaCreada] = useState<Reserva | null>(null);
-  const [usuarioAceptoAcuerdo, setUsuarioAceptoAcuerdo] = useState(false);
+
   const [horaInicioSel, setHoraInicioSel] = useState<string | null>(null);
   const [horaFinSel, setHoraFinSel] = useState<string | null>(null);
   const [bloquearCorreo, setBloquearCorreo] = useState(false);
@@ -63,10 +73,10 @@ export default function ReservaPublica() {
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const areaImages: Record<string, string> = {
-    SALA_REUNIONES: `${BACKEND_URL}/areas/SALA_REUNIONES.jpeg`,
-    TRABAJO_INDIVIDUAL: `${BACKEND_URL}/areas/TRABAJO_INDIVIDUAL.jpeg`,
-    COMPARTIDO_A: `${BACKEND_URL}/areas/COMPARTIDO_A.jpeg`,
-    COMPARTIDO_B: `${BACKEND_URL}/areas/COMPARTIDO_B.jpeg`,
+    SALA_REUNIONES: `${BACKEND_URL}/uploads/areas/SALA_REUNIONES.jpeg`,
+    TRABAJO_INDIVIDUAL: `${BACKEND_URL}/uploads/areas/TRABAJO_INDIVIDUAL.jpeg`,
+    COMPARTIDO_A: `${BACKEND_URL}/uploads/areas/COMPARTIDO_A.jpeg`,
+    COMPARTIDO_B: `${BACKEND_URL}/uploads/areas/COMPARTIDO_B.jpeg`,
   };
 
   const nuevaReserva = () => {
@@ -156,6 +166,58 @@ export default function ReservaPublica() {
       horaInicio: horaInicioSel,
       horaFin: hora,
     }));
+  };
+
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  const imprimirQR = () => {
+    const canvas = document.querySelector("canvas");
+
+    if (!canvas) return;
+
+    const qrImage = canvas.toDataURL("image/png");
+
+    const ventana = window.open("", "_blank", "width=400,height=600");
+
+    if (!ventana) return;
+
+    ventana.document.write(`
+    <html>
+      <head>
+        <title>Reserva Coworking</title>
+        <style>
+          body{
+            font-family: Arial;
+            text-align:center;
+            padding:30px;
+          }
+          img{
+            width:220px;
+            margin-top:10px;
+          }
+        </style>
+      </head>
+      <body>
+
+        <h3>Tu código de acceso</h3>
+
+        <p>
+        Administración Zonal Valle de los Chillos
+        </p>
+
+        <img src="${qrImage}" />
+
+      </body>
+    </html>
+  `);
+
+    ventana.document.close();
+
+    ventana.focus();
+
+    setTimeout(() => {
+      ventana.print();
+    }, 500);
   };
 
   /* ================= VALIDAR CÉDULA ================= */
@@ -333,7 +395,7 @@ export default function ReservaPublica() {
       return;
     }
 
-    if (usuarioAceptoAcuerdo) {
+    if (user?.aceptaAcuerdo || usuarioAceptoAcuerdo) {
       await enviarReserva(true);
     } else {
       setMostrarModal(true);
@@ -429,7 +491,7 @@ export default function ReservaPublica() {
                           <select
                             name="tipoUsuario"
                             value={form.tipoUsuario}
-                            disabled={bloquearNombre}
+                            disabled={!!form.tipoUsuario}
                             onChange={handleChange}
                           >
                             <option value="">Seleccione</option>
@@ -572,38 +634,50 @@ export default function ReservaPublica() {
 
             {reservaCreada && (
               <div style={{ textAlign: "center", marginTop: "30px" }}>
-                <h3>Tu código de acceso</h3>
+                <div ref={qrRef}>
+                  <h3>Tu código de acceso</h3>
 
-                <p style={{ fontSize: "15px", marginBottom: "10px" }}>
-                  Gracias por confiar en la{" "}
-                  <b>Administración Zonal Valle de los Chillos</b>.
-                </p>
+                  <p style={{ fontSize: "15px", marginBottom: "10px" }}>
+                    Gracias por confiar en la{" "}
+                    <b>Administración Zonal Valle de los Chillos</b>.
+                  </p>
 
-                <p style={{ fontSize: "14px" }}>
-                  Su reserva es para el día <b>{reservaCreada.fecha}</b>
-                  <br />
-                  en el horario de <b>{reservaCreada.horaInicio}</b> a{" "}
-                  <b>{reservaCreada.horaFin}</b>
-                </p>
+                  <p style={{ fontSize: "14px" }}>
+                    Su reserva es para el día <b>{reservaCreada.fecha}</b>
+                    <br />
+                    en el horario de <b>{reservaCreada.horaInicio}</b> a{" "}
+                    <b>{reservaCreada.horaFin}</b>
+                  </p>
 
-                <p
-                  style={{ marginTop: "10px", fontSize: "13px", color: "#555" }}
-                >
-                  Código de validación:
-                </p>
+                  <p
+                    style={{
+                      marginTop: "10px",
+                      fontSize: "13px",
+                      color: "#555",
+                    }}
+                  >
+                    Código de validación:
+                  </p>
 
-                <QRCodeCanvas value={`${reservaCreada.qrToken}`} size={220} />
+                  <QRCodeCanvas value={`${reservaCreada.qrToken}`} size={220} />
 
-                <p
-                  style={{ fontSize: "12px", color: "#777", marginTop: "8px" }}
-                >
-                  {reservaCreada.qrToken}
-                </p>
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#777",
+                      marginTop: "8px",
+                    }}
+                  >
+                    {reservaCreada.qrToken}
+                  </p>
 
-                <p style={{ fontSize: "12px", marginTop: "10px" }}>
-                  Presente este código al momento de su ingreso.
-                </p>
-
+                  <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                    Presente este código al momento de su ingreso.
+                  </p>
+                </div>
+                <button className="btn" onClick={imprimirQR}>
+                  🖨 Imprimir QR
+                </button>
                 <button className="btn" onClick={nuevaReserva}>
                   Nueva reserva
                 </button>

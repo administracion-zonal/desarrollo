@@ -16,6 +16,7 @@ public class ReservaDTO {
     private Boolean aceptaAcuerdo;
     private String correo;
     private String fotoPerfil;
+    private String tipoUsuario;
     public Boolean getAceptaAcuerdo() {
         return aceptaAcuerdo;
     }

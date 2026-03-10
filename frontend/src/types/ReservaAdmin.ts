@@ -17,4 +17,5 @@ export type ReservaAdmin = {
   noAsistio: boolean;
   usado: boolean;
   qrToken: string;
+  fechaCreacion: string;
 };

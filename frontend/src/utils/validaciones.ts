@@ -61,14 +61,23 @@ export const validarPassword = (password: string) => {
      FORMATO FECHAS LARGAS
   ========================= */
 
-export const formatearFecha = (fecha: string): string => {
-  if (!fecha) return "";
+export const formatearFecha = (fecha: string) => {
+  const [anio, mes, dia] = fecha.split("-");
 
-  const date = new Date(fecha);
+  const meses = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+  ];
 
-  return date.toLocaleDateString("es-EC", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return `${Number(dia)} de ${meses[Number(mes) - 1]} de ${anio}`;
 };

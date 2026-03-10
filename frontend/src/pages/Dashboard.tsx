@@ -77,12 +77,18 @@ export default function Dashboard() {
 
   const obtenerEstadoReserva = (reserva: Reserva) => {
     const ahora = new Date();
-    const fin = new Date(`${reserva.fecha}T${reserva.horaFin}`);
+    const [anio, mes, dia] = reserva.fecha.split("-").map(Number);
+    const fechaReserva = new Date(anio, mes - 1, dia);
 
+    const fin = new Date(
+      anio,
+      mes - 1,
+      dia,
+      Number(reserva.horaFin.split(":")[0]),
+      Number(reserva.horaFin.split(":")[1]),
+    );
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-
-    const fechaReserva = new Date(`${reserva.fecha}T00:00:00`);
 
     /* PASO 1 — ASISTIÓ */
     if (reserva.usado && reserva.asistio) {
@@ -138,9 +144,12 @@ export default function Dashboard() {
       })
       .then((data) => {
         const ordenadas = data.sort((a: Reserva, b: Reserva) => {
-          const fa = new Date(`${a.fecha}T${a.horaInicio}`).getTime();
-          const fb = new Date(`${b.fecha}T${b.horaInicio}`).getTime();
-          return fb - fa; // más recientes primero
+          const fa = `${a.fecha} ${a.horaInicio}`;
+          const fb = `${b.fecha} ${b.horaInicio}`;
+
+          if (fa > fb) return -1;
+          if (fa < fb) return 1;
+          return 0;
         });
 
         setReservas(ordenadas);
