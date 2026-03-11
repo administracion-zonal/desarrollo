@@ -1,80 +1,164 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Reserva } from "../types/Reserva";
 import { QRCodeCanvas } from "qrcode.react";
 import { validarCedula } from "../utils/validaciones";
+import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
 import "../App.css";
 import { apiFetch } from "../utils/api";
+import { useAuth } from "../context/useAuth";
+import "../App.css";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/reservas`;
-const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios/cedula`;
-
-const initialForm = {
-  cedula: "",
-  nombres: "",
-  tipoUsuario: "",
-  nombreInstitucion: "",
-  fecha: "",
-  horaInicio: "",
-  horaFin: "",
-  nombreArea: "",
-};
-
+const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
 export default function ReservaForm() {
-  const [form, setForm] = useState(initialForm);
-  const [bloquearNombre, setBloquearNombre] = useState(false);
-  const [mensajeCedula, setMensajeCedula] = useState<string | null>(null);
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const { user } = useAuth();
+
+  const [form, setForm] = useState({
+    cedula: user?.cedula || "",
+    nombres: user?.nombres || "",
+    nombreInstitucion: "",
+    fecha: "",
+    horaInicio: "",
+    horaFin: "",
+    nombreArea: "",
+  });
+
   const [error, setError] = useState<string | null>(null);
-  const [cupos, setCupos] = useState<number | null>(null);
+
   const [horasBloqueadas, setHorasBloqueadas] = useState<string[]>([]);
   const [reservaCreada, setReservaCreada] = useState<Reserva | null>(null);
-
-  const cedulaRef = useRef<HTMLInputElement>(null);
-
+  const [horaInicioSel, setHoraInicioSel] = useState<string | null>(null);
+  const [horaFinSel, setHoraFinSel] = useState<string | null>(null);
+  const [cuposPorBloque, setCuposPorBloque] = useState<Record<string, number>>(
+    {},
+  );
   const BACKEND_URL = `${import.meta.env.VITE_API_URL}`;
-
+  const qrRef = useRef<HTMLDivElement>(null);
   const HORA_MIN = "08:00";
   const HORA_MAX = "16:00";
 
   const areaImages: Record<string, string> = {
-    SALA_REUNIONES: `${BACKEND_URL}/areas/SALA_REUNIONES.jpeg`,
-    TRABAJO_INDIVIDUAL: `${BACKEND_URL}/areas/TRABAJO_INDIVIDUAL.jpeg`,
-    COMPARTIDO_A: `${BACKEND_URL}/areas/COMPARTIDO_A.jpeg`,
-    COMPARTIDO_B: `${BACKEND_URL}/areas/COMPARTIDO_B.jpeg`,
+    SALA_REUNIONES: `${BACKEND_URL}/uploads/areas/SALA_REUNIONES.jpeg`,
+    TRABAJO_INDIVIDUAL: `${BACKEND_URL}/uploads/areas/TRABAJO_INDIVIDUAL.jpeg`,
+    COMPARTIDO_A: `${BACKEND_URL}/uploads/areas/COMPARTIDO_A.jpeg`,
+    COMPARTIDO_B: `${BACKEND_URL}/uploads/areas/COMPARTIDO_B.jpeg`,
   };
 
-  /* ================= VALIDAR CÉDULA ================= */
-  const validarCedulaBlur = async () => {
-    setMensajeCedula(null);
+  const aMinutos = (hora: string) => {
+    const [h, m] = hora.split(":").map(Number);
+    return h * 60 + m;
+  };
 
-    if (!validarCedula(form.cedula)) {
-      setMensajeCedula("Cédula inválida");
-      setForm((prev) => ({ ...prev, nombres: "" }));
-      setBloquearNombre(false);
-      setMostrarFormulario(false);
-      setTimeout(() => {
-        cedulaRef.current?.focus();
-      }, 0);
+  const generarBloques = () => {
+    const bloques: string[] = [];
+    let t = aMinutos(HORA_MIN);
+    const max = aMinutos(HORA_MAX);
+
+    while (t < max) {
+      bloques.push(
+        `${Math.floor(t / 60)
+          .toString()
+          .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`,
+      );
+      t += 30;
+    }
+    return bloques;
+  };
+
+  const bloqueBloqueado = (hora: string) => (cuposPorBloque[hora] ?? 0) === 0;
+
+  const seleccionarHora = (hora: string) => {
+    if (bloqueBloqueado(hora)) return;
+
+    // Primer click → inicio
+    if (!horaInicioSel) {
+      setHoraInicioSel(hora);
+      setHoraFinSel(null);
+      setForm((prev) => ({ ...prev, horaInicio: "", horaFin: "" }));
       return;
     }
-    setMostrarFormulario(true);
-    try {
-      const res = await apiFetch(`${API_USUARIOS}/${form.cedula}`);
 
-      if (res.ok) {
-        const usuario = await res.json();
-        setForm((prev) => ({ ...prev, nombres: usuario.nombres }));
-        setBloquearNombre(true);
-      } else {
-        setForm((prev) => ({ ...prev, nombres: "" }));
-        setBloquearNombre(false);
-      }
-    } catch {
-      setMensajeCedula("Error al consultar usuario");
-      setTimeout(() => {
-        cedulaRef.current?.focus();
-      }, 0);
+    // Click sobre la misma hora → reset
+    if (hora === horaInicioSel) {
+      setHoraInicioSel(null);
+      setHoraFinSel(null);
+      setForm((prev) => ({ ...prev, horaInicio: "", horaFin: "" }));
+      return;
     }
+
+    const inicio = aMinutos(horaInicioSel);
+    const fin = aMinutos(hora);
+
+    // Hora fin debe ser mayor
+    if (fin <= inicio) return;
+
+    // Máximo 2 horas
+    if (fin - inicio > 120) return;
+
+    // Validar bloques intermedios
+    for (let t = inicio; t < fin; t += 30) {
+      const h = `${Math.floor(t / 60)
+        .toString()
+        .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
+      if (bloqueBloqueado(h)) return;
+    }
+
+    // OK
+    setHoraFinSel(hora);
+    setForm((prev) => ({
+      ...prev,
+      horaInicio: horaInicioSel,
+      horaFin: hora,
+    }));
+  };
+
+  const imprimirQR = () => {
+    const canvas = document.querySelector("canvas");
+
+    if (!canvas) return;
+
+    const qrImage = canvas.toDataURL("image/png");
+
+    const ventana = window.open("", "_blank", "width=400,height=600");
+
+    if (!ventana) return;
+
+    ventana.document.write(`
+    <html>
+      <head>
+        <title>Reserva Coworking</title>
+        <style>
+          body{
+            font-family: Arial;
+            text-align:center;
+            padding:30px;
+          }
+          img{
+            width:220px;
+            margin-top:10px;
+          }
+        </style>
+      </head>
+      <body>
+
+        <h3>Tu código de acceso</h3>
+
+        <p>
+        Administración Zonal Valle de los Chillos
+        </p>
+
+        <img src="${qrImage}" />
+
+      </body>
+    </html>
+  `);
+
+    ventana.document.close();
+
+    ventana.focus();
+
+    setTimeout(() => {
+      ventana.print();
+    }, 500);
   };
 
   /* ================= DISPONIBILIDAD ================= */
@@ -82,20 +166,21 @@ export default function ReservaForm() {
     if (!form.nombreArea || !form.fecha) return;
 
     apiFetch(
-      `${API_URL}/disponibilidad?nombreArea=${form.nombreArea}&fecha=${form.fecha}`,
+      `${API_RESERVAS}/disponibilidad?nombreArea=${form.nombreArea}&fecha=${form.fecha}`,
     )
       .then((res) => res.json())
-      .then((data) => {
-        setCupos(data.disponibles);
-        setHorasBloqueadas(
-          data.reservas.map(
-            (r: { horaInicio: string; horaFin: string }) =>
-              `${r.horaInicio}-${r.horaFin}`,
-          ),
-        );
+      .then((data: DisponibilidadResponse) => {
+        const cupos: Record<string, number> = {};
+
+        data.bloques.forEach((b) => {
+          cupos[b.hora] = Math.max(b.capacidad - b.ocupados, 0);
+        });
+
+        setCuposPorBloque(cupos);
+        setHorasBloqueadas([]);
       })
       .catch(() => {
-        setCupos(null);
+        setCuposPorBloque({});
         setHorasBloqueadas([]);
       });
   }, [form.nombreArea, form.fecha]);
@@ -105,17 +190,18 @@ export default function ReservaForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        name === "nombres" || name === "nombreInstitucion"
+          ? value.toUpperCase()
+          : value,
+    }));
+  };
 
-    if (name === "nombreArea" || name === "fecha") {
-      setCupos(null);
-      setHorasBloqueadas([]);
-    }
-
-    if (name === "fecha" && value && !esDiaHabil(value)) {
-      alert("Solo se permiten reservas de lunes a viernes");
-      return;
-    }
+  const esDiaHabil = (fecha: string) => {
+    const dia = new Date(fecha + "T00:00:00").getDay();
+    return dia !== 0 && dia !== 6;
   };
 
   const solapada = (inicio: string, fin: string) =>
@@ -124,18 +210,38 @@ export default function ReservaForm() {
       return inicio < hf && fin > hi;
     });
 
+  const enviarReserva = async (acepta: boolean) => {
+    const payload = {
+      ...form,
+      aceptaAcuerdo: acepta,
+    };
+
+    const token = localStorage.getItem("token");
+
+    //const res = await apiFetch(API_RESERVAS, {
+    const res = await apiFetch(`${API_RESERVAS}/reservar`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      setReservaCreada(await res.json());
+    } else {
+      setError("Error al registrar la reserva");
+    }
+  };
+
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!validarCedula(form.cedula)) {
-      setError("Cédula inválida");
-      setMensajeCedula("Cédula inválida");
-
-      setTimeout(() => {
-        cedulaRef.current?.focus();
-      }, 0);
+    if (!esDiaHabil(form.fecha)) {
+      setError("Solo se permiten reservas de lunes a viernes");
       return;
     }
 
@@ -144,13 +250,8 @@ export default function ReservaForm() {
       return;
     }
 
-    if (form.horaInicio < HORA_MIN || form.horaFin > HORA_MAX) {
-      setError("El horario permitido es de 08:00 a 16:00");
-      return;
-    }
-
     if (form.horaFin <= form.horaInicio) {
-      setError("La hora fin debe ser mayor a la hora inicio");
+      setError("Hora fin debe ser mayor a hora inicio");
       return;
     }
 
@@ -159,45 +260,13 @@ export default function ReservaForm() {
       return;
     }
 
-    try {
-      const response = await apiFetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      if (!response.ok) {
-        setError("Error al registrar la reserva");
-        return;
-      }
-
-      const data: Reserva = await response.json();
-      setReservaCreada(data);
-    } catch {
-      setError("Error de conexión con el servidor");
-    }
-  };
-
-  const nuevaReserva = () => {
-    setReservaCreada(null);
-    setForm(initialForm);
-    setBloquearNombre(false);
-    setCupos(null);
-    setHorasBloqueadas([]);
-    setError(null);
-    setMensajeCedula(null);
-  };
-
-  const esDiaHabil = (fecha: string) => {
-    const dia = new Date(fecha + "T00:00:00").getDay();
-    return dia !== 0 && dia !== 6; // 0 domingo, 6 sábado
+    await enviarReserva(true);
   };
 
   const formularioValido = () => {
     return (
       validarCedula(form.cedula) &&
       form.nombres.trim() !== "" &&
-      form.tipoUsuario !== "" &&
       form.nombreInstitucion.trim() !== "" &&
       form.nombreArea !== "" &&
       form.fecha !== "" &&
@@ -211,161 +280,192 @@ export default function ReservaForm() {
   return (
     <>
       <h2 style={{ textAlign: "center" }}>Reserva Coworking</h2>
+      <div className="reserva-layout">
+        <div className="reserva-content">
+          <div className="form-panel">
+            <>
+              {!reservaCreada && (
+                <form onSubmit={handleSubmit} noValidate>
+                  {/* 🔹 DESDE AQUÍ TODOS VEN */}
 
-      {!reservaCreada && (
-        <form onSubmit={handleSubmit} className="form-grid" noValidate>
-          <label>Cédula:</label>
-          <input
-            ref={cedulaRef}
-            name="cedula"
-            value={form.cedula}
-            maxLength={10}
-            onChange={handleChange}
-            onBlur={validarCedulaBlur}
-          />
-          <div />
-          <label></label>
-          {mensajeCedula && (
-            <p className="error" style={{ marginTop: "-10px" }}>
-              {mensajeCedula}
-            </p>
-          )}
+                  <div className={`fade-in form-grid-2`}>
+                    <div className="field">
+                      <label>Área</label>
+                      <select
+                        name="nombreArea"
+                        value={form.nombreArea}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setForm((prev) => ({
+                            ...prev,
+                            nombreArea: value,
+                            fecha: "",
+                            horaInicio: "",
+                            horaFin: "",
+                          }));
 
-          {mostrarFormulario && (
-            <div className="fade-in form-grid-2">
-              {/* NOMBRES */}
-              <div className="field span-2">
-                <label>Nombres</label>
-                <input
-                  name="nombres"
-                  value={form.nombres}
-                  disabled={bloquearNombre}
-                  onChange={handleChange}
-                />
-              </div>
+                          setHoraInicioSel(null);
+                          setHoraFinSel(null);
+                          setHorasBloqueadas([]);
+                          setCuposPorBloque({});
+                        }}
+                      >
+                        <option value="">Seleccione</option>
+                        <option value="SALA_REUNIONES">SALA REUNIONES</option>
+                        <option value="TRABAJO_INDIVIDUAL">
+                          TRABAJO INDIVIDUAL
+                        </option>
+                        <option value="COMPARTIDO_A">COMPARTIDO A</option>
+                        <option value="COMPARTIDO_B">COMPARTIDO B</option>
+                      </select>
+                    </div>
 
-              {/* ÁREA */}
-              <div className="field">
-                <label>Área</label>
-                <select
-                  name="nombreArea"
-                  value={form.nombreArea}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccione</option>
-                  <option value="SALA_REUNIONES">Sala reuniones</option>
-                  <option value="TRABAJO_INDIVIDUAL">Trabajo individual</option>
-                  <option value="COMPARTIDO_A">Zona compartida A</option>
-                  <option value="COMPARTIDO_B">Zona compartida B</option>
-                </select>
-              </div>
+                    <div className="field span-2">
+                      <label>Institución a la que pertenece</label>
+                      <input
+                        name="nombreInstitucion"
+                        value={form.nombreInstitucion}
+                        onChange={handleChange}
+                      />
+                    </div>
 
-              {/* TIPO USUARIO */}
-              <div className="field">
-                <label>Tipo usuario</label>
-                <select
-                  name="tipoUsuario"
-                  value={form.tipoUsuario}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccione</option>
-                  <option value="PUBLICO">Público</option>
-                  <option value="PRIVADO">Privado</option>
-                  <option value="ESTUDIANTE">Estudiante</option>
-                </select>
-              </div>
+                    <div className="field span-2">
+                      <label>Fecha</label>
+                      <input
+                        type="date"
+                        name="fecha"
+                        value={form.fecha}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={handleChange}
+                      />
+                    </div>
 
-              {/* INSTITUCIÓN */}
-              <div className="field span-2">
-                <label>Institución</label>
-                <input
-                  name="nombreInstitucion"
-                  value={form.nombreInstitucion}
-                  onChange={handleChange}
-                />
-              </div>
+                    <div className="field span-2">
+                      <label>Horario y cupos disponible</label>
 
-              {/* FECHA */}
-              <div className="field span-2">
-                <label>Fecha</label>
-                <input
-                  type="date"
-                  name="fecha"
-                  value={form.fecha}
-                  onChange={handleChange}
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </div>
+                      <div className="time-grid">
+                        {generarBloques().map((hora) => {
+                          const bloqueada = bloqueBloqueado(hora);
+                          const esInicio = hora === horaInicioSel;
+                          const esFin = hora === horaFinSel;
 
-              {/* CUPOS */}
-              <div className="field span-2 cupos">
-                {cupos !== null && (
-                  <p>
-                    <strong>Cupos disponibles:</strong> {cupos}
-                  </p>
+                          const seleccionada =
+                            horaInicioSel &&
+                            horaFinSel &&
+                            aMinutos(hora) >= aMinutos(horaInicioSel) &&
+                            aMinutos(hora) <= aMinutos(horaFinSel);
+
+                          const cuposDisponibles = cuposPorBloque[hora] ?? 0;
+
+                          return (
+                            <button
+                              key={hora}
+                              type="button"
+                              disabled={bloqueada || cuposDisponibles === 0}
+                              className={`time-slot
+                              ${bloqueada ? "blocked" : ""}
+                              ${seleccionada ? "selected" : ""}
+                              ${esInicio ? "start" : ""}
+                              ${esFin ? "end" : ""}
+                            `}
+                              onClick={() => seleccionarHora(hora)}
+                            >
+                              {hora}
+                              <span className="cupos-mini">
+                                {cuposDisponibles}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {horaInicioSel && horaFinSel && (
+                        <p className="hint">
+                          Horario seleccionado: <strong>{horaInicioSel}</strong>{" "}
+                          – <strong>{horaFinSel}</strong>
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      className="actions span-2"
+                      disabled={!formularioValido()}
+                    >
+                      Reservar
+                    </button>
+
+                    {error && <p className="error full">{error}</p>}
+                  </div>
+                </form>
+              )}
+
+              {user &&
+                !reservaCreada &&
+                form.nombreArea &&
+                areaImages[form.nombreArea] && (
+                  <div className="area-preview">
+                    <img
+                      src={areaImages[form.nombreArea]}
+                      alt={form.nombreArea}
+                    />
+                  </div>
                 )}
-              </div>
 
-              {/* HORA INICIO */}
-              <div className="field">
-                <label>Hora inicio</label>
-                <input
-                  type="time"
-                  name="horaInicio"
-                  value={form.horaInicio}
-                  step="900"
-                  onChange={handleChange}
-                />
-                <small className="hint">08:00 – 16:00</small>
-              </div>
+              {reservaCreada && (
+                <div style={{ textAlign: "center", marginTop: "30px" }}>
+                  <div ref={qrRef}>
+                    <h3>Tu código de acceso</h3>
 
-              {/* HORA FIN */}
-              <div className="field">
-                <label>Hora fin</label>
-                <input
-                  type="time"
-                  name="horaFin"
-                  value={form.horaFin}
-                  onChange={handleChange}
-                />
-                <small className="hint">08:01 – 16:00</small>
-              </div>
+                    <p style={{ fontSize: "15px", marginBottom: "10px" }}>
+                      Gracias por confiar en la{" "}
+                      <b>Administración Zonal Valle de los Chillos</b>.
+                    </p>
 
-              {/* BOTÓN */}
-              <div className="actions span-2">
-                <button className="btn" disabled={!formularioValido()}>
-                  Reservar
-                </button>
-              </div>
+                    <p style={{ fontSize: "14px" }}>
+                      Su reserva es para el día <b>{reservaCreada.fecha}</b>
+                      <br />
+                      en el horario de <b>{reservaCreada.horaInicio}</b> a{" "}
+                      <b>{reservaCreada.horaFin}</b>
+                    </p>
 
-              {error && <p className="error full">{error}</p>}
-            </div>
-          )}
-        </form>
-      )}
+                    <p
+                      style={{
+                        marginTop: "10px",
+                        fontSize: "13px",
+                        color: "#555",
+                      }}
+                    >
+                      Código de validación:
+                    </p>
 
-      {mostrarFormulario &&
-        !reservaCreada &&
-        form.nombreArea &&
-        areaImages[form.nombreArea] && (
-          <div className="area-preview">
-            <img src={areaImages[form.nombreArea]} alt={form.nombreArea} />
+                    <QRCodeCanvas
+                      value={`${reservaCreada.qrToken}`}
+                      size={220}
+                    />
+
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "#777",
+                        marginTop: "8px",
+                      }}
+                    >
+                      {reservaCreada.qrToken}
+                    </p>
+
+                    <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                      Presente este código al momento de su ingreso.
+                    </p>
+                  </div>
+                  <button className="btn" onClick={imprimirQR}>
+                    🖨 Imprimir QR
+                  </button>
+                </div>
+              )}
+            </>
           </div>
-        )}
-
-      {reservaCreada && (
-        <div style={{ textAlign: "center", marginTop: "30px" }}>
-          <h3>Tu código de acceso</h3>
-
-          <QRCodeCanvas value={`RESERVA|${reservaCreada.qrToken}`} size={220} />
-
-          <p>Guarda este código, se mostrará solo una vez</p>
-
-          <button className="btn" onClick={nuevaReserva}>
-            Nueva reserva
-          </button>
         </div>
-      )}
+      </div>
     </>
   );
 }
