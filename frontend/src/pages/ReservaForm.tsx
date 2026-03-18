@@ -6,7 +6,6 @@ import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
 import "../App.css";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/useAuth";
-import "../App.css";
 
 const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
 export default function ReservaForm() {

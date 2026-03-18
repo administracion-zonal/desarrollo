@@ -311,13 +311,6 @@ button:disabled {
   border-color: #ddd;
 }
 
-.time-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-
 .time-slot {
   padding: 10px 0;
   border-radius: 10px;
@@ -343,13 +336,6 @@ button:disabled {
   background: #eee;
   color: #999;
   cursor: not-allowed;
-}
-
-.time-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-top: 10px;
 }
 
 /* DISPONIBLE */

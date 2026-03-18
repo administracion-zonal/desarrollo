@@ -1,10 +1,9 @@
 import { useAuth } from "../context/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import incognito from "../assets/incognito-ini.jpg";
 import ImageCropper from "../components/ImageCropper";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
-import { useEffect } from "react";
 import type { PerfilUsuario } from "../types/PerfilUsuario";
 
 export default function Perfil() {
