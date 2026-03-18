@@ -1,3 +1,4 @@
+com\administracionzonal\dto\PerfilUsuarioDTO.class
 com\administracionzonal\dto\ReservaAdminDTO.class
 com\administracionzonal\config\WebConfig.class
 com\administracionzonal\jobs\ReservaScheduler.class
@@ -11,6 +12,7 @@ com\administracionzonal\dto\RegisterRequest.class
 com\administracionzonal\config\CorsConfig.class
 com\administracionzonal\dto\LoginRequest.class
 com\administracionzonal\dto\BloqueHorarioDTO.class
+com\administracionzonal\entity\Direccion.class
 com\administracionzonal\entity\UsuarioInstitucion.class
 com\administracionzonal\entity\UsuarioRolId.class
 com\administracionzonal\entity\ReservaCoworking.class
@@ -26,6 +28,7 @@ com\administracionzonal\repository\UsuarioRolRepository.class
 com\administracionzonal\service\ReservaService.class
 com\administracionzonal\controller\ReservaController.class
 com\administracionzonal\dto\ReservaUsuarioDTO.class
+com\administracionzonal\entity\DenominacionPuesto.class
 com\administracionzonal\dto\ReservaDTO.class
 com\administracionzonal\service\UsuarioService.class
 com\AdministracionZonalApplication.class
@@ -33,4 +36,5 @@ com\administracionzonal\entity\Rol.class
 com\administracionzonal\repository\ReservaRepository.class
 com\administracionzonal\entity\UsuarioRol.class
 com\administracionzonal\dto\CambioPasswordDTO.class
+com\administracionzonal\entity\Unidad.class
 com\administracionzonal\security\JwtUtil.class

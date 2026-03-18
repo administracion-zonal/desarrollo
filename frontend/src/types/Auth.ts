@@ -14,6 +14,8 @@ export interface AuthUser {
   fotoPerfil?: string;
   debeCambiarPassword: boolean;
   aceptaAcuerdo: boolean;
+  institucion?: string;
+  tipoUsuario?: string;
 }
 
 export interface AuthContextType {

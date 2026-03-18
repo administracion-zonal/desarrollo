@@ -17,4 +17,5 @@ public class AuthResponseDTO {
     private Boolean aceptaAcuerdo;
     private String cedula;
 private String correo;
+private String institucion;
 }

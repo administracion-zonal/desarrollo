@@ -4,18 +4,41 @@ import incognito from "../assets/incognito-ini.jpg";
 import ImageCropper from "../components/ImageCropper";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
+import { useEffect } from "react";
+import type { PerfilUsuario } from "../types/PerfilUsuario";
 
 export default function Perfil() {
   const { user } = useAuth();
 
   const [editando, setEditando] = useState(false);
-
+  const esInstitucional =
+    user?.roles.includes("SERVIDOR_AZVCH") || user?.roles.includes("ADMIN");
   const [imagenTemporal, setImagenTemporal] = useState<string | null>(null);
   const [cacheBust, setCacheBust] = useState(0);
   const navigate = useNavigate();
   const fotoUrl = user?.fotoPerfil
     ? `${import.meta.env.VITE_API_URL}/${user.fotoPerfil}?v=${cacheBust}`
     : incognito;
+
+  const [perfil, setPerfil] = useState<PerfilUsuario | null>(null);
+
+  useEffect(() => {
+    const cargarPerfil = async () => {
+      const res = await apiFetch(
+        `${import.meta.env.VITE_API_URL}/api/usuarios/perfil/${user?.idUsuario}`,
+      );
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      setPerfil(data);
+    };
+
+    if (user?.idUsuario) {
+      cargarPerfil();
+    }
+  }, [user]);
 
   return (
     <div className="perfil-container">
@@ -49,7 +72,7 @@ export default function Perfil() {
 
         {/* INFO DERECHA */}
         <div className="perfil-info-container">
-          <h2 className="perfil-nombre">{user?.nombres}</h2>
+          <h2 className="perfil-nombre">{perfil?.nombres || user?.nombres}</h2>
 
           <p className="perfil-extra">{user?.roles.join(", ")}</p>
         </div>
@@ -63,15 +86,48 @@ export default function Perfil() {
           <div className="perfil-card">
             <h3>INFORMACIÓN PERSONAL</h3>
 
-            <div className="perfil-item">
-              <label>Nombres</label>
-              <span>{user?.nombres}</span>
-            </div>
+            {!esInstitucional && (
+              <>
+                <div className="perfil-item">
+                  <label>Correo</label>
+                  <span>{perfil?.correo}</span>
+                </div>
 
-            <div className="perfil-item">
-              <label>Rol</label>
-              <span>{user?.roles.join(", ")}</span>
-            </div>
+                <div className="perfil-item">
+                  <label>Institución</label>
+                  <span>{perfil?.institucion}</span>
+                </div>
+              </>
+            )}
+
+            {esInstitucional && (
+              <>
+                <div className="perfil-item">
+                  <label>Direeción</label>
+                  <span>{perfil?.direccion}</span>
+                </div>
+
+                <div className="perfil-item">
+                  <label>Cargo</label>
+                  <span>{perfil?.cargo}</span>
+                </div>
+
+                <div className="perfil-item">
+                  <label>Unidad</label>
+                  <span>{perfil?.unidad}</span>
+                </div>
+
+                <div className="perfil-item">
+                  <label>Correo institucional</label>
+                  <span>{perfil?.correoInstitucional}</span>
+                </div>
+
+                <div className="perfil-item">
+                  <label>Extensión</label>
+                  <span>{perfil?.telefonoExtension}</span>
+                </div>
+              </>
+            )}
 
             <button onClick={() => setEditando(true)} className="btn-primary">
               Actualizar datos

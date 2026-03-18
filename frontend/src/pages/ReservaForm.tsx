@@ -161,6 +161,11 @@ export default function ReservaForm() {
     }, 500);
   };
 
+  const esFinDeSemana = (fecha: string) => {
+    const dia = new Date(fecha + "T00:00:00").getDay();
+    return dia === 0 || dia === 6; // domingo = 0, sábado = 6
+  };
+
   /* ================= DISPONIBILIDAD ================= */
   useEffect(() => {
     if (!form.nombreArea || !form.fecha) return;
@@ -336,7 +341,23 @@ export default function ReservaForm() {
                         name="fecha"
                         value={form.fecha}
                         min={new Date().toISOString().split("T")[0]}
-                        onChange={handleChange}
+                        onKeyDown={(e) => e.preventDefault()} // evita escribir manual
+                        onFocus={(e) => e.target.showPicker?.()}
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          if (esFinDeSemana(value)) {
+                            alert(
+                              "Solo se permiten reservas de lunes a viernes",
+                            );
+                            return;
+                          }
+
+                          setForm((prev) => ({
+                            ...prev,
+                            fecha: value,
+                          }));
+                        }}
                       />
                     </div>
 

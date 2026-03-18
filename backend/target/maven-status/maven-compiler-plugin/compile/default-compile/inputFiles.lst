@@ -2,6 +2,7 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\PublicReservaController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\jobs\ReservaScheduler.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\UsuarioRepository.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\Direccion.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\ReservaController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\ReservaPrivadaController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\RegisterRequest.java
@@ -25,9 +26,12 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\LoginRequest.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\UsuarioInstitucion.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\ReservaDTO.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\DenominacionPuesto.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\security\JwtFilter.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\PerfilUsuarioDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\CambioPasswordDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\service\ReservaService.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\Unidad.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\BloqueHorarioDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\config\SecurityConfig.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\Rol.java

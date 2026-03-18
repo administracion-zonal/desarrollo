@@ -2,6 +2,8 @@ package com.administracionzonal.controller;
 
 import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.UsuarioRepository;
+import com.administracionzonal.service.UsuarioService;
+import com.administracionzonal.dto.PerfilUsuarioDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,17 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepo;
 
+@Autowired
+private UsuarioService usuarioService;
+
+@GetMapping("/perfil/{id}")
+public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
+        @PathVariable Long id) {
+
+    return ResponseEntity.ok(
+        usuarioService.obtenerPerfil(id)
+    );
+}
 
     /* =====================================
        BUSCAR USUARIO POR CEDULA

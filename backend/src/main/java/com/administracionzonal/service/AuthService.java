@@ -46,7 +46,7 @@ public class AuthService {
 
         return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(),
                 usuario.getDebeCambiarPassword(),
-                usuario.getAceptaAcuerdo(), usuario.getCedula(), usuario.getCorreo());
+                usuario.getAceptaAcuerdo(), usuario.getCedula(), usuario.getCorreo(), usuario.getInstitucion());
     }
 
     public AuthResponseDTO register(RegisterRequest request) {
@@ -83,10 +83,12 @@ public class AuthService {
 
 
 
- List<String> roles = List.of("PRIVADO");
-        String token = jwtUtil.generateToken(usuario.getCedula(), roles);
+ List<String> roles = usuario.getRoles()
+    .stream()
+    .map(Rol::getNombre)
+    .toList();
 
-
-        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(), true, true,  usuario.getCedula(), usuario.getCorreo());
+String token = jwtUtil.generateToken(usuario.getCedula(), roles);
+        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(), true, true,  usuario.getCedula(), usuario.getCorreo(), usuario.getInstitucion());
     }
 }

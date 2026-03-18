@@ -1,5 +1,9 @@
 package com.administracionzonal.service;
 
+import com.administracionzonal.dto.PerfilUsuarioDTO;
+import com.administracionzonal.entity.UsuarioInstitucion;
+import com.administracionzonal.repository.UsuarioInstitucionRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.administracionzonal.entity.Rol;
 import com.administracionzonal.entity.Usuario;
@@ -18,7 +22,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepo;
     private final RolRepository rolRepo;
     private final PasswordEncoder passwordEncoder;
-
+private final UsuarioInstitucionRepository usuarioInstitucionRepository;
 
     public Usuario save(Usuario usuario) {
         return usuarioRepo.save(usuario);
@@ -93,6 +97,60 @@ u.setCorreo(correo.toLowerCase());
         usuario.setPassword(passwordEncoder.encode(dto.getPasswordNueva()));
 
         usuarioRepo.save(usuario);
+    }
+
+    public PerfilUsuarioDTO obtenerPerfil(Long idUsuario) {
+
+        Usuario usuario = usuarioRepo.findById(idUsuario)
+            .orElseThrow();
+
+        PerfilUsuarioDTO dto = new PerfilUsuarioDTO();
+
+        dto.setIdUsuario(usuario.getIdUsuario());
+        dto.setNombres(usuario.getNombres());
+        dto.setCorreo(usuario.getCorreo());
+        dto.setTipoUsuario(usuario.getTipoUsuario());
+        dto.setInstitucion(usuario.getInstitucion());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
+
+        dto.setRoles(
+            usuario.getRoles().stream()
+                .map(Rol::getNombre)
+                .toList()
+        );
+
+        if ("SERVIDOR_AZVCH".equals(usuario.getTipoUsuario())) {
+
+                    UsuarioInstitucion ui =
+                    usuarioInstitucionRepository
+                    .findByUsuario(usuario)
+                    .orElse(null);
+
+            if(ui != null){
+                dto.setCargo(
+                    ui.getDenominacion() != null
+                        ? ui.getDenominacion().getNombre()
+                        : null
+                );
+
+                dto.setUnidad(
+                    ui.getUnidad() != null
+                        ? ui.getUnidad().getNombre()
+                        : null
+                );
+
+                dto.setDireccion(
+                    ui.getDireccion() != null
+                        ? ui.getDireccion().getNombre()
+                        : null
+                );
+                
+                dto.setCorreoInstitucional(ui.getCorreoInstitucional());
+                dto.setTelefonoExtension(ui.getTelefonoExtension());
+            }
+        }
+
+        return dto;
     }
 
 }

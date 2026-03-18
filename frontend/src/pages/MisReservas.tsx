@@ -10,6 +10,56 @@ export default function MisReservas() {
   const [detalle, setDetalle] = useState<ReservaUsuario | null>(null);
   const [mostrarQR, setMostrarQR] = useState<ReservaUsuario | null>(null);
 
+  const imprimirQR = () => {
+    const canvas = document.querySelector("canvas");
+
+    if (!canvas) return;
+
+    const qrImage = canvas.toDataURL("image/png");
+
+    const ventana = window.open("", "_blank", "width=400,height=600");
+
+    if (!ventana) return;
+
+    ventana.document.write(`
+    <html>
+      <head>
+        <title>Reserva Coworking</title>
+        <style>
+          body{
+            font-family: Arial;
+            text-align:center;
+            padding:30px;
+          }
+          img{
+            width:220px;
+            margin-top:10px;
+          }
+        </style>
+      </head>
+      <body>
+
+        <h3>Tu código de acceso</h3>
+
+        <p>
+        Administración Zonal Valle de los Chillos
+        </p>
+
+        <img src="${qrImage}" />
+
+      </body>
+    </html>
+  `);
+
+    ventana.document.close();
+
+    ventana.focus();
+
+    setTimeout(() => {
+      ventana.print();
+    }, 500);
+  };
+
   const cancelarReserva = async (id: number) => {
     if (!confirm("¿Desea cancelar esta reserva?")) return;
 
@@ -116,7 +166,9 @@ export default function MisReservas() {
             <p style={{ marginTop: "10px", fontSize: "12px" }}>
               Presente este código al ingresar
             </p>
-
+            <button className="btn" onClick={imprimirQR}>
+              🖨 Imprimir QR
+            </button>
             <button onClick={() => setMostrarQR(null)}>Cerrar</button>
           </div>
         </div>
