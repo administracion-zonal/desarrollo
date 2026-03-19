@@ -290,7 +290,7 @@ button:disabled {
 
 .time-slot.blocked {
   background: #d10f0f;
-  color: #999;
+  color: #ffffff;
   cursor: not-allowed;
   border-color: #ddd;
 }
