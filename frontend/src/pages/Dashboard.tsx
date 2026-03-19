@@ -3,7 +3,7 @@ import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
 import { formatearFecha } from "../utils/validaciones";
 import { apiFetch } from "../utils/api";
 
-const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/admin/reservas/todas`;
+const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/reservas/todas`;
 export default function Dashboard() {
   const token = localStorage.getItem("token");
 
@@ -23,7 +23,7 @@ export default function Dashboard() {
   const marcarAsistencia = async (id: number) => {
     try {
       await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/admin/reservas/${id}/asistir`,
+        `${import.meta.env.VITE_API_URL}/api/reservas/${id}/asistir`,
         {
           method: "POST",
           headers: {
@@ -46,7 +46,7 @@ export default function Dashboard() {
 
     try {
       const res = await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/admin/reservas/validar-qr/${codigoQR}`,
+        `${import.meta.env.VITE_API_URL}/api/reservas/validar-qr/${codigoQR}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

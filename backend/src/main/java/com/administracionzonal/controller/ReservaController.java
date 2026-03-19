@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/reservas")
+@RequestMapping("/api/reservas")
 @RequiredArgsConstructor
 public class ReservaController {
 
@@ -89,5 +89,26 @@ public class ReservaController {
         reservaService.marcarAsistencia(id);
         return ResponseEntity.ok().build();
     }
+
+@GetMapping("/mis")
+public ResponseEntity<List<ReservaUsuarioDTO>> misReservas(Authentication auth) {
+
+    String cedula = auth.getName(); // viene del token
+
+    return ResponseEntity.ok(
+        reservaService.listarReservasUsuario(cedula)
+    );
+}
+
+@PostMapping("/{id}/cancelar")
+public ResponseEntity<?> cancelar(
+        @PathVariable Long id,
+        Authentication auth
+) {
+
+    reservaService.cancelarReserva(id, auth.getName());
+
+    return ResponseEntity.ok().build();
+}
 
 }

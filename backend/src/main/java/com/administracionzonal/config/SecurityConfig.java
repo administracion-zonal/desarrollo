@@ -92,12 +92,29 @@ public class SecurityConfig {
 
 
                 /* =========================
-                   RESERVAS ADMIN
+                   RESERVAS (USUARIOS LOGUEADOS)
                 ========================= */
 
-                .requestMatchers("/api/reservas/**")
-                        .hasAnyRole("ADMIN", "SERVIDOR", "SERVIDOR_AZVCH")
+                .requestMatchers("/api/reservas/mis")
+                    .authenticated()
 
+                .requestMatchers("/api/reservas/*/cancelar")
+                    .authenticated()
+
+                .requestMatchers("/api/reservas/disponibilidad")
+                    .permitAll()
+
+                .requestMatchers("/api/reservas/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers("/api/reservas/todas")
+                    .hasRole("ADMIN")
+
+                .requestMatchers("/api/reservas/validar-qr/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers("/api/reservas/*/asistir")
+                    .hasRole("ADMIN")
 
                 /* =========================
                    USUARIOS PRIVADOS

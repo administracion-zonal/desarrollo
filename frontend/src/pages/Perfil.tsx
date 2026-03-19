@@ -72,8 +72,15 @@ export default function Perfil() {
         {/* INFO DERECHA */}
         <div className="perfil-info-container">
           <h2 className="perfil-nombre">{perfil?.nombres || user?.nombres}</h2>
-
-          <p className="perfil-extra">{user?.roles.join(", ")}</p>
+          <p>
+            {user?.roles.includes("ADMIN")
+              ? "ADMIN"
+              : user?.roles.includes("SERVIDOR_AZVCH")
+                ? "SERVIDOR"
+                : user?.roles.includes("ESTUDIANTE")
+                  ? "ESTUDIANTE"
+                  : "PRIVADO"}
+          </p>
         </div>
       </div>
 

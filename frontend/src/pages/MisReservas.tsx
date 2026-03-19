@@ -66,7 +66,7 @@ export default function MisReservas() {
     const token = localStorage.getItem("token");
 
     const res = await apiFetch(
-      `${import.meta.env.VITE_API_URL}/api/privado/reservas/${id}/cancelar`,
+      `${import.meta.env.VITE_API_URL}/api/reservas/${id}/cancelar`,
       {
         method: "POST",
         headers: {
