@@ -4,7 +4,7 @@ import "./AcuerdoResponsabilidadModal.css";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onAccept: () => void;
+  onAccept: () => Promise<void>;
 }
 
 export default function AcuerdoResponsabilidadModal({
