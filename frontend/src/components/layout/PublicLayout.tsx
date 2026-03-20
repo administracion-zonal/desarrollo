@@ -9,8 +9,8 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="header-left">
           <img src="/cabecera1.png" alt="Institución" className="header-logo" />
           <div className="header-text">
-            <h1>Reserva Coworking</h1>
-            <span>Administración Zonal Valle de los Chillos</span>
+            <h1>Administración Zonal Valle de los Chillos</h1>
+            <span>Bienvenidos</span>
           </div>
         </div>
 

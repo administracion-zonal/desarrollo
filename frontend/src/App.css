@@ -19,17 +19,8 @@
    HEADER PÚBLICO
 ===================================================== */
 
-.public-header {
-  width: 100%;
-  max-width: 1100px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 20px 10px;
-}
-
 .header-logo {
-  height: 70px;
+  height: 56px;
   width: auto;
 }
 
@@ -42,10 +33,12 @@
   margin: 0;
   font-size: 32px;
   font-weight: 700;
+  color: #0f172a;
 }
 
 .header-text span {
   font-size: 14px;
+  color: #475569;
   opacity: 0.75;
 }
 
@@ -367,18 +360,6 @@ button:disabled {
   }
 }
 
-.time-slot.start {
-  background: #1d4ed8;
-  color: #fff;
-  border: 2px solid #1e40af;
-}
-
-.time-slot.end {
-  background: #1d4ed8;
-  color: #fff;
-  border: 2px dashed #1e40af;
-}
-
 /* RANGO */
 .time-slot.selected {
   background: #9b5a5a;
@@ -389,14 +370,14 @@ button:disabled {
 .time-slot.start {
   background: #2563eb; /* azul */
   color: #fff;
-  border-radius: 10px 0 0 10px;
+  border-radius: 10px 0 0 10px solid #1e40af;
 }
 
 /* FIN */
 .time-slot.end {
   background: #1d4ed8;
   color: #fff;
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 10px 10px 0 dashed #1e40af;
 }
 
 /* BLOQUEADO */
@@ -404,16 +385,6 @@ button:disabled {
   background: #6b6b6b;
   color: #300;
   cursor: not-allowed;
-}
-
-.time-slot.start {
-  background: #1d4ed8;
-  color: #fff;
-}
-
-.time-slot.end {
-  background: #1e40af;
-  color: #fff;
 }
 
 .cupos-mini {
@@ -465,7 +436,10 @@ button:disabled {
   justify-content: space-between;
   padding: 14px 28px;
   background: #ffffff;
+  gap: 20px;
   border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 1100px;
 }
 
 /* IZQUIERDA */
@@ -473,27 +447,6 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 14px;
-}
-
-.header-logo {
-  height: 56px;
-}
-
-.header-text h1 {
-  font-size: 18px;
-  margin: 0;
-  color: #0f172a;
-}
-
-.header-text span {
-  font-size: 13px;
-  color: #475569;
-}
-
-/* DERECHA */
-.header-actions {
-  display: flex;
-  gap: 12px;
 }
 
 .btn-login {
@@ -524,69 +477,10 @@ button:disabled {
   background: #1e40af;
 }
 
-.public-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 28px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-/* IZQUIERDA */
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.header-logo {
-  height: 56px;
-}
-
-.header-text h1 {
-  font-size: 18px;
-  margin: 0;
-  color: #0f172a;
-}
-
-.header-text span {
-  font-size: 13px;
-  color: #475569;
-}
-
 /* DERECHA */
 .header-actions {
   display: flex;
   gap: 12px;
-}
-
-.btn-login {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #1e3a8a;
-  color: #1e3a8a;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.2s;
-}
-
-.btn-login:hover {
-  background: #e0e7ff;
-}
-
-.btn-register {
-  padding: 8px 16px;
-  border-radius: 6px;
-  background: #1e3a8a;
-  color: #ffffff;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.2s;
-}
-
-.btn-register:hover {
-  background: #1e40af;
 }
 
 .menu {
@@ -794,6 +688,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 15px;
+  width: 100%;
 }
 
 .perfil-foto {
@@ -847,12 +742,6 @@ button:disabled {
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-}
-
-.perfil-header {
-  display: flex;
-  align-items: center;
-  width: 100%;
 }
 
 .perfil-foto-container {
