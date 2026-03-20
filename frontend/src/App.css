@@ -602,10 +602,10 @@ button:disabled {
 .login-card button {
   width: 100%;
   padding: 12px;
-  background: #2f80ed;
+  background: #1d4ed8; /* 🔥 azul más oscuro */
   border: none;
   border-radius: 6px;
-  color: #fff;
+  color: #ffffff;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
