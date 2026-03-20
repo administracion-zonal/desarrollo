@@ -8,6 +8,7 @@ import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/useAuth";
 import { esFinDeSemana, esDiaHabil } from "../utils/dateUtils";
 import { toMinutes, generarBloques } from "../utils/timeUtils";
+import { solapada } from "../utils/reservaUtils";
 
 const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
 export default function ReservaForm() {
@@ -179,12 +180,6 @@ export default function ReservaForm() {
     }));
   };
 
-  const solapada = (inicio: string, fin: string) =>
-    horasBloqueadas.some((h) => {
-      const [hi, hf] = h.split("-");
-      return inicio < hf && fin > hi;
-    });
-
   const enviarReserva = async (acepta: boolean) => {
     const payload = {
       ...form,
@@ -230,7 +225,7 @@ export default function ReservaForm() {
       return;
     }
 
-    if (solapada(form.horaInicio, form.horaFin)) {
+    if (solapada(form.horaInicio, form.horaFin, horasBloqueadas)) {
       setError("Horario no disponible");
       return;
     }
@@ -247,7 +242,7 @@ export default function ReservaForm() {
       form.fecha !== "" &&
       form.horaInicio !== "" &&
       form.horaFin !== "" &&
-      !solapada(form.horaInicio, form.horaFin)
+      !solapada(form.horaInicio, form.horaFin, horasBloqueadas)
     );
   };
 

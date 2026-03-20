@@ -10,6 +10,7 @@ import { apiFetch } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import { esFinDeSemana, esDiaHabil } from "../utils/dateUtils";
 import { toMinutes, generarBloques } from "../utils/timeUtils";
+import { solapada } from "../utils/reservaUtils";
 
 const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
 const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios`;
@@ -283,12 +284,6 @@ export default function ReservaPublica() {
     }));
   };
 
-  const solapada = (inicio: string, fin: string) =>
-    horasBloqueadas.some((h) => {
-      const [hi, hf] = h.split("-");
-      return inicio < hf && fin > hi;
-    });
-
   const nombreCompletoValido = (nombre: string) => {
     const partes = nombre.trim().split(/\s+/);
     return partes.length >= 2 && partes[0].length >= 2 && partes[1].length >= 2;
@@ -302,7 +297,7 @@ export default function ReservaPublica() {
         form.fecha &&
         form.horaInicio &&
         form.horaFin &&
-        !solapada(form.horaInicio, form.horaFin)
+        !solapada(form.horaInicio, form.horaFin, horasBloqueadas)
       );
     }
 
@@ -316,7 +311,7 @@ export default function ReservaPublica() {
       form.fecha &&
       form.horaInicio &&
       form.horaFin &&
-      !solapada(form.horaInicio, form.horaFin)
+      !solapada(form.horaInicio, form.horaFin, horasBloqueadas)
     );
   };
 
@@ -366,7 +361,7 @@ export default function ReservaPublica() {
       return;
     }
 
-    if (solapada(form.horaInicio, form.horaFin)) {
+    if (solapada(form.horaInicio, form.horaFin, horasBloqueadas)) {
       setError("Horario no disponible");
       return;
     }
