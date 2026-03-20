@@ -8,6 +8,8 @@ import { useAuth } from "../context/useAuth";
 import "../App.css";
 import { apiFetch } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import { esFinDeSemana, esDiaHabil } from "../utils/dateUtils";
+import { toMinutes, generarBloques } from "../utils/timeUtils";
 
 const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
 const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios`;
@@ -100,27 +102,6 @@ export default function ReservaPublica() {
     }, 300); // duración animación
   };
 
-  const aMinutos = (hora: string) => {
-    const [h, m] = hora.split(":").map(Number);
-    return h * 60 + m;
-  };
-
-  const generarBloques = () => {
-    const bloques: string[] = [];
-    let t = aMinutos(HORA_MIN);
-    const max = aMinutos(HORA_MAX);
-
-    while (t < max) {
-      bloques.push(
-        `${Math.floor(t / 60)
-          .toString()
-          .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`,
-      );
-      t += 30;
-    }
-    return bloques;
-  };
-
   const bloqueBloqueado = (hora: string) => (cuposPorBloque[hora] ?? 0) === 0;
 
   const seleccionarHora = (hora: string) => {
@@ -142,8 +123,8 @@ export default function ReservaPublica() {
       return;
     }
 
-    const inicio = aMinutos(horaInicioSel);
-    const fin = aMinutos(hora);
+    const inicio = toMinutes(horaInicioSel);
+    const fin = toMinutes(hora);
 
     // Hora fin debe ser mayor
     if (fin <= inicio) return;
@@ -264,11 +245,6 @@ export default function ReservaPublica() {
     }
   };
 
-  const esFinDeSemana = (fecha: string) => {
-    const dia = new Date(fecha + "T00:00:00").getDay();
-    return dia === 0 || dia === 6; // domingo = 0, sábado = 6
-  };
-
   /* ================= DISPONIBILIDAD ================= */
   useEffect(() => {
     if (!form.nombreArea || !form.fecha) return;
@@ -305,11 +281,6 @@ export default function ReservaPublica() {
           ? value.toUpperCase()
           : value,
     }));
-  };
-
-  const esDiaHabil = (fecha: string) => {
-    const dia = new Date(fecha + "T00:00:00").getDay();
-    return dia !== 0 && dia !== 6;
   };
 
   const solapada = (inicio: string, fin: string) =>
@@ -590,8 +561,8 @@ export default function ReservaPublica() {
                           const seleccionada =
                             horaInicioSel &&
                             horaFinSel &&
-                            aMinutos(hora) >= aMinutos(horaInicioSel) &&
-                            aMinutos(hora) <= aMinutos(horaFinSel);
+                            toMinutes(hora) >= toMinutes(horaInicioSel) &&
+                            toMinutes(hora) <= toMinutes(horaFinSel);
 
                           const cuposDisponibles = cuposPorBloque[hora] ?? 0;
 
