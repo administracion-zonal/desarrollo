@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import "./AcuerdoResponsabilidadModal.css";
 
-interface Props {
+type Props = Readonly<{
   open: boolean;
   onClose: () => void;
-  onAccept: () => Promise<void>;
-}
+  onAccept: () => Promise<void>; // (ya lo tienes async)
+}>;
 
 export default function AcuerdoResponsabilidadModal({
   open,

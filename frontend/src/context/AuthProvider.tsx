@@ -2,11 +2,11 @@ import { useState } from "react";
 import { AuthContext } from "./AuthContext";
 import type { AuthUser } from "../types/Auth";
 
-export default function AuthProvider({
-  children,
-}: {
+type Props = Readonly<{
   children: React.ReactNode;
-}) {
+}>;
+
+export default function AuthProvider({ children }: Props) {
   const [user, setUser] = useState<AuthUser | null>(() => {
     const stored = localStorage.getItem("user");
     if (stored) {

@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-export default function PublicLayout({ children }: { children: ReactNode }) {
+type Props = Readonly<{
+  children: ReactNode;
+}>;
+
+export default function PublicLayout({ children }: Props) {
   return (
     <div className="public-layout">
       <header className="public-header">
