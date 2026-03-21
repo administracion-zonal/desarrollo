@@ -290,7 +290,7 @@ button:disabled {
 
 .time-slot.blocked {
   background: #eee;
-  color: #999;
+  color: #374151;
   cursor: not-allowed;
 }
 
@@ -676,8 +676,8 @@ button:disabled {
 }
 
 .btn-warning {
-  background: #f57c00;
-  color: white;
+  background: #c2410c; /* 🔥 más fuerte */
+  color: #ffffff;
 }
 
 .btn-danger {
