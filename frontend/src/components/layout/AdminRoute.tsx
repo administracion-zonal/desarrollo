@@ -2,7 +2,11 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import type { ReactNode } from "react";
 
-export default function AdminRoute({ children }: { children: ReactNode }) {
+type Props = Readonly<{
+  children: ReactNode;
+}>;
+
+export default function AdminRoute({ children }: Props) {
   const { user, loading } = useAuth();
 
   if (loading) {

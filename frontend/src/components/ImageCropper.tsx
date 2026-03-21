@@ -4,11 +4,11 @@ import { useState } from "react";
 import getCroppedImg from "../utils/cropImage";
 import type { CropArea } from "../utils/cropImage";
 
-interface Props {
+type Props = Readonly<{
   image: string;
   onComplete: (blob: Blob) => void;
   onCancel: () => void;
-}
+}>;
 
 export default function ImageCropper({ image, onComplete, onCancel }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });

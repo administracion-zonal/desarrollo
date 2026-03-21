@@ -1,10 +1,10 @@
 import Navbar from "./Navbar";
 
-export default function PrivateLayout({
-  children,
-}: {
+type Props = Readonly<{
   children: React.ReactNode;
-}) {
+}>;
+
+export default function PrivateLayout({ children }: Props) {
   return (
     <>
       <Navbar />

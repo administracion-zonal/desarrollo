@@ -20,7 +20,12 @@ import Footer from "./components/Footer";
 /* =========================
    PRIVATE ROUTE
 ========================= */
-function PrivateRoute({ children }: { children: ReactNode }) {
+
+type Props = Readonly<{
+  children: ReactNode;
+}>;
+
+function PrivateRoute({ children }: Props) {
   const { user, loading } = useAuth();
 
   if (loading) {
