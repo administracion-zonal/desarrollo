@@ -44,7 +44,7 @@ export default function Perfil() {
       <div className="perfil-header">
         {/* FOTO Y BOTÓN */}
         <div className="perfil-foto-container">
-          <img src={fotoUrl} className="perfil-foto" />
+          <img src={fotoUrl} className="perfil-foto" alt="" />
 
           <label className="perfil-boton-foto">
             Cambiar foto
@@ -53,11 +53,8 @@ export default function Perfil() {
               accept="image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-
                 if (!file) return;
-
                 const reader = new FileReader();
-
                 reader.onload = () => {
                   setImagenTemporal(reader.result as string);
                 };

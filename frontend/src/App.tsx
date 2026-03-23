@@ -172,10 +172,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
-
-        {/* FOOTER GLOBAL */}
-        <Footer />
+        <div className="app-container">
+          <AppContent />
+          <Footer />
+        </div>
       </AuthProvider>
     </BrowserRouter>
   );
