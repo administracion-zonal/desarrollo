@@ -3,7 +3,7 @@
 ===================================================== */
 
 #root {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -828,12 +828,17 @@ body,
 }
 
 .footer {
+  width: 100vw; /* 🔥 CLAVE */
   margin-top: auto;
-  width: 100%;
-  padding: 25px 15px;
-  text-align: center;
+  padding: 20px;
   background: linear-gradient(90deg, #1e293b, #0f172a);
   color: #e2e8f0;
+  text-align: center;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
   font-size: 14px;
 }
 
