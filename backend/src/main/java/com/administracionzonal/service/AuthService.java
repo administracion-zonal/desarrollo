@@ -1,18 +1,20 @@
 package com.administracionzonal.service;
 
-import com.administracionzonal.dto.LoginRequest;
-import com.administracionzonal.dto.RegisterRequest;
-import com.administracionzonal.dto.AuthResponseDTO;
-
-import com.administracionzonal.entity.Usuario;
-import com.administracionzonal.entity.Rol;
-import com.administracionzonal.repository.UsuarioRepository;
-import com.administracionzonal.security.JwtUtil;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.administracionzonal.dto.AuthResponseDTO;
+import com.administracionzonal.dto.LoginRequest;
+import com.administracionzonal.dto.RegisterRequest;
+import com.administracionzonal.entity.Rol;
+import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.RolRepository;
+import com.administracionzonal.repository.UsuarioRepository;
+import com.administracionzonal.security.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -26,23 +28,22 @@ public class AuthService {
     public AuthResponseDTO login(LoginRequest request) {
 
         Usuario usuario = usuarioRepository
-            .findByCedula(request.getCedula())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .findByCedula(request.getCedula())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
-                usuario.getPassword()
-        )) {
+                usuario.getPassword())) {
             throw new RuntimeException("Credenciales inválidas");
         }
 
-// Tomamos el primer rol (por ahora)
-    List<String> roles = usuario.getRoles()
-        .stream()
-        .map(Rol::getNombre)
-        .toList();
+        // Tomamos el primer rol (por ahora)
+        List<String> roles = usuario.getRoles()
+                .stream()
+                .map(Rol::getNombre)
+                .toList();
 
-    String token = jwtUtil.generateToken(usuario.getCedula(), roles);
+        String token = jwtUtil.generateToken(usuario.getCedula(), roles);
 
         return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(),
                 usuario.getDebeCambiarPassword(),
@@ -51,7 +52,7 @@ public class AuthService {
 
     public AuthResponseDTO register(RegisterRequest request) {
 
-         if (!Boolean.TRUE.equals(request.getAceptaAcuerdo())) {
+        if (!Boolean.TRUE.equals(request.getAceptaAcuerdo())) {
             throw new RuntimeException("Debe aceptar el acuerdo de responsabilidad");
         }
 
@@ -66,11 +67,10 @@ public class AuthService {
         Usuario usuario = new Usuario();
         usuario.setCedula(request.getCedula());
         usuario.setNombres(request.getNombres());
-         usuario.setCorreo(request.getCorreo());
+        usuario.setCorreo(request.getCorreo());
         // 🔐 CIFRAR CONTRASEÑA
         usuario.setPassword(
-            passwordEncoder.encode(request.getPassword())
-        );
+                passwordEncoder.encode(request.getPassword()));
         usuario.setDebeCambiarPassword(true);
         usuario.setAceptaAcuerdo(true);
 
@@ -78,17 +78,16 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Rol PRIVADO no existe"));
 
         usuario.getRoles().add(rol);
-        
+
         usuarioRepository.save(usuario);
 
+        List<String> roles = usuario.getRoles()
+                .stream()
+                .map(Rol::getNombre)
+                .toList();
 
-
- List<String> roles = usuario.getRoles()
-    .stream()
-    .map(Rol::getNombre)
-    .toList();
-
-String token = jwtUtil.generateToken(usuario.getCedula(), roles);
-        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(), true, true,  usuario.getCedula(), usuario.getCorreo(), usuario.getInstitucion());
+        String token = jwtUtil.generateToken(usuario.getCedula(), roles);
+        return new AuthResponseDTO(usuario.getIdUsuario(), token, usuario.getNombres(), roles, usuario.getFotoPerfil(),
+                true, true, usuario.getCedula(), usuario.getCorreo(), usuario.getInstitucion());
     }
 }

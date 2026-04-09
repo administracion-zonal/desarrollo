@@ -1,13 +1,16 @@
 package com.administracionzonal.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-
-import java.util.List;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
@@ -41,12 +44,20 @@ public class JwtUtil {
     }
 
     public List<String> extractRoles(String token) {
-        return Jwts.parserBuilder()
+        Object roles = Jwts.parserBuilder()
                 .setSigningKey(getKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("roles", List.class);
+                .get("roles");
+
+        if (roles instanceof List<?>) {
+            return ((List<?>) roles).stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+
+        return List.of();
     }
 
     public boolean isTokenValid(String token) {

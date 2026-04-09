@@ -1,15 +1,21 @@
 package com.administracionzonal.controller;
 
-import com.administracionzonal.dto.ReservaDTO;
+import java.time.LocalDate;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.administracionzonal.dto.DisponibilidadDTO;
-import com.administracionzonal.entity.ReservaCoworking;
+import com.administracionzonal.dto.ReservaDTO;
 import com.administracionzonal.service.ReservaService;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/public/reservas")
@@ -29,8 +35,7 @@ public class PublicReservaController {
     @GetMapping("/disponibilidad")
     public DisponibilidadDTO disponibilidad(
             @RequestParam String nombreArea,
-            @RequestParam LocalDate fecha
-    ) {
+            @RequestParam LocalDate fecha) {
         return reservaService.obtenerDisponibilidad(nombreArea, fecha);
     }
 

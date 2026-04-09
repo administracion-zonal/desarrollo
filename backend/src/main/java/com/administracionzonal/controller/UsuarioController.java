@@ -1,17 +1,27 @@
 package com.administracionzonal.controller;
 
-import com.administracionzonal.entity.Usuario;
-import com.administracionzonal.repository.UsuarioRepository;
-import com.administracionzonal.service.UsuarioService;
-import com.administracionzonal.dto.PerfilUsuarioDTO;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.*;
-import java.io.IOException;
+import com.administracionzonal.dto.PerfilUsuarioDTO;
+import com.administracionzonal.entity.Usuario;
+import com.administracionzonal.repository.UsuarioRepository;
+import com.administracionzonal.service.UsuarioService;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -21,21 +31,22 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepo;
 
-@Autowired
-private UsuarioService usuarioService;
+    @Autowired
+    private UsuarioService usuarioService;
 
-@GetMapping("/perfil/{id}")
-public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
-        @PathVariable Long id) {
+    @GetMapping("/perfil/{id}")
+    public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
+            @NonNull @PathVariable Long id) {
 
-    return ResponseEntity.ok(
-        usuarioService.obtenerPerfil(id)
-    );
-}
+        return ResponseEntity.ok(
+                usuarioService.obtenerPerfil(id));
+    }
 
-    /* =====================================
-       BUSCAR USUARIO POR CEDULA
-    ===================================== */
+    /*
+     * =====================================
+     * BUSCAR USUARIO POR CEDULA
+     * =====================================
+     */
     @GetMapping("/cedula/{cedula}")
     public ResponseEntity<Usuario> buscarPorCedula(@PathVariable String cedula) {
 
@@ -46,16 +57,16 @@ public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
 
     }
 
-
-    /* =====================================
-       SUBIR FOTO DE PERFIL
-       ELIMINA FOTO ANTERIOR
-    ===================================== */
+    /*
+     * =====================================
+     * SUBIR FOTO DE PERFIL
+     * ELIMINA FOTO ANTERIOR
+     * =====================================
+     */
     @PostMapping("/subir-foto/{id}")
     public ResponseEntity<?> subirFoto(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file
-    ) {
+            @RequestParam("file") MultipartFile file) {
         System.out.println("Archivo recibido: " + file.getOriginalFilename());
         try {
 
@@ -65,11 +76,14 @@ public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
                         .body("Archivo vacío");
             }
 
+            if (id == null) {
+                return ResponseEntity.badRequest()
+                        .body("ID de usuario es requerido");
+            }
+
             /* BUSCAR USUARIO */
             Usuario usuario = usuarioRepo.findById(id)
-                    .orElseThrow(() ->
-                            new RuntimeException("Usuario no encontrado")
-                    );
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             /* CARPETA ABSOLUTA SEGURA */
             String carpeta = System.getProperty("user.dir")
@@ -81,17 +95,17 @@ public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
                 Files.createDirectories(uploadPath);
             }
 
-
-            /* =====================================
-               ELIMINAR FOTO ANTERIOR
-            ===================================== */
+            /*
+             * =====================================
+             * ELIMINAR FOTO ANTERIOR
+             * =====================================
+             */
             if (usuario.getFotoPerfil() != null
                     && !usuario.getFotoPerfil().isEmpty()) {
 
                 Path rutaAnterior = Paths.get(
                         System.getProperty("user.dir"),
-                        usuario.getFotoPerfil()
-                );
+                        usuario.getFotoPerfil());
 
                 if (Files.exists(rutaAnterior)) {
 
@@ -100,10 +114,11 @@ public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
                 }
             }
 
-
-            /* =====================================
-               OBTENER EXTENSION REAL
-            ===================================== */
+            /*
+             * =====================================
+             * OBTENER EXTENSION REAL
+             * =====================================
+             */
             String nombreOriginal = file.getOriginalFilename();
 
             String extension = ".jpg";
@@ -111,57 +126,56 @@ public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
             if (nombreOriginal != null && nombreOriginal.contains(".")) {
 
                 extension = nombreOriginal.substring(
-                        nombreOriginal.lastIndexOf(".")
-                );
+                        nombreOriginal.lastIndexOf("."));
 
             }
 
-
-            /* =====================================
-               USAR NOMBRE FIJO (PROFESIONAL)
-               SIEMPRE REEMPLAZA
-            ===================================== */
+            /*
+             * =====================================
+             * USAR NOMBRE FIJO (PROFESIONAL)
+             * SIEMPRE REEMPLAZA
+             * =====================================
+             */
             String nombreArchivo = "perfil_" + id + extension;
-
 
             Path rutaArchivo = uploadPath.resolve(nombreArchivo);
 
-
-            /* =====================================
-               GUARDAR ARCHIVO
-            ===================================== */
+            /*
+             * =====================================
+             * GUARDAR ARCHIVO
+             * =====================================
+             */
             Files.copy(
                     file.getInputStream(),
                     rutaArchivo,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+                    StandardCopyOption.REPLACE_EXISTING);
 
-
-            /* =====================================
-               GUARDAR EN BASE DE DATOS
-            ===================================== */
+            /*
+             * =====================================
+             * GUARDAR EN BASE DE DATOS
+             * =====================================
+             */
             String rutaBD = "uploads/perfiles/" + nombreArchivo;
 
             usuario.setFotoPerfil(rutaBD);
 
             usuarioRepo.save(usuario);
 
-
-            /* =====================================
-               RESPUESTA
-            ===================================== */
+            /*
+             * =====================================
+             * RESPUESTA
+             * =====================================
+             */
             return ResponseEntity.ok(rutaBD);
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
 
             e.printStackTrace();
 
             return ResponseEntity.internalServerError()
                     .body("Error al guardar archivo");
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
             e.printStackTrace();
 

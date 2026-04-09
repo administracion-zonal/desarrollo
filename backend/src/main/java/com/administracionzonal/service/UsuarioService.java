@@ -1,18 +1,23 @@
 package com.administracionzonal.service;
 
-import com.administracionzonal.dto.PerfilUsuarioDTO;
-import com.administracionzonal.entity.UsuarioInstitucion;
-import com.administracionzonal.repository.UsuarioInstitucionRepository;
+import java.util.List;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.administracionzonal.entity.Rol;
-import com.administracionzonal.entity.Usuario;
-import com.administracionzonal.repository.RolRepository;
-import com.administracionzonal.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.administracionzonal.dto.CambioPasswordDTO;
+import com.administracionzonal.dto.ChoferDTO;
+import com.administracionzonal.dto.PerfilUsuarioDTO;
+import com.administracionzonal.entity.Rol;
+import com.administracionzonal.entity.Usuario;
+import com.administracionzonal.entity.UsuarioInstitucion;
+import com.administracionzonal.repository.RolRepository;
+import com.administracionzonal.repository.UsuarioInstitucionRepository;
+import com.administracionzonal.repository.UsuarioRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +27,9 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepo;
     private final RolRepository rolRepo;
     private final PasswordEncoder passwordEncoder;
-private final UsuarioInstitucionRepository usuarioInstitucionRepository;
+    private final UsuarioInstitucionRepository usuarioInstitucionRepository;
 
-    public Usuario save(Usuario usuario) {
+    public Usuario save(@NonNull Usuario usuario) {
         return usuarioRepo.save(usuario);
     }
 
@@ -32,11 +37,9 @@ private final UsuarioInstitucionRepository usuarioInstitucionRepository;
             String cedula,
             String nombres,
             String institucion,
-            String correo
-    ) {
+            String correo) {
 
         return usuarioRepo.findByCedula(cedula).orElseGet(() -> {
-
 
             if (correo == null || correo.isBlank()) {
                 throw new RuntimeException("El correo es obligatorio");
@@ -46,15 +49,14 @@ private final UsuarioInstitucionRepository usuarioInstitucionRepository;
             u.setCedula(cedula);
             u.setNombres(nombres);
             u.setInstitucion(institucion);
-u.setCorreo(correo.toLowerCase());
+            u.setCorreo(correo.toLowerCase());
             u.setPassword(passwordEncoder.encode("Quito2026"));
-            
+
             u.setDebeCambiarPassword(true);
 
             u.setAceptaAcuerdo(false);
 
             u = usuarioRepo.save(u);
-
 
             // 🔑 nombre del rol (ajústalo si deseas)
             String nombre = "PRIVADO";
@@ -99,10 +101,10 @@ u.setCorreo(correo.toLowerCase());
         usuarioRepo.save(usuario);
     }
 
-    public PerfilUsuarioDTO obtenerPerfil(Long idUsuario) {
+    public PerfilUsuarioDTO obtenerPerfil(@NonNull Long idUsuario) {
 
         Usuario usuario = usuarioRepo.findById(idUsuario)
-            .orElseThrow();
+                .orElseThrow();
 
         PerfilUsuarioDTO dto = new PerfilUsuarioDTO();
 
@@ -114,37 +116,32 @@ u.setCorreo(correo.toLowerCase());
         dto.setFotoPerfil(usuario.getFotoPerfil());
 
         dto.setRoles(
-            usuario.getRoles().stream()
-                .map(Rol::getNombre)
-                .toList()
-        );
+                usuario.getRoles().stream()
+                        .map(Rol::getNombre)
+                        .toList());
 
         if ("SERVIDOR_AZVCH".equals(usuario.getTipoUsuario())) {
 
-                    UsuarioInstitucion ui =
-                    usuarioInstitucionRepository
+            UsuarioInstitucion ui = usuarioInstitucionRepository
                     .findByUsuario(usuario)
                     .orElse(null);
 
-            if(ui != null){
+            if (ui != null) {
                 dto.setCargo(
-                    ui.getDenominacion() != null
-                        ? ui.getDenominacion().getNombre()
-                        : null
-                );
+                        ui.getDenominacion() != null
+                                ? ui.getDenominacion().getNombre()
+                                : null);
 
                 dto.setUnidad(
-                    ui.getUnidad() != null
-                        ? ui.getUnidad().getNombre()
-                        : null
-                );
+                        ui.getUnidad() != null
+                                ? ui.getUnidad().getNombre()
+                                : null);
 
                 dto.setDireccion(
-                    ui.getDireccion() != null
-                        ? ui.getDireccion().getNombre()
-                        : null
-                );
-                
+                        ui.getDireccion() != null
+                                ? ui.getDireccion().getNombre()
+                                : null);
+
                 dto.setCorreoInstitucional(ui.getCorreoInstitucional());
                 dto.setTelefonoExtension(ui.getTelefonoExtension());
             }
@@ -153,4 +150,14 @@ u.setCorreo(correo.toLowerCase());
         return dto;
     }
 
+    public List<ChoferDTO> obtenerChoferes() {
+
+        return usuarioRepo.findAll().stream()
+                .map(u -> ChoferDTO.builder()
+                        .idUsuario(u.getIdUsuario())
+                        .nombres(u.getNombres())
+                        .correo(u.getCorreo())
+                        .build())
+                .toList();
+    }
 }

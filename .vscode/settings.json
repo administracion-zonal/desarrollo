@@ -1,0 +1,28 @@
+{
+  "editor.formatOnSave": true,
+
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java",
+    "editor.formatOnSave": true
+  },
+  "java.compile.nullAnalysis.mode": "automatic",
+
+  "java.completion.importOrder": ["java", "javax", "org", "com"],
+
+  "java.saveActions.organizeImports": true,
+  "java.configuration.updateBuildConfiguration": "automatic"
+}

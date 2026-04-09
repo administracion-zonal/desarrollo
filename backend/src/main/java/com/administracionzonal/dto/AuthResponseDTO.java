@@ -1,9 +1,9 @@
 package com.administracionzonal.dto;
 
-import com.administracionzonal.entity.Usuario;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,6 +16,6 @@ public class AuthResponseDTO {
     private Boolean cambiarPassword;
     private Boolean aceptaAcuerdo;
     private String cedula;
-private String correo;
-private String institucion;
+    private String correo;
+    private String institucion;
 }

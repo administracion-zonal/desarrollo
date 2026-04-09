@@ -1,25 +1,25 @@
 package com.administracionzonal.service;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
 
 import com.administracionzonal.dto.BloqueHorarioDTO;
 import com.administracionzonal.dto.DisponibilidadDTO;
-import com.administracionzonal.dto.ReservaUsuarioDTO;
+import com.administracionzonal.dto.ReservaAdminDTO;
 import com.administracionzonal.dto.ReservaDTO;
+import com.administracionzonal.dto.ReservaUsuarioDTO;
 import com.administracionzonal.entity.ReservaCoworking;
 import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.ReservaRepository;
 
-import com.administracionzonal.dto.ReservaAdminDTO;
-
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +31,11 @@ public class ReservaService {
     private static final LocalTime HORA_MIN = LocalTime.of(8, 0);
     private static final LocalTime HORA_MAX = LocalTime.of(16, 0);
 
-    /* ======================================================
-       CREAR RESERVA
-    ====================================================== */
+    /*
+     * ======================================================
+     * CREAR RESERVA
+     * ======================================================
+     */
     public ReservaCoworking crearReservaPublica(ReservaDTO dto) {
 
         Usuario usuario = usuarioService.obtenerOcrearUsuario(
@@ -41,7 +43,7 @@ public class ReservaService {
                 dto.getNombres(),
                 dto.getNombreInstitucion(),
                 dto.getCorreo()
-                
+
         );
 
         if (dto.getTipoUsuario() != null && !dto.getTipoUsuario().isEmpty()) {
@@ -61,8 +63,6 @@ public class ReservaService {
             usuarioService.save(usuario);
         }
 
-
-
         ReservaCoworking r = new ReservaCoworking();
         r.setUsuario(usuario);
         r.setNombreInstitucion(dto.getNombreInstitucion());
@@ -76,15 +76,16 @@ public class ReservaService {
         return reservaRepo.save(r);
     }
 
-    /* ======================================================
-       DISPONIBILIDAD POR BLOQUES (CORE)
-    ====================================================== */
+    /*
+     * ======================================================
+     * DISPONIBILIDAD POR BLOQUES (CORE)
+     * ======================================================
+     */
     public DisponibilidadDTO obtenerDisponibilidad(String area, LocalDate fecha) {
 
         int capacidad = capacidadPorArea(area);
 
-        List<ReservaCoworking> reservas =
-                reservaRepo.findByAreaAndFecha(area, fecha);
+        List<ReservaCoworking> reservas = reservaRepo.findByAreaAndFecha(area, fecha);
 
         List<BloqueHorarioDTO> bloques = new ArrayList<>();
 
@@ -97,8 +98,7 @@ public class ReservaService {
                         r.getHoraInicio(),
                         r.getHoraFin(),
                         t,
-                        t.plusMinutes(30)
-                )) {
+                        t.plusMinutes(30))) {
                     ocupados++;
                 }
             }
@@ -107,30 +107,26 @@ public class ReservaService {
                     new BloqueHorarioDTO(
                             t.toString(),
                             ocupados,
-                            capacidad
-                    )
-            );
+                            capacidad));
         }
 
         return new DisponibilidadDTO(area, bloques);
     }
 
-    /* ======================================================
-       VALIDACIÓN REAL DE CAPACIDAD (BACKEND MANDA)
-    ====================================================== */
+    /*
+     * ======================================================
+     * VALIDACIÓN REAL DE CAPACIDAD (BACKEND MANDA)
+     * ======================================================
+     */
     private void validarCapacidadPorBloques(ReservaDTO dto) {
 
         int capacidad = capacidadPorArea(dto.getNombreArea());
 
-        List<ReservaCoworking> reservas =
-                reservaRepo.findByAreaAndFecha(
-                        dto.getNombreArea(),
-                        dto.getFecha()
-                );
+        List<ReservaCoworking> reservas = reservaRepo.findByAreaAndFecha(
+                dto.getNombreArea(),
+                dto.getFecha());
 
-        for (LocalTime t = dto.getHoraInicio();
-             t.isBefore(dto.getHoraFin());
-             t = t.plusMinutes(30)) {
+        for (LocalTime t = dto.getHoraInicio(); t.isBefore(dto.getHoraFin()); t = t.plusMinutes(30)) {
 
             int ocupados = 0;
 
@@ -139,29 +135,28 @@ public class ReservaService {
                         r.getHoraInicio(),
                         r.getHoraFin(),
                         t,
-                        t.plusMinutes(30)
-                )) {
+                        t.plusMinutes(30))) {
                     ocupados++;
                 }
             }
 
             if (ocupados >= capacidad) {
                 throw new RuntimeException(
-                        "No hay cupos disponibles entre " + t
-                );
+                        "No hay cupos disponibles entre " + t);
             }
         }
     }
 
-    /* ======================================================
-       UTILIDADES
-    ====================================================== */
+    /*
+     * ======================================================
+     * UTILIDADES
+     * ======================================================
+     */
     private boolean solapan(
             LocalTime inicio1,
             LocalTime fin1,
             LocalTime inicio2,
-            LocalTime fin2
-    ) {
+            LocalTime fin2) {
         return inicio1.isBefore(fin2) && fin1.isAfter(inicio2);
     }
 
@@ -177,8 +172,7 @@ public class ReservaService {
 
     public boolean validarQR(String token) {
 
-        Optional<ReservaCoworking> reservaOpt =
-                reservaRepo.findByQrToken(token);
+        Optional<ReservaCoworking> reservaOpt = reservaRepo.findByQrToken(token);
 
         if (reservaOpt.isEmpty()) {
             return false;
@@ -201,8 +195,11 @@ public class ReservaService {
     }
 
     public void marcarAsistencia(Long id) {
+        if (id == null) {
+            throw new RuntimeException("ID de reserva no proporcionado");
+        }
         ReservaCoworking r = reservaRepo.findById(id)
-            .orElseThrow();
+                .orElseThrow();
 
         LocalTime ahora = LocalTime.now();
 
@@ -239,7 +236,7 @@ public class ReservaService {
             dto.setNoAsistio(r.isNoAsistio());
             dto.setQrToken(r.getQrToken());
             dto.setUsado(r.isUsado());
-            
+
             return dto;
         }).toList();
     }
@@ -250,47 +247,48 @@ public class ReservaService {
         LocalTime ahora = LocalTime.now();
 
         return reservaRepo.findByUsuario_CedulaOrderByFechaDesc(cedula)
-            .stream()
-            .map(r -> {
+                .stream()
+                .map(r -> {
 
-                ReservaUsuarioDTO dto = new ReservaUsuarioDTO();
+                    ReservaUsuarioDTO dto = new ReservaUsuarioDTO();
 
-                dto.setId(r.getId());
-                dto.setFecha(r.getFecha().toString());
-                dto.setHoraInicio(r.getHoraInicio().toString());
-                dto.setHoraFin(r.getHoraFin().toString());
-                dto.setNombreArea(r.getNombreArea());
-                dto.setNombreInstitucion(r.getNombreInstitucion());
+                    dto.setId(r.getId());
+                    dto.setFecha(r.getFecha().toString());
+                    dto.setHoraInicio(r.getHoraInicio().toString());
+                    dto.setHoraFin(r.getHoraFin().toString());
+                    dto.setNombreArea(r.getNombreArea());
+                    dto.setNombreInstitucion(r.getNombreInstitucion());
 
-                // 🔎 vigente
-                boolean vigente =
-                    r.getFecha().isAfter(hoy) ||
-                    (r.getFecha().isEqual(hoy) && ahora.isBefore(r.getHoraFin()));
+                    // 🔎 vigente
+                    boolean vigente = r.getFecha().isAfter(hoy) ||
+                            (r.getFecha().isEqual(hoy) && ahora.isBefore(r.getHoraFin()));
 
-                dto.setVigente(vigente);
+                    dto.setVigente(vigente);
 
-                // ❌ cancelable (30 min antes)
-                boolean puedeCancelar =
-                    r.getFecha().isAfter(hoy) ||
-                    (r.getFecha().isEqual(hoy) &&
-                    Duration.between(ahora, r.getHoraInicio()).toMinutes() >= 30);
+                    // ❌ cancelable (30 min antes)
+                    boolean puedeCancelar = r.getFecha().isAfter(hoy) ||
+                            (r.getFecha().isEqual(hoy) &&
+                                    Duration.between(ahora, r.getHoraInicio()).toMinutes() >= 30);
 
-                dto.setPuedeCancelar(puedeCancelar);
+                    dto.setPuedeCancelar(puedeCancelar);
 
-                // 🔳 QR solo si está vigente
-                if (vigente) {
-                    dto.setQrToken(r.getQrToken());
-                }
+                    // 🔳 QR solo si está vigente
+                    if (vigente) {
+                        dto.setQrToken(r.getQrToken());
+                    }
 
-                return dto;
-            })
-            .toList();
+                    return dto;
+                })
+                .toList();
     }
 
     public void cancelarReserva(Long id, String cedula) {
+        if (id == null) {
+            throw new RuntimeException("ID de reserva no proporcionado");
 
+        }
         ReservaCoworking r = reservaRepo.findById(id)
-            .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
         if (!r.getUsuario().getCedula().equals(cedula)) {
             throw new RuntimeException("No autorizado");
@@ -299,21 +297,16 @@ public class ReservaService {
         LocalDate hoy = LocalDate.now();
         LocalTime ahora = LocalTime.now();
 
-        boolean permitido =
-            r.getFecha().isAfter(hoy) ||
-            (r.getFecha().isEqual(hoy) &&
-            Duration.between(ahora, r.getHoraInicio()).toMinutes() >= 30);
+        boolean permitido = r.getFecha().isAfter(hoy) ||
+                (r.getFecha().isEqual(hoy) &&
+                        Duration.between(ahora, r.getHoraInicio()).toMinutes() >= 30);
 
         if (!permitido) {
             throw new RuntimeException(
-                "No se puede cancelar con menos de 30 minutos"
-            );
+                    "No se puede cancelar con menos de 30 minutos");
         }
 
         reservaRepo.delete(r);
     }
 
 }
-
-   
-

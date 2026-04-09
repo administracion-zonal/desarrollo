@@ -1,20 +1,21 @@
 package com.administracionzonal.controller;
 
-import com.administracionzonal.dto.LoginRequest;
-import com.administracionzonal.dto.RegisterRequest;
-import com.administracionzonal.dto.AuthResponseDTO;
-import com.administracionzonal.dto.CambioPasswordDTO;
-import com.administracionzonal.service.UsuarioService;
-import com.administracionzonal.service.AuthService;
-import org.springframework.security.core.Authentication;
-import lombok.*;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 
-import java.util.Map;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.administracionzonal.dto.AuthResponseDTO;
+import com.administracionzonal.dto.CambioPasswordDTO;
+import com.administracionzonal.dto.LoginRequest;
+import com.administracionzonal.dto.RegisterRequest;
+import com.administracionzonal.service.AuthService;
+import com.administracionzonal.service.UsuarioService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,23 +45,22 @@ public class AuthController {
     @PostMapping("/cambiar-password")
     public ResponseEntity<?> cambiarPassword(
             @RequestBody CambioPasswordDTO dto,
-            Principal principal
-    ) {
+            Principal principal) {
 
-         try {
+        try {
 
-        String cedula = principal.getName();
+            String cedula = principal.getName();
 
-        usuarioService.cambiarPassword(dto, cedula);
+            usuarioService.cambiarPassword(dto, cedula);
 
-        return ResponseEntity.ok("Contraseña actualizada correctamente");
+            return ResponseEntity.ok("Contraseña actualizada correctamente");
 
-    } catch (RuntimeException e) {
+        } catch (RuntimeException e) {
 
-        return ResponseEntity
-                .badRequest()
-                .body(e.getMessage());
-    }
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+        }
     }
 
 }
