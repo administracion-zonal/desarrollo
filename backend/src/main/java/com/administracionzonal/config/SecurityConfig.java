@@ -26,147 +26,149 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
+        private final JwtFilter jwtFilter;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http
+                http
 
-                // desactivar csrf (API stateless)
-                .csrf(csrf -> csrf.disable())
+                                // desactivar csrf (API stateless)
+                                .csrf(csrf -> csrf.disable())
 
-                // CORS
-                .cors(cors -> {
-                })
+                                // CORS
+                                .cors(cors -> {
+                                })
 
-                // sin sesiones
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // sin sesiones
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // manejo de errores JWT
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((req, res, ex) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+                                // manejo de errores JWT
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint((req, res, ex) -> res
+                                                                .sendError(HttpServletResponse.SC_UNAUTHORIZED)))
 
-                .authorizeHttpRequests(auth -> auth
+                                .authorizeHttpRequests(auth -> auth
 
-                        /*
-                         * =========================
-                         * ENDPOINTS PUBLICOS
-                         * =========================
-                         */
+                                                /*
+                                                 * =========================
+                                                 * ENDPOINTS PUBLICOS
+                                                 * =========================
+                                                 */
 
-                        .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/auth/**").permitAll()
 
-                        .requestMatchers("/api/public/**").permitAll()
+                                                .requestMatchers("/api/public/**").permitAll()
 
-                        .requestMatchers("/api/usuarios/cedula/**").permitAll()
+                                                .requestMatchers("/api/usuarios/cedula/**").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
 
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        /*
-                         * =========================
-                         * PERFIL USUARIO
-                         * =========================
-                         */
+                                                /*
+                                                 * =========================
+                                                 * PERFIL USUARIO
+                                                 * =========================
+                                                 */
 
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/usuarios/subir-foto/**")
-                        .authenticated()
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/usuarios/subir-foto/**")
+                                                .authenticated()
 
-                        /*
-                         * =========================
-                         * ADMIN
-                         * =========================
-                         */
+                                                /*
+                                                 * =========================
+                                                 * ADMIN
+                                                 * =========================
+                                                 */
 
-                        .requestMatchers("/api/admin/**")
-                        .hasRole("ADMIN")
+                                                .requestMatchers("/api/admin/**")
+                                                .hasRole("ADMIN")
 
-                        /*
-                         * =========================
-                         * RESERVAS (USUARIOS LOGUEADOS)
-                         * =========================
-                         */
+                                                /*
+                                                 * =========================
+                                                 * RESERVAS (USUARIOS LOGUEADOS)
+                                                 * =========================
+                                                 */
 
-                        .requestMatchers("/api/reservas/mis")
-                        .authenticated()
+                                                .requestMatchers("/api/reservas/mis")
+                                                .authenticated()
 
-                        .requestMatchers("/api/reservas/*/cancelar")
-                        .authenticated()
+                                                .requestMatchers("/api/reservas/*/cancelar")
+                                                .authenticated()
 
-                        .requestMatchers("/api/reservas/disponibilidad")
-                        .permitAll()
+                                                .requestMatchers("/api/reservas/disponibilidad")
+                                                .permitAll()
 
-                        .requestMatchers("/api/reservas/**")
-                        .hasRole("ADMIN")
+                                                .requestMatchers("/api/reservas/**")
+                                                .hasRole("ADMIN")
 
-                        .requestMatchers("/api/reservas/todas")
-                        .hasRole("ADMIN")
+                                                .requestMatchers("/api/reservas/todas")
+                                                .hasRole("ADMIN")
 
-                        .requestMatchers("/api/reservas/validar-qr/**")
-                        .hasRole("ADMIN")
+                                                .requestMatchers("/api/reservas/validar-qr/**")
+                                                .hasRole("ADMIN")
 
-                        .requestMatchers("/api/reservas/*/asistir")
-                        .hasRole("ADMIN")
+                                                .requestMatchers("/api/reservas/*/asistir")
+                                                .hasRole("ADMIN")
 
-                        /*
-                         * =========================
-                         * USUARIOS PRIVADOS
-                         * =========================
-                         */
+                                                /*
+                                                 * =========================
+                                                 * USUARIOS PRIVADOS
+                                                 * =========================
+                                                 */
 
-                        .requestMatchers("/api/privado/**")
-                        .hasRole("PRIVADO")
+                                                .requestMatchers("/api/privado/**")
+                                                .hasRole("PRIVADO")
 
-                        .anyRequest().authenticated())
+                                                .anyRequest().authenticated())
 
-                // filtro JWT
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                                // filtro JWT
+                                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    /*
-     * =========================
-     * PASSWORD ENCODER
-     * =========================
-     */
+        /*
+         * =========================
+         * PASSWORD ENCODER
+         * =========================
+         */
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    /*
-     * =========================
-     * CORS CONFIG
-     * =========================
-     */
+        /*
+         * =========================
+         * CORS CONFIG
+         * =========================
+         */
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration config = new CorsConfiguration();
+                CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "http://172.20.7.210",
-                        "http://172.20.7.210:5173"));
+                config.setAllowedOrigins(
+                                List.of(
+                                                "http://localhost:5173",
+                                                "http://172.20.7.9",
+                                                "http://172.20.7.9:5173"));
 
-        config.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowedMethods(
+                                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        config.setAllowedHeaders(List.of("*"));
+                config.setAllowedHeaders(List.of("*"));
 
-        config.setAllowCredentials(true);
+                config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", config);
+                source.registerCorsConfiguration("/**", config);
 
-        return source;
-    }
+                return source;
+        }
 }
