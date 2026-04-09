@@ -8,7 +8,7 @@ export default function AdminVehiculos() {
 
   useEffect(() => {
     cargarTodas();
-  }, []);
+  }, [cargarTodas]);
 
   const aprobar = async (id: number) => {
     await vehiculosService.aprobar(id);
@@ -44,13 +44,21 @@ export default function AdminVehiculos() {
   };
 
   const descargar = async (id: number) => {
-    const res = await vehiculosService.pdf(id);
+    try {
+      const blob = await vehiculosService.pdf(id);
 
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "salvoconducto.pdf";
-    link.click();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `salvoconducto_${id}.pdf`;
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert("Error al descargar PDF");
+    }
   };
 
   return (
