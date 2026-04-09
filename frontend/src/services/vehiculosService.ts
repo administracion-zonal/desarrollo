@@ -1,4 +1,3 @@
-import axios from "axios";
 import type { VehiculoReserva } from "../types/VehiculoReserva";
 
 const API = `/api`;
@@ -6,65 +5,101 @@ const API = `/api`;
 const getHeaders = () => {
   const token = localStorage.getItem("token");
 
-  console.log("TOKEN 👉", token); // 👈 AGREGA ESTO
-
   return {
+    "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
 };
 
+const handleResponse = async (res: Response) => {
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Error en la petición");
+  }
+  return res;
+};
+
 export const vehiculosService = {
-  crear: (data: VehiculoReserva) =>
-    axios.post<VehiculoReserva>(`${API}/vehiculos/reservar`, data, {
+  crear: async (data: VehiculoReserva) => {
+    const res = await fetch(`${API}/vehiculos/reservar`, {
+      method: "POST",
       headers: getHeaders(),
-    }),
+      body: JSON.stringify(data),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
 
-  mis: () =>
-    axios.get<VehiculoReserva[]>(`${API}/vehiculos/mis`, {
+  mis: async () => {
+    const res = await fetch(`${API}/vehiculos/mis`, {
       headers: getHeaders(),
-    }),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
 
-  todas: () =>
-    axios.get<VehiculoReserva[]>(`${API}/vehiculos/admin/todas`, {
+  todas: async () => {
+    const res = await fetch(`${API}/vehiculos/admin/todas`, {
       headers: getHeaders(),
-    }),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
 
-  aprobar: (id: number) =>
-    axios.put(
-      `${API}/vehiculos/admin/aprobar/${id}`,
-      {},
-      {
-        headers: getHeaders(),
-      },
-    ),
-
-  rechazar: (id: number) =>
-    axios.put(
-      `${API}/vehiculos/admin/rechazar/${id}`,
-      {},
-      {
-        headers: getHeaders(),
-      },
-    ),
-
-  asignarChofer: (data: { idReserva: number; idChofer: number }) =>
-    axios.put(`${API}/vehiculos/admin/asignar-chofer`, data, {
+  aprobar: async (id: number) => {
+    const res = await fetch(`${API}/vehiculos/admin/aprobar/${id}`, {
+      method: "PUT",
       headers: getHeaders(),
-    }),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
 
-  pdf: (id: number) =>
-    axios.get<Blob>(`${API}/vehiculos/admin/salvoconducto/${id}`, {
+  rechazar: async (id: number) => {
+    const res = await fetch(`${API}/vehiculos/admin/rechazar/${id}`, {
+      method: "PUT",
       headers: getHeaders(),
-      responseType: "blob",
-    }),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
 
-  obtenerVehiculos: () =>
-    axios.get(`${API}/vehiculos`, {
+  asignarChofer: async (data: { idReserva: number; idChofer: number }) => {
+    const res = await fetch(`${API}/vehiculos/admin/asignar-chofer`, {
+      method: "PUT",
       headers: getHeaders(),
-    }),
-  disponibilidad: (idVehiculo: number, fecha: string) =>
-    axios.get(`${API}/vehiculos/disponibilidad`, {
-      params: { idVehiculo, fecha },
+      body: JSON.stringify(data),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
+
+  pdf: async (id: number) => {
+    const res = await fetch(`${API}/vehiculos/admin/salvoconducto/${id}`, {
       headers: getHeaders(),
-    }),
+    });
+    await handleResponse(res);
+    return res.blob();
+  },
+
+  obtenerVehiculos: async () => {
+    const res = await fetch(`${API}/vehiculos`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
+
+  disponibilidad: async (idVehiculo: number, fecha: string) => {
+    const params = new URLSearchParams({
+      idVehiculo: String(idVehiculo),
+      fecha,
+    });
+
+    const res = await fetch(`${API}/vehiculos/disponibilidad?${params}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(res);
+    return res.json();
+  },
 };

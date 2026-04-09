@@ -7,6 +7,10 @@ export default function Menu() {
 
   if (!user) return null;
 
+  const isAdmin = user.roles?.includes("ADMIN");
+
+  const isAdminCoworking = user.roles?.includes("ADMIN_COWORKING");
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -16,8 +20,27 @@ export default function Menu() {
     <nav className="menu">
       <Link to="/perfil">Perfil</Link>
 
-      {user.roles.includes("ADMIN") && <Link to="/dashboard">Dashboard</Link>}
+      {/* 🔥 ADMIN GENERAL */}
+      {isAdmin && (
+        <>
+          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/admin/reservas">Administrar Reservas</Link>
+          <Link to="/admin/vehiculos">Vehículos</Link>
+        </>
+      )}
 
+      {/* 🔥 ADMIN SOLO COWORKING */}
+      {isAdminCoworking && (
+        <div className="menu-item">
+          <span>Admin Coworking ▾</span>
+
+          <div className="submenu">
+            <Link to="/admin/coworking/reservas">Administrar Coworking</Link>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 USUARIOS */}
       <Link to="/mis-reservas">Mis reservas</Link>
 
       <div className="menu-item">
