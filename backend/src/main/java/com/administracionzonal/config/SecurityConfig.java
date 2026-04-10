@@ -64,14 +64,14 @@ public class SecurityConfig {
                                                                 "/index.html")
                                                 .permitAll()
 
-                                                .requestMatchers("/api/usuarios/aceptar-acuerdo")
+                                                .requestMatchers("/usuarios/aceptar-acuerdo")
                                                 .authenticated()
 
-                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/auth/**").permitAll()
 
-                                                .requestMatchers("/api/public/**").permitAll()
+                                                .requestMatchers("/public/**").permitAll()
 
-                                                .requestMatchers("/api/usuarios/cedula/**").permitAll()
+                                                .requestMatchers("/usuarios/cedula/**").permitAll()
 
                                                 .requestMatchers("/uploads/**").permitAll()
 
@@ -172,7 +172,7 @@ public class SecurityConfig {
                                                  */
 
                                                 .requestMatchers(HttpMethod.POST,
-                                                                "/api/usuarios/subir-foto/**")
+                                                                "/usuarios/subir-foto/**")
                                                 .authenticated()
 
                                                 /*

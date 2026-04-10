@@ -25,7 +25,7 @@ import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.service.UsuarioService;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/usuarios")
 @CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 

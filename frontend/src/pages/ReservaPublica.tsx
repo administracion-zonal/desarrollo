@@ -1,19 +1,19 @@
-import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import type { Reserva } from "../types/Reserva";
-import { validarCedula } from "../utils/validaciones";
-import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../App.css";
 import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { useAuth } from "../context/useAuth";
-import "../App.css";
+import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
+import type { Reserva } from "../types/Reserva";
 import { apiFetch } from "../utils/api";
-import { useNavigate } from "react-router-dom";
-import { esFinDeSemana, esDiaHabil } from "../utils/dateUtils";
-import { toMinutes, generarBloques } from "../utils/timeUtils";
+import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
 import { solapada } from "../utils/reservaUtils";
+import { generarBloques, toMinutes } from "../utils/timeUtils";
+import { validarCedula } from "../utils/validaciones";
 
-const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
-const API_USUARIOS = `${import.meta.env.VITE_API_URL}/api/usuarios`;
+const API_RESERVAS = `${import.meta.env.VITE_API_URL}/public/reservas`;
+const API_USUARIOS = `${import.meta.env.VITE_API_URL}/usuarios`;
 
 const initialForm = {
   cedula: "",

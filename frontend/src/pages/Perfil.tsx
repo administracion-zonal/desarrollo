@@ -23,7 +23,7 @@ export default function Perfil() {
 
   useEffect(() => {
     const cargarPerfil = async () => {
-      const res = await apiFetch(`/api/usuarios/perfil/${user?.idUsuario}`);
+      const res = await apiFetch(`/usuarios/perfil/${user?.idUsuario}`);
 
       if (!res.ok) return;
 
@@ -191,7 +191,7 @@ export default function Perfil() {
             );
 
             const res = await apiFetch(
-              `/api/usuarios/subir-foto/${user?.idUsuario}`,
+              `/usuarios/subir-foto/${user?.idUsuario}`,
               {
                 method: "POST",
                 body: formData,

@@ -67,7 +67,7 @@ export default function Login() {
 
   const aceptarAcuerdo = async () => {
     try {
-      await apiFetch("/api/usuarios/aceptar-acuerdo", {
+      await apiFetch("/usuarios/aceptar-acuerdo", {
         method: "POST",
       });
 
