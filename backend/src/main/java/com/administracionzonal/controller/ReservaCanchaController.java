@@ -20,7 +20,7 @@ import com.administracionzonal.service.ReservaCanchaService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/cancha")
+@RequestMapping("/cancha")
 @RequiredArgsConstructor
 public class ReservaCanchaController {
 

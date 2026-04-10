@@ -1,6 +1,6 @@
 import { apiFetch } from "../utils/api";
 
-const API = `/api/talento-humano`;
+const API = `/talento-humano`;
 
 export const getDocumentos = async (idUsuario: number) => {
   const res = await apiFetch(`${API}/documentos/${idUsuario}`);

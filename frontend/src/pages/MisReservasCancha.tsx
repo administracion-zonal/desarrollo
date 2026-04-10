@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
 
-const API = `/api/cancha/mis`;
+const API = `/cancha/mis`;
 
 export default function MisReservasCancha() {
   const [reservas, setReservas] = useState<ReservaCancha[]>([]);

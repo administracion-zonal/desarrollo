@@ -10,7 +10,7 @@ import { solapada } from "../utils/reservaUtils";
 import { generarBloques, toMinutes } from "../utils/timeUtils";
 import { validarCedula } from "../utils/validaciones";
 
-const API_RESERVAS = `/api/public/reservas`;
+const API_RESERVAS = `/public/reservas`;
 export default function ReservaForm() {
   const { user } = useAuth();
 

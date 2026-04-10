@@ -14,7 +14,7 @@ import org.thymeleaf.context.Context;
 import com.administracionzonal.service.PdfService;
 
 @RestController
-@RequestMapping("/api/documentos")
+@RequestMapping("/documentos")
 public class DocumentoController {
 
     private final PdfService pdfService;

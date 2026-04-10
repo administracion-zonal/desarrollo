@@ -1,6 +1,6 @@
 import type { VehiculoReserva } from "../types/VehiculoReserva";
 
-const API = `${import.meta.env.VITE_API_URL}/api`;
+const API = `${import.meta.env.VITE_API_URL}`;
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");

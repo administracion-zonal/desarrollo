@@ -23,7 +23,7 @@ import com.administracionzonal.service.SolicitudVehiculoService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/vehiculos/solicitudes")
+@RequestMapping("/vehiculos/solicitudes")
 @RequiredArgsConstructor
 public class SolicitudVehiculoController {
 

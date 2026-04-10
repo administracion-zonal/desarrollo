@@ -65,7 +65,7 @@ export default function MisReservas() {
 
     const token = localStorage.getItem("token");
 
-    const res = await apiFetch(`/api/reservas/${id}/cancelar`, {
+    const res = await apiFetch(`/reservas/${id}/cancelar`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

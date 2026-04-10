@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../App.css";
 import { apiFetch } from "../utils/api";
 
-const API = `/api/talento-humano`;
+const API = `/talento-humano`;
 
 export default function GestionTH() {
   const [cedula, setCedula] = useState("");

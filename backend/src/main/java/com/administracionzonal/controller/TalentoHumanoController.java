@@ -22,7 +22,7 @@ import com.administracionzonal.enums.TipoProceso;
 import com.administracionzonal.service.TalentoHumanoService;
 
 @RestController
-@RequestMapping("/api/talento-humano")
+@RequestMapping("/talento-humano")
 public class TalentoHumanoController {
 
     private final TalentoHumanoService service;

@@ -18,7 +18,7 @@ import com.administracionzonal.service.ReservaService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/public/reservas")
+@RequestMapping("/public/reservas")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
 public class PublicReservaController {

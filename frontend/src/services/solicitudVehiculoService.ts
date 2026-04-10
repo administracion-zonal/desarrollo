@@ -24,7 +24,7 @@ export interface SolicitudVehiculo {
 /* ================= SERVICE ================= */
 export const solicitudVehiculoService = {
   crear: async (data: SolicitudVehiculoRequest) => {
-    const res = await apiFetch("/api/vehiculos/solicitudes", {
+    const res = await apiFetch("/vehiculos/solicitudes", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -38,14 +38,14 @@ export const solicitudVehiculoService = {
   },
 
   listarPendientes: async (): Promise<SolicitudVehiculo[]> => {
-    const res = await apiFetch("/api/vehiculos/solicitudes/pendientes");
+    const res = await apiFetch("/vehiculos/solicitudes/pendientes");
 
     if (!res.ok) throw new Error("Error al obtener solicitudes");
     return res.json();
   },
 
   aprobar: async (id: number) => {
-    const res = await apiFetch(`/api/vehiculos/solicitudes/${id}/aprobar`, {
+    const res = await apiFetch(`/vehiculos/solicitudes/${id}/aprobar`, {
       method: "POST",
     });
 
@@ -53,7 +53,7 @@ export const solicitudVehiculoService = {
   },
 
   rechazar: async (id: number) => {
-    const res = await apiFetch(`/api/vehiculos/solicitudes/${id}/rechazar`, {
+    const res = await apiFetch(`/vehiculos/solicitudes/${id}/rechazar`, {
       method: "POST",
     });
 

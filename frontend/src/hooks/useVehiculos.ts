@@ -7,7 +7,7 @@ export const useVehiculos = () => {
   const [loading, setLoading] = useState(false);
 
   const cargarMis = async () => {
-    const res = await apiFetch("/api/vehiculos/mis");
+    const res = await apiFetch("/vehiculos/mis");
 
     const text = await res.text();
 

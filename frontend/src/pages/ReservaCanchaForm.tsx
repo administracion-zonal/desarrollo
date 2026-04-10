@@ -7,7 +7,7 @@ import { apiFetch } from "../utils/api";
 import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
 import { generarBloques, toMinutes } from "../utils/timeUtils";
 
-const API = `/api/cancha`;
+const API = `/cancha`;
 
 export default function ReservaCanchaForm() {
   const { user } = useAuth();

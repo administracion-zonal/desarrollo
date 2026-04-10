@@ -3,7 +3,7 @@ import "../App.css";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
 
-const API = `/api/cancha`;
+const API = `/cancha`;
 
 export default function DashboardCancha() {
   const [reservas, setReservas] = useState<ReservaCancha[]>([]);

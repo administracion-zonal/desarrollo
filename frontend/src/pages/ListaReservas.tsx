@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Reserva } from "../types/Reserva";
 import { apiFetch } from "../utils/api";
 
-const API_URL = `/api/reservas`;
+const API_URL = `/reservas`;
 
 export default function ListaReservas() {
   const [reservas, setReservas] = useState<Reserva[]>([]);

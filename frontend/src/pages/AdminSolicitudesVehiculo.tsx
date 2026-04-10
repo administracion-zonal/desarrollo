@@ -44,7 +44,7 @@ export default function AdminSolicitudesVehiculo() {
 
     try {
       await apiFetch(
-        `/api/vehiculos/solicitudes/${solicitudSeleccionada.id}/aprobar`,
+        `/vehiculos/solicitudes/${solicitudSeleccionada.id}/aprobar`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -78,7 +78,7 @@ export default function AdminSolicitudesVehiculo() {
 
   // 🔥 CARGAR CHOFERES
   useEffect(() => {
-    apiFetch("/api/vehiculos/choferes")
+    apiFetch("/vehiculos/choferes")
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();

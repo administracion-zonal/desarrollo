@@ -1,20 +1,30 @@
 package com.administracionzonal.controller;
 
-import com.administracionzonal.dto.ReservaDTO;
-import com.administracionzonal.dto.ReservaAdminDTO;
-import com.administracionzonal.dto.DisponibilidadDTO;
-import com.administracionzonal.service.ReservaService;
-import com.administracionzonal.dto.ReservaUsuarioDTO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.administracionzonal.dto.DisponibilidadDTO;
+import com.administracionzonal.dto.ReservaAdminDTO;
+import com.administracionzonal.dto.ReservaDTO;
+import com.administracionzonal.dto.ReservaUsuarioDTO;
+import com.administracionzonal.service.ReservaService;
+
+import lombok.RequiredArgsConstructor;
+
 @RestController
-@RequestMapping("/api/reservas")
+@RequestMapping("/reservas")
 @RequiredArgsConstructor
 public class ReservaController {
 
@@ -37,8 +47,7 @@ public class ReservaController {
 
         try {
             return ResponseEntity.ok(
-                    reservaService.crearReservaPublica(dto)
-            );
+                    reservaService.crearReservaPublica(dto));
         } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
@@ -56,11 +65,9 @@ public class ReservaController {
     @GetMapping("/disponibilidad")
     public ResponseEntity<DisponibilidadDTO> disponibilidad(
             @RequestParam String nombreArea,
-            @RequestParam LocalDate fecha
-    ) {
+            @RequestParam LocalDate fecha) {
         return ResponseEntity.ok(
-                reservaService.obtenerDisponibilidad(nombreArea, fecha)
-        );
+                reservaService.obtenerDisponibilidad(nombreArea, fecha));
     }
 
     /* ===================== VALIDAR QR ===================== */
@@ -90,25 +97,23 @@ public class ReservaController {
         return ResponseEntity.ok().build();
     }
 
-@GetMapping("/mis")
-public ResponseEntity<List<ReservaUsuarioDTO>> misReservas(Authentication auth) {
+    @GetMapping("/mis")
+    public ResponseEntity<List<ReservaUsuarioDTO>> misReservas(Authentication auth) {
 
-    String cedula = auth.getName(); // viene del token
+        String cedula = auth.getName(); // viene del token
 
-    return ResponseEntity.ok(
-        reservaService.listarReservasUsuario(cedula)
-    );
-}
+        return ResponseEntity.ok(
+                reservaService.listarReservasUsuario(cedula));
+    }
 
-@PostMapping("/{id}/cancelar")
-public ResponseEntity<?> cancelar(
-        @PathVariable Long id,
-        Authentication auth
-) {
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelar(
+            @PathVariable Long id,
+            Authentication auth) {
 
-    reservaService.cancelarReserva(id, auth.getName());
+        reservaService.cancelarReserva(id, auth.getName());
 
-    return ResponseEntity.ok().build();
-}
+        return ResponseEntity.ok().build();
+    }
 
 }

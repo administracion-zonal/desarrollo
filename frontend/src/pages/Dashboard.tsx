@@ -3,7 +3,7 @@ import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
 import { apiFetch } from "../utils/api";
 import { formatearFecha } from "../utils/validaciones";
 
-const API_RESERVAS = `/api/reservas/todas`;
+const API_RESERVAS = `/reservas/todas`;
 export default function Dashboard() {
   const token = localStorage.getItem("token");
 
@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   const marcarAsistencia = async (id: number) => {
     try {
-      await apiFetch(`/api/reservas/${id}/asistir`, {
+      await apiFetch(`/reservas/${id}/asistir`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ export default function Dashboard() {
     if (!codigoQR || !reservaQR) return;
 
     try {
-      const res = await apiFetch(`/api/reservas/validar-qr/${codigoQR}`, {
+      const res = await apiFetch(`/reservas/validar-qr/${codigoQR}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,15 +1,21 @@
 package com.administracionzonal.controller;
 
-import com.administracionzonal.dto.ReservaUsuarioDTO;
-import com.administracionzonal.service.ReservaService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.administracionzonal.dto.ReservaUsuarioDTO;
+import com.administracionzonal.service.ReservaService;
+
+import lombok.RequiredArgsConstructor;
+
 @RestController
-@RequestMapping("/api/privado")
+@RequestMapping("/privado")
 @RequiredArgsConstructor
 public class ReservaPrivadaController {
 
@@ -23,8 +29,7 @@ public class ReservaPrivadaController {
     @PostMapping("/reservas/{id}/cancelar")
     public void cancelar(
             @PathVariable Long id,
-            Authentication auth
-    ) {
+            Authentication auth) {
         reservaService.cancelarReserva(id, auth.getName());
     }
 }

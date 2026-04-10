@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { ReservaUsuario } from "../types/ReservaUsuario";
 import { apiFetch } from "../utils/api";
 
-const API = `/api/reservas/mis`;
+const API = `/reservas/mis`;
 
 export function useMisReservas() {
   const [reservas, setReservas] = useState<ReservaUsuario[]>([]);
