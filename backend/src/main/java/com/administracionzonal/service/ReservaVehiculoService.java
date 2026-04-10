@@ -60,7 +60,7 @@ public class ReservaVehiculoService {
                 .horaFin(dto.getHoraFin())
                 .destino(dto.getDestino())
                 .observaciones(dto.getObservaciones())
-                .estado("APROBADO")
+                .estado("APROBADA")
                 .build();
 
         @SuppressWarnings("null")
@@ -70,7 +70,7 @@ public class ReservaVehiculoService {
     }
 
     public List<ReservaVehiculo> misReservas(Long idUsuario) {
-        return repository.findByUsuarioIdUsuarioAndEstado(idUsuario, "APROBADO");
+        return repository.findByUsuarioIdUsuarioAndEstado(idUsuario, "APROBADA");
     }
 
     public List<ReservaVehiculo> reservasChofer(Long idChofer) {
@@ -106,7 +106,7 @@ public class ReservaVehiculoService {
             throw new RuntimeException("Solo se pueden aprobar reservas pendientes");
         }
 
-        reserva.setEstado("APROBADO");
+        reserva.setEstado("APROBADA");
 
         return mapToDTO(repository.save(reserva));
     }

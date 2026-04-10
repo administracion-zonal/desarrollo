@@ -92,7 +92,7 @@ export default function ChecklistWizard() {
 
   const validarPaso = () => {
     const lista = step === 0 ? docsIngreso : docsSalida;
-    return lista.length > 0 && lista.every((d) => d.estado === "APROBADO");
+    return lista.length > 0 && lista.every((d) => d.estado === "APROBADA");
   };
 
   /* =========================
@@ -102,7 +102,7 @@ export default function ChecklistWizard() {
     const lista = step === 0 ? docsIngreso : docsSalida;
     if (lista.length === 0) return 0;
 
-    const completos = lista.filter((d) => d.estado === "APROBADO").length;
+    const completos = lista.filter((d) => d.estado === "APROBADA").length;
     return Math.round((completos / lista.length) * 100);
   };
 

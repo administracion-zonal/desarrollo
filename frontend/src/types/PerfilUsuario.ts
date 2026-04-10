@@ -1,10 +1,12 @@
+import type { RolUsuario } from "./User";
+
 export interface PerfilUsuario {
   idUsuario: number;
   nombres: string;
   correo?: string;
   fotoPerfil?: string;
   tipoUsuario?: string;
-  roles: string[];
+  roles: RolUsuario[];
   institucion?: string;
 
   cargo?: string;

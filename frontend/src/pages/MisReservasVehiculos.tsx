@@ -7,7 +7,7 @@ export default function MisReservasVehiculos() {
 
   useEffect(() => {
     cargarMis();
-  }, []);
+  }, [cargarMis]);
 
   return (
     <div>

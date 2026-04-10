@@ -1,13 +1,13 @@
 import { useState } from "react";
+import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
+import { apiFetch } from "../utils/api";
 import {
   validarCedula,
   validarCorreo,
   validarPassword,
 } from "../utils/validaciones";
-import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
-import { apiFetch } from "../utils/api";
 
-const API = `${import.meta.env.VITE_API_URL}/api/auth/register`;
+const API = `/api/auth/register`;
 
 export default function Register() {
   const [error, setError] = useState<string | null>(null);

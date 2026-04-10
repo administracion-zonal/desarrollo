@@ -1,5 +1,9 @@
 package com.administracionzonal.controller;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,12 +42,19 @@ public class SolicitudVehiculoController {
         Usuario usuario = usuarioRepo.findByCedula(cedula)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        // Parsear fecha y hora desde String a LocalDate/LocalTime
+        LocalDate fecha = LocalDate.parse(req.getFecha(), DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalTime horaInicio = LocalTime.parse(req.getHoraInicio(), DateTimeFormatter.ISO_LOCAL_TIME);
+        LocalTime horaFin = LocalTime.parse(req.getHoraFin(), DateTimeFormatter.ISO_LOCAL_TIME);
+
         SolicitudVehiculo s = service.crearSolicitud(
                 usuario,
-                req.getFecha(),
-                req.getHoraInicio(),
-                req.getHoraFin(),
-                req.getMotivo());
+                fecha,
+                horaInicio,
+                horaFin,
+                req.getMotivo()
+
+        );
 
         return ResponseEntity.ok(s);
     }

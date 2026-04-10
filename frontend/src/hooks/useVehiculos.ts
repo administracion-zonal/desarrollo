@@ -9,10 +9,7 @@ export const useVehiculos = () => {
   const cargarMis = async () => {
     const res = await apiFetch("/api/vehiculos/mis");
 
-    console.log("STATUS 👉", res.status);
-
     const text = await res.text();
-    console.log("RAW 👉", text);
 
     let json = null;
     try {
@@ -20,8 +17,6 @@ export const useVehiculos = () => {
     } catch (e) {
       console.error("No es JSON válido", e);
     }
-
-    console.log("JSON 👉", json);
 
     // 🔥 SOLUCIÓN
     if (Array.isArray(json)) {

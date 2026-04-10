@@ -2,6 +2,6 @@ package com.administracionzonal.enums;
 
 public enum EstadoDocumento {
     PENDIENTE,
-    APROBADO,
+    APROBADA,
     RECHAZADO
 }

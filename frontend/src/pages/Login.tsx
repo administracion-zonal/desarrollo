@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { useAuth } from "../context/useAuth";
 import { apiFetch } from "../utils/api";
 
@@ -9,20 +10,17 @@ export default function Login() {
   const [cedula, setCedula] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
+  const [mostrarModal, setMostrarModal] = useState(false);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const res = await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cedula, password }),
-        },
-      );
+      const res = await apiFetch(`/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cedula, password }),
+      });
 
       if (!res.ok) {
         setError("Credenciales incorrectas");
@@ -30,8 +28,6 @@ export default function Login() {
       }
 
       const data = await res.json();
-
-      console.log("RESPUESTA LOGIN 👉", data);
 
       // 🔐 Guardar sesión
 
@@ -47,14 +43,37 @@ export default function Login() {
       }
 
       if (!data.aceptaAcuerdo) {
-        navigate("/reservas/coworking", { replace: true });
-        return;
+        setMostrarModal(true);
+        return; // 🚨 CLAVE: DETIENE TODO
       }
 
       navigate("/perfil", { replace: true });
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
+    }
+  };
+
+  const aceptarAcuerdo = async () => {
+    try {
+      const res = await apiFetch("/api/usuarios/aceptar-acuerdo", {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error();
+
+      // actualizar usuario
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      user.aceptaAcuerdo = true;
+
+      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user);
+
+      setMostrarModal(false);
+
+      navigate("/perfil", { replace: true });
+    } catch {
+      setError("Error al aceptar acuerdo");
     }
   };
 
@@ -81,6 +100,13 @@ export default function Login() {
 
         {error && <p className="login-error">{error}</p>}
       </form>
+
+      {/* MODAL DE ACUERDO */}
+      <AcuerdoResponsabilidadModal
+        open={mostrarModal}
+        onClose={() => setMostrarModal(false)}
+        onAccept={aceptarAcuerdo}
+      />
     </div>
   );
 }

@@ -26,20 +26,17 @@ export default function CambiarPassword() {
     }
 
     try {
-      const res = await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/cambiar-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            passwordActual,
-            passwordNueva,
-          }),
+      const res = await apiFetch(`/api/auth/cambiar-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          passwordActual,
+          passwordNueva,
+        }),
+      });
 
       const texto = await res.text(); // 🔥 SOLO UNA VEZ
 

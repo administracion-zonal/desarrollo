@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { apiFetch } from "../utils/api";
 import type { ReservaUsuario } from "../types/ReservaUsuario";
+import { apiFetch } from "../utils/api";
 
-const API = `${import.meta.env.VITE_API_URL}/api/reservas/mis`;
+const API = `/api/reservas/mis`;
 
 export function useMisReservas() {
   const [reservas, setReservas] = useState<ReservaUsuario[]>([]);

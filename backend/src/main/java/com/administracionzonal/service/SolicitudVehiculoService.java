@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.administracionzonal.entity.ReservaVehiculo;
 import com.administracionzonal.entity.SolicitudVehiculo;
@@ -40,7 +42,9 @@ public class SolicitudVehiculoService {
                 usuario, fecha, horaFin, horaInicio);
 
         if (existe) {
-            throw new RuntimeException("Ya tienes una solicitud en ese horario");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ya tienes una solicitud en ese horario");
         }
 
         SolicitudVehiculo s = new SolicitudVehiculo();
@@ -81,12 +85,12 @@ public class SolicitudVehiculoService {
                 .horaInicio(solicitud.getHoraInicio())
                 .horaFin(solicitud.getHoraFin())
                 .destino(solicitud.getMotivo())
-                .estado("APROBADO")
+                .estado("APROBADA")
                 .build();
 
         reservaRepository.save(reserva);
 
-        solicitud.setEstado(EstadoSolicitud.APROBADO);
+        solicitud.setEstado(EstadoSolicitud.APROBADA);
         repo.save(solicitud);
     }
 

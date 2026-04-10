@@ -31,6 +31,14 @@ public class JwtFilter extends OncePerRequestFilter {
                         @NonNull HttpServletResponse response,
                         @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+                String path = request.getServletPath();
+
+                // 🚀 Permitir imágenes sin pasar por JWT
+                if (path.startsWith("/uploads/")) {
+                        filterChain.doFilter(request, response);
+                        return;
+                }
+
                 String authHeader = request.getHeader("Authorization");
 
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {

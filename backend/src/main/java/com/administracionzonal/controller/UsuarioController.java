@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -186,4 +187,19 @@ public class UsuarioController {
 
     }
 
+    @PostMapping("/aceptar-acuerdo")
+    public ResponseEntity<?> aceptarAcuerdo(Authentication auth) {
+
+        // 🔐 obtener usuario desde JWT
+        String cedula = auth.getName();
+
+        Usuario usuario = usuarioRepo.findByCedula(cedula)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setAceptaAcuerdo(true);
+
+        usuarioRepo.save(usuario);
+
+        return ResponseEntity.ok().build();
+    }
 }

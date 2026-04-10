@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
-import type { ReactNode } from "react";
+import { permisos } from "../../utils/permisos";
 
 type Props = Readonly<{
   children: ReactNode;
@@ -17,7 +18,15 @@ export default function AdminRoute({ children }: Props) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!user.roles?.includes("ADMIN")) {
+  // 🔥 USAMOS TU SISTEMA CENTRALIZADO
+  const p = permisos(user);
+
+  // ✅ permisos válidos para dashboard
+  if (
+    !p.puedeAdminCoworking &&
+    !p.puedeAdminCanchas &&
+    !p.puedeAdminVehiculos
+  ) {
     return <Navigate to="/" replace />;
   }
 

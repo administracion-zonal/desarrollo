@@ -44,7 +44,7 @@ export default function ChecklistTabla({ items, onUpload }: Props) {
                 <td>{doc.nombre}</td>
 
                 <td style={{ textAlign: "center" }}>
-                  {doc.estado === "APROBADO"
+                  {doc.estado === "APROBADA"
                     ? "✔"
                     : doc.estado === "PENDIENTE"
                       ? "⏳"

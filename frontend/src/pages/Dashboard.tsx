@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
-import { formatearFecha } from "../utils/validaciones";
 import { apiFetch } from "../utils/api";
+import { formatearFecha } from "../utils/validaciones";
 
-const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/reservas/todas`;
+const API_RESERVAS = `/api/reservas/todas`;
 export default function Dashboard() {
   const token = localStorage.getItem("token");
 
@@ -22,15 +22,12 @@ export default function Dashboard() {
 
   const marcarAsistencia = async (id: number) => {
     try {
-      await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/reservas/${id}/asistir`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await apiFetch(`/api/reservas/${id}/asistir`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       // refrescar lista
       setReservas((prev) =>
@@ -45,14 +42,11 @@ export default function Dashboard() {
     if (!codigoQR || !reservaQR) return;
 
     try {
-      const res = await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/reservas/validar-qr/${codigoQR}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await apiFetch(`/api/reservas/validar-qr/${codigoQR}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const txt = await res.text();
 

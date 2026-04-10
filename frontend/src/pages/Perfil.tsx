@@ -1,10 +1,10 @@
-import { useAuth } from "../context/useAuth";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import incognito from "../assets/incognito-ini.jpg";
 import ImageCropper from "../components/ImageCropper";
-import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../utils/api";
+import { useAuth } from "../context/useAuth";
 import type { PerfilUsuario } from "../types/PerfilUsuario";
+import { apiFetch } from "../utils/api";
 
 export default function Perfil() {
   const { user } = useAuth();
@@ -23,9 +23,7 @@ export default function Perfil() {
 
   useEffect(() => {
     const cargarPerfil = async () => {
-      const res = await apiFetch(
-        `${import.meta.env.VITE_API_URL}/api/usuarios/perfil/${user?.idUsuario}`,
-      );
+      const res = await apiFetch(`/api/usuarios/perfil/${user?.idUsuario}`);
 
       if (!res.ok) return;
 
@@ -193,7 +191,7 @@ export default function Perfil() {
             );
 
             const res = await apiFetch(
-              `${import.meta.env.VITE_API_URL}/api/usuarios/subir-foto/${user?.idUsuario}`,
+              `/api/usuarios/subir-foto/${user?.idUsuario}`,
               {
                 method: "POST",
                 body: formData,

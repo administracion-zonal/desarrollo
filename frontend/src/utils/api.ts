@@ -1,3 +1,5 @@
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export async function apiFetch(
   url: string,
   options: RequestInit = {},
@@ -17,16 +19,14 @@ export async function apiFetch(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(`${BASE_URL}${url}`, {
+    // 🔥 AQUI EL FIX
     ...options,
     headers,
   });
 
   if (response.status === 401) {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-    throw new Error("Sesión expirada");
+    throw new Error("No autorizado");
   }
 
   return response;

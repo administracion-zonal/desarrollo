@@ -1,7 +1,7 @@
+import { QRCodeCanvas } from "qrcode.react";
 import { useState } from "react";
 import { useMisReservas } from "../hooks/useMisReservas";
 import type { ReservaUsuario } from "../types/ReservaUsuario";
-import { QRCodeCanvas } from "qrcode.react";
 import { apiFetch } from "../utils/api";
 
 export default function MisReservas() {
@@ -65,15 +65,12 @@ export default function MisReservas() {
 
     const token = localStorage.getItem("token");
 
-    const res = await apiFetch(
-      `${import.meta.env.VITE_API_URL}/api/reservas/${id}/cancelar`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const res = await apiFetch(`/api/reservas/${id}/cancelar`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!res.ok) {
       alert(await res.text());

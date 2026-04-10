@@ -1,12 +1,4 @@
-export type RolUsuario =
-  | "ADMIN"
-  | "ADMIN_COWORKING"
-  | "ADMIN_VEHICULOS"
-  | "TALENTO_HUMANO"
-  | "SERVIDOR"
-  | "SERVIDOR_AZVCH"
-  | "PRIVADO"
-  | "ESTUDIANTE";
+import type { RolUsuario } from "./User";
 
 export interface AuthUser {
   idUsuario: number;

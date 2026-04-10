@@ -1,22 +1,30 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import ReservaPublica from "./pages/ReservaPublica";
-import ReservaForm from "./pages/ReservaForm";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Registro from "./pages/Registro";
-import Perfil from "./pages/Perfil";
-import Menu from "./components/Menu";
-import MisReservas from "./pages/MisReservas";
-import PublicLayout from "./components/layout/PublicLayout";
-import PrivateLayout from "./components/layout/PrivateLayout";
-import CambiarPassword from "./pages/CambiarPassword";
+import Footer from "./components/Footer";
 import AdminRoute from "./components/layout/AdminRoute";
+import PrivateLayout from "./components/layout/PrivateLayout";
+import PublicLayout from "./components/layout/PublicLayout";
+import Menu from "./components/Menu";
 import AuthProvider from "./context/AuthProvider";
 import { useAuth } from "./context/useAuth";
-import Footer from "./components/Footer";
-
+import AdminSolicitudesVehiculo from "./pages/AdminSolicitudesVehiculo";
+import AdminVehiculos from "./pages/AdminVehiculos";
+import CambiarPassword from "./pages/CambiarPassword";
+import ChecklistWizard from "./pages/ChecklistWizard";
+import Dashboard from "./pages/Dashboard";
+import DashboardCancha from "./pages/DashboardCancha";
+import GestionTH from "./pages/GestionTH";
+import Login from "./pages/Login";
+import MisReservas from "./pages/MisReservas";
+import MisReservasCancha from "./pages/MisReservasCancha";
+import MisReservasVehiculos from "./pages/MisReservasVehiculos";
+import Perfil from "./pages/Perfil";
+import Registro from "./pages/Registro";
+import ReservaCanchaForm from "./pages/ReservaCanchaForm";
+import ReservaForm from "./pages/ReservaForm";
+import ReservaPublica from "./pages/ReservaPublica";
+import ReservaVehiculoForm from "./pages/ReservaVehiculoForm";
 /* =========================
    PRIVATE ROUTE
 ========================= */
@@ -90,6 +98,18 @@ function AppContent() {
         {/* =========================
            PERFIL
         ========================= */}
+
+        <Route
+          path="/checklist"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <ChecklistWizard />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
         <Route
           path="/perfil"
           element={
@@ -126,6 +146,28 @@ function AppContent() {
           }
         />
 
+        <Route
+          path="/dashboard-cancha"
+          element={
+            <AdminRoute>
+              <PrivateLayout>
+                <DashboardCancha />
+              </PrivateLayout>
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/vehiculos"
+          element={
+            <AdminRoute>
+              <PrivateLayout>
+                <AdminSolicitudesVehiculo />
+              </PrivateLayout>
+            </AdminRoute>
+          }
+        />
+
         {/* =========================
            MIS RESERVAS
            PRIVADO / ESTUDIANTE / ADMIN
@@ -136,6 +178,17 @@ function AppContent() {
             <PrivateRoute>
               <PrivateLayout>
                 <MisReservas />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/mis-reservas-cancha"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <MisReservasCancha />
               </PrivateLayout>
             </PrivateRoute>
           }
@@ -153,6 +206,67 @@ function AppContent() {
             <PrivateRoute>
               <ReservaForm />
             </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/cancha"
+          element={
+            <PrivateRoute>
+              <ReservaCanchaForm />
+            </PrivateRoute>
+          }
+        />
+
+        {/* =========================
+              VEHICULOS
+            ========================= */}
+
+        <Route
+          path="/vehiculos/reservar"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <ReservaVehiculoForm />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* =========================
+              TALENTO HUMANO
+            ========================= */}
+
+        <Route
+          path="/gestion-th"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <GestionTH />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/vehiculos/mis"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <MisReservasVehiculos />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/vehiculos/admin"
+          element={
+            <AdminRoute>
+              <PrivateLayout>
+                <AdminVehiculos />
+              </PrivateLayout>
+            </AdminRoute>
           }
         />
 

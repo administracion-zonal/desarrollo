@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import type { Reserva } from "../types/Reserva";
 import { QRCodeCanvas } from "qrcode.react";
-import { validarCedula } from "../utils/validaciones";
-import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
+import { useEffect, useRef, useState } from "react";
 import "../App.css";
-import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/useAuth";
-import { esFinDeSemana, esDiaHabil } from "../utils/dateUtils";
-import { toMinutes, generarBloques } from "../utils/timeUtils";
+import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
+import type { Reserva } from "../types/Reserva";
+import { apiFetch } from "../utils/api";
+import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
 import { solapada } from "../utils/reservaUtils";
+import { generarBloques, toMinutes } from "../utils/timeUtils";
+import { validarCedula } from "../utils/validaciones";
 
-const API_RESERVAS = `${import.meta.env.VITE_API_URL}/api/public/reservas`;
+const API_RESERVAS = `/api/public/reservas`;
 export default function ReservaForm() {
   const { user } = useAuth();
 
@@ -307,7 +307,6 @@ export default function ReservaForm() {
                         value={form.fecha}
                         min={new Date().toISOString().split("T")[0]}
                         onKeyDown={(e) => e.preventDefault()} // evita escribir manual
-                        onFocus={(e) => e.target.showPicker?.()}
                         onChange={(e) => {
                           const value = e.target.value;
 
