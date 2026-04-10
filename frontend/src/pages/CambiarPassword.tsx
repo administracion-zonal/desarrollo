@@ -26,7 +26,7 @@ export default function CambiarPassword() {
     }
 
     try {
-      const res = await apiFetch(`/api/auth/cambiar-password`, {
+      const res = await apiFetch(`/auth/cambiar-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

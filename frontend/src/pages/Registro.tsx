@@ -7,7 +7,7 @@ import {
   validarPassword,
 } from "../utils/validaciones";
 
-const API = `/api/auth/register`;
+const API = `/auth/register`;
 
 export default function Register() {
   const [error, setError] = useState<string | null>(null);
