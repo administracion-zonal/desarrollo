@@ -34,7 +34,18 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
 
+      if (!data.aceptaAcuerdo) {
+        localStorage.setItem("tempUser", JSON.stringify(data)); // 👈 guardar temporal
+        setMostrarModal(true);
+        return;
+      }
+
+      // SOLO si acepta
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
       setUser(data);
+
+      navigate("/perfil", { replace: true });
 
       // 🚦 REDIRECCIÓN
       if (data.debeCambiarPassword) {
@@ -56,18 +67,22 @@ export default function Login() {
 
   const aceptarAcuerdo = async () => {
     try {
-      const res = await apiFetch("/api/usuarios/aceptar-acuerdo", {
+      await apiFetch("/api/usuarios/aceptar-acuerdo", {
         method: "POST",
       });
 
-      if (!res.ok) throw new Error();
+      // recuperar usuario temporal
+      const tempUser = JSON.parse(localStorage.getItem("tempUser") || "{}");
 
-      // actualizar usuario
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      user.aceptaAcuerdo = true;
+      tempUser.aceptaAcuerdo = true;
 
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
+      // guardar sesión REAL
+      localStorage.setItem("token", tempUser.token);
+      localStorage.setItem("user", JSON.stringify(tempUser));
+
+      setUser(tempUser);
+
+      localStorage.removeItem("tempUser");
 
       setMostrarModal(false);
 
@@ -104,7 +119,7 @@ export default function Login() {
       {/* MODAL DE ACUERDO */}
       <AcuerdoResponsabilidadModal
         open={mostrarModal}
-        onClose={() => setMostrarModal(false)}
+        onClose={() => {}}
         onAccept={aceptarAcuerdo}
       />
     </div>
