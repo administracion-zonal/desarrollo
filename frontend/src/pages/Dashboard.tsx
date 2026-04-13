@@ -3,7 +3,7 @@ import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
 import { apiFetch } from "../utils/api";
 import { formatearFecha } from "../utils/validaciones";
 
-const API_RESERVAS = `/reservas/todas`;
+const API_RESERVAS = `/api/reservas/todas`;
 export default function Dashboard() {
   const token = localStorage.getItem("token");
 
@@ -125,7 +125,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!token) return;
-
+    console.log("TOKEN 👉", token);
     apiFetch(API_RESERVAS, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -147,7 +147,9 @@ export default function Dashboard() {
 
         setReservas(ordenadas);
       })
+
       .catch(() => setError("No se pudieron cargar las reservas"))
+
       .finally(() => setLoading(false));
   }, [token]);
 

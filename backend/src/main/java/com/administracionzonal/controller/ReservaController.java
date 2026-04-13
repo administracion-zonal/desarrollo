@@ -24,7 +24,7 @@ import com.administracionzonal.service.ReservaService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/reservas")
+@RequestMapping("/api/reservas")
 @RequiredArgsConstructor
 public class ReservaController {
 
