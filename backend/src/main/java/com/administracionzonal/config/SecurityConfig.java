@@ -250,7 +250,9 @@ public class SecurityConfig {
 
                 config.setAllowedOrigins(
                                 List.of(
-                                                "http://localhost:5173", "http://172.20.7.9:5173"));
+                                                "http://localhost:5173",
+                                                "http://172.20.7.9",
+                                                "http://172.20.7.9:5173"));
 
                 config.setAllowedMethods(
                                 List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
