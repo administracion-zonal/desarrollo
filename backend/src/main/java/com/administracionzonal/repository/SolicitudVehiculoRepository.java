@@ -12,19 +12,21 @@ import com.administracionzonal.enums.EstadoSolicitud;
 
 public interface SolicitudVehiculoRepository extends JpaRepository<SolicitudVehiculo, Long> {
 
-    // Validar que el usuario no tenga otra solicitud en ese horario
-    boolean existsByUsuarioAndFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqual(
-            Usuario usuario,
-            LocalDate fecha,
-            LocalTime horaFin,
-            LocalTime horaInicio);
+        // Validar que el usuario no tenga otra solicitud en ese horario
+        boolean existsByUsuarioAndFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqual(
+                        Usuario usuario,
+                        LocalDate fecha,
+                        LocalTime horaFin,
+                        LocalTime horaInicio);
 
-    // Contar solicitudes aprobadas (para después)
-    int countByFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqualAndEstado(
-            LocalDate fecha,
-            LocalTime horaFin,
-            LocalTime horaInicio,
-            com.administracionzonal.enums.EstadoSolicitud estado);
+        // Contar solicitudes aprobadas (para después)
+        int countByFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqualAndEstado(
+                        LocalDate fecha,
+                        LocalTime horaFin,
+                        LocalTime horaInicio,
+                        com.administracionzonal.enums.EstadoSolicitud estado);
 
-    List<SolicitudVehiculo> findByEstado(EstadoSolicitud estado);
+        List<SolicitudVehiculo> findByEstado(EstadoSolicitud estado);
+
+        List<SolicitudVehiculo> findByUsuario_Cedula(String cedula);
 }

@@ -3,6 +3,9 @@ package com.administracionzonal.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.administracionzonal.entity.Usuario;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,9 +13,11 @@ import lombok.Data;
 @Builder
 public class ReservaVehiculoResponseDTO {
 
+    private Usuario usuario;
     private Long idReserva;
+    @NotNull(message = "El idVehiculo es obligatorio")
     private Long idVehiculo;
-    private Long idUsuario;
+    // private Long idUsuario;
     private Long idChofer;
 
     private LocalDate fechaReserva;

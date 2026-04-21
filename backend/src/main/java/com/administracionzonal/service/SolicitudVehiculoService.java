@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.administracionzonal.dto.SolicitudVehiculoRequest;
 import com.administracionzonal.entity.ReservaVehiculo;
 import com.administracionzonal.entity.SolicitudVehiculo;
 import com.administracionzonal.entity.Usuario;
@@ -35,7 +36,8 @@ public class SolicitudVehiculoService {
             LocalDate fecha,
             LocalTime horaInicio,
             LocalTime horaFin,
-            String motivo) {
+            String motivo,
+            String destino) {
 
         // 🔴 VALIDAR QUE NO TENGA OTRA SOLICITUD EN ESE HORARIO
         boolean existe = repo.existsByUsuarioAndFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqual(
@@ -53,6 +55,7 @@ public class SolicitudVehiculoService {
         s.setHoraInicio(horaInicio);
         s.setHoraFin(horaFin);
         s.setMotivo(motivo);
+        s.setDestino(destino);
         s.setEstado(EstadoSolicitud.PENDIENTE);
 
         return repo.save(s);
@@ -78,9 +81,9 @@ public class SolicitudVehiculoService {
         Usuario usuario = solicitud.getUsuario();
 
         ReservaVehiculo reserva = ReservaVehiculo.builder()
-                .usuario(usuario) // 🔥 ESTO EVITA TU ERROR
+                .usuario(usuario)
                 .chofer(chofer)
-                .idVehiculo(vehiculo.getIdVehiculo())
+                .vehiculo(vehiculo)
                 .fechaReserva(solicitud.getFecha())
                 .horaInicio(solicitud.getHoraInicio())
                 .horaFin(solicitud.getHoraFin())
@@ -112,9 +115,27 @@ public class SolicitudVehiculoService {
         return repo.findAll();
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     public List<SolicitudVehiculo> listarPendientes() {
         return repo.findAll().stream()
                 .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE)
+                .toList();
+    }
+
+    public List<SolicitudVehiculoRequest> listarPorUsuario(String cedula) {
+        return repo.findByUsuario_Cedula(cedula)
+                .stream()
+                .map(r -> {
+                    SolicitudVehiculoRequest dto = new SolicitudVehiculoRequest();
+
+                    dto.setId(r.getId());
+                    dto.setFecha(r.getFecha().toString());
+                    dto.setHoraInicio(r.getHoraInicio().toString());
+                    dto.setHoraFin(r.getHoraFin().toString());
+                    dto.setDestino(r.getDestino());
+
+                    return dto;
+                })
                 .toList();
     }
 

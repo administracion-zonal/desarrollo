@@ -12,8 +12,8 @@ import { solapada } from "../utils/reservaUtils";
 import { generarBloques, toMinutes } from "../utils/timeUtils";
 import { validarCedula } from "../utils/validaciones";
 
-const API_RESERVAS = `${import.meta.env.VITE_API_URL}/public/reservas`;
-const API_USUARIOS = `${import.meta.env.VITE_API_URL}/usuarios`;
+const API_RESERVAS = `/api/public/reservas`;
+const API_USUARIOS = `/api/usuarios`;
 
 const initialForm = {
   cedula: "",
@@ -470,6 +470,9 @@ export default function ReservaPublica() {
                             <option value="ESTUDIANTE">ESTUDIANTE</option>
                             <option value="SERVIDOR_PUBLICO">
                               SERVIDOR PUBLICO
+                            </option>
+                            <option value="SERVIDOR_AZVCH">
+                              SERVIDOR AZVCH
                             </option>
                           </select>
                         </div>

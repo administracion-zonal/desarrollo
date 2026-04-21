@@ -9,8 +9,10 @@ public class SolicitudVehiculoRequest {
     private String horaInicio;
     private String horaFin;
     private String motivo;
+    private String destino;
     private String estado;
 
     private String nombres;
     private String cedula;
+
 }

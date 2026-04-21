@@ -14,7 +14,7 @@ public interface ReservaVehiculoRepository extends JpaRepository<ReservaVehiculo
 
     @Query("""
                 SELECT r FROM ReservaVehiculo r
-                WHERE r.idVehiculo = :vehiculo
+                WHERE r.vehiculo.idVehiculo = :vehiculo
                 AND r.fechaReserva = :fecha
                 AND (
                     (r.horaInicio <= :horaFin AND r.horaFin >= :horaInicio)
@@ -28,11 +28,11 @@ public interface ReservaVehiculoRepository extends JpaRepository<ReservaVehiculo
 
     @Query("""
                 SELECT r FROM ReservaVehiculo r
-                WHERE r.idVehiculo = :idVehiculo
+                WHERE r.vehiculo.idVehiculo = :idVehiculo
                 AND r.fechaReserva = :fecha
                 AND r.estado <> 'RECHAZADO'
             """)
-    List<ReservaVehiculo> findByIdVehiculoAndFechaReserva(
+    List<ReservaVehiculo> buscarReservas(
             @Param("idVehiculo") Long idVehiculo,
             @Param("fecha") LocalDate fecha);
 
@@ -41,5 +41,7 @@ public interface ReservaVehiculoRepository extends JpaRepository<ReservaVehiculo
     List<ReservaVehiculo> findByChoferIdUsuario(Long idChofer);
 
     List<ReservaVehiculo> findByUsuarioIdUsuarioAndEstado(Long idUsuario, String estado);
+
+    List<ReservaVehiculo> findByVehiculo_IdVehiculoAndFechaReserva(Long idVehiculo, LocalDate fecha);
 
 }

@@ -1,6 +1,7 @@
 package com.administracionzonal.entity;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,5 +58,11 @@ public class Usuario {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuarios_roles", schema = "administracionzonal", joinColumns = @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario"), inverseJoinColumns = @JoinColumn(name = "id_rol", referencedColumnName = "id_rol"))
     private Set<Rol> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario")
+    private List<SolicitudVehiculo> solicitudes;
+
+    @OneToMany(mappedBy = "usuario")
+    private List<ReservaVehiculo> reservas;
 
 }

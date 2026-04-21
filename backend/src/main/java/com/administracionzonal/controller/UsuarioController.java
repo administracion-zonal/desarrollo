@@ -25,7 +25,7 @@ import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.service.UsuarioService;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
@@ -57,6 +57,20 @@ public class UsuarioController {
                 .orElse(ResponseEntity.notFound().build());
 
     }
+
+    // @GetMapping("/cedula/{cedula}")
+    // public ResponseEntity<?> buscarPorCedula(@PathVariable String cedula) {
+
+    // System.out.println("CEDULA BUSCADA: " + cedula);
+
+    // List<Usuario> usuarios = usuarioRepo.findAll();
+
+    // System.out.println("TOTAL USUARIOS: " + usuarios.size());
+
+    // usuarios.forEach(u -> System.out.println("BD -> " + u.getCedula()));
+
+    // return ResponseEntity.ok(usuarios);
+    // }
 
     /*
      * =====================================

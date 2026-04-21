@@ -2,7 +2,7 @@ package com.administracionzonal.controller;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,7 +23,7 @@ import com.administracionzonal.service.SolicitudVehiculoService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/vehiculos/solicitudes")
+@RequestMapping("/api/vehiculos/solicitudes")
 @RequiredArgsConstructor
 public class SolicitudVehiculoController {
 
@@ -43,20 +43,24 @@ public class SolicitudVehiculoController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Parsear fecha y hora desde String a LocalDate/LocalTime
-        LocalDate fecha = LocalDate.parse(req.getFecha(), DateTimeFormatter.ISO_LOCAL_DATE);
-        LocalTime horaInicio = LocalTime.parse(req.getHoraInicio(), DateTimeFormatter.ISO_LOCAL_TIME);
-        LocalTime horaFin = LocalTime.parse(req.getHoraFin(), DateTimeFormatter.ISO_LOCAL_TIME);
+        LocalDate fecha = LocalDate.parse(req.getFecha());
+        LocalTime horaInicio = LocalTime.parse(req.getHoraInicio() + ":00");
+        LocalTime horaFin = LocalTime.parse(req.getHoraFin() + ":00");
 
         SolicitudVehiculo s = service.crearSolicitud(
                 usuario,
                 fecha,
                 horaInicio,
                 horaFin,
-                req.getMotivo()
+                req.getMotivo(),
+                req.getDestino()
 
         );
-
-        return ResponseEntity.ok(s);
+        System.out.println("REQ 👉 " + req);
+        System.out.println(req.getFecha());
+        System.out.println(req.getHoraInicio());
+        System.out.println(req.getHoraFin());
+        return ResponseEntity.ok(Map.of("message", "OK"));
     }
 
     /* ================= LISTAR PENDIENTES ================= */
@@ -83,5 +87,13 @@ public class SolicitudVehiculoController {
     @PostMapping("/{id}/rechazar")
     public ResponseEntity<?> rechazar(@PathVariable Long id) {
         return ResponseEntity.ok(service.rechazarSolicitud(id));
+    }
+
+    @GetMapping("/mis")
+    public ResponseEntity<?> misSolicitudes(Authentication auth) {
+
+        String cedula = auth.getName();
+
+        return ResponseEntity.ok(service.listarPorUsuario(cedula));
     }
 }

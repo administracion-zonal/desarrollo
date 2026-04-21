@@ -3,6 +3,8 @@ package com.administracionzonal.entity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,9 +31,6 @@ public class ReservaVehiculo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idReserva;
 
-    @Column(name = "id_vehiculo")
-    private Long idVehiculo;
-
     private LocalDate fechaReserva;
     private LocalTime horaInicio;
     private LocalTime horaFin;
@@ -43,9 +42,15 @@ public class ReservaVehiculo {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnore
     private Usuario usuario;
 
     @ManyToOne
+    @JoinColumn(name = "id_vehiculo")
+    private Vehiculo vehiculo;
+
+    @ManyToOne
     @JoinColumn(name = "chofer_id")
+    @JsonIgnore
     private Usuario chofer;
 }

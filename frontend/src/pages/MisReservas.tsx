@@ -8,7 +8,6 @@ export default function MisReservas() {
   const { reservas, setReservas, loading, error } = useMisReservas();
 
   const [detalle, setDetalle] = useState<ReservaUsuario | null>(null);
-  const [mostrarQR, setMostrarQR] = useState<ReservaUsuario | null>(null);
 
   const imprimirQR = () => {
     const canvas = document.querySelector("canvas");
@@ -65,7 +64,7 @@ export default function MisReservas() {
 
     const token = localStorage.getItem("token");
 
-    const res = await apiFetch(`/reservas/${id}/cancelar`, {
+    const res = await apiFetch(`/api/reservas/${id}/cancelar`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -85,7 +84,7 @@ export default function MisReservas() {
 
   return (
     <>
-      <h2>📅 Mis Reservas</h2>
+      <h2>📅 Mis Reservas Coworking</h2>
 
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
@@ -110,10 +109,6 @@ export default function MisReservas() {
                 <td>
                   <button onClick={() => setDetalle(r)}>Ver</button>
 
-                  {r.vigente && r.qrToken && (
-                    <button onClick={() => setMostrarQR(r)}>QR</button>
-                  )}
-
                   {r.puedeCancelar && (
                     <button
                       style={{ color: "red" }}
@@ -133,40 +128,35 @@ export default function MisReservas() {
       {detalle && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Detalle de reserva</h3>
-            <p>
-              <b>Fecha:</b> {detalle.fecha}
-            </p>
-            <p>
-              <b>Horario:</b> {detalle.horaInicio} - {detalle.horaFin}
-            </p>
-            <p>
-              <b>Área:</b> {detalle.nombreArea}
-            </p>
-            <p>
-              <b>Institución:</b> {detalle.nombreInstitucion}
-            </p>
+            <div className="modal-header">Detalle de reserva</div>
 
-            <button onClick={() => setDetalle(null)}>Cerrar</button>
-          </div>
-        </div>
-      )}
+            <div className="modal-body">
+              <p>
+                <b>Fecha:</b> {detalle.fecha}
+              </p>
+              <p>
+                <b>Horario:</b> {detalle.horaInicio} - {detalle.horaFin}
+              </p>
+              <p>
+                <b>Área:</b> {detalle.nombreArea}
+              </p>
+              <p>
+                <b>Institución:</b> {detalle.nombreInstitucion}
+              </p>
 
-      {/* MODAL QR */}
-      {mostrarQR && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Código QR</h3>
+              {detalle.vigente && detalle.qrToken && (
+                <QRCodeCanvas value={detalle.qrToken!} size={200} />
+              )}
+            </div>
 
-            <QRCodeCanvas value={mostrarQR.qrToken!} size={200} />
-
-            <p style={{ marginTop: "10px", fontSize: "12px" }}>
-              Presente este código al ingresar
-            </p>
-            <button className="btn" onClick={imprimirQR}>
-              🖨 Imprimir QR
-            </button>
-            <button onClick={() => setMostrarQR(null)}>Cerrar</button>
+            <div className="modal-footer">
+              {detalle.vigente && detalle.qrToken && (
+                <button className="btn" onClick={imprimirQR}>
+                  🖨 Imprimir QR
+                </button>
+              )}
+              <button onClick={() => setDetalle(null)}>Cerrar</button>
+            </div>
           </div>
         </div>
       )}

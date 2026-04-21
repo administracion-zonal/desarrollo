@@ -45,7 +45,7 @@ public class SalvoconductoService {
                         ReservaVehiculo r = repository.findById(idReserva)
                                         .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
-                        Long idVehiculo = r.getIdVehiculo();
+                        Long idVehiculo = r.getVehiculo().getIdVehiculo();
                         Long idUsuario = r.getUsuario().getIdUsuario();
                         Long idChofer = r.getChofer().getIdUsuario();
 

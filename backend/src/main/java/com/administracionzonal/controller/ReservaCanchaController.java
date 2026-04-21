@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,7 @@ import com.administracionzonal.service.ReservaCanchaService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/cancha")
+@RequestMapping("/api/cancha")
 @RequiredArgsConstructor
 public class ReservaCanchaController {
 
@@ -55,6 +56,13 @@ public class ReservaCanchaController {
     public List<ReservaCanchaUsuarioDTO> misReservas(Authentication auth) {
         String cedula = auth.getName();
         return service.listarReservasUsuario(cedula);
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelar(@PathVariable Long id, Authentication auth) {
+        String cedula = auth.getName();
+        service.cancelarReserva(id, cedula);
+        return ResponseEntity.ok().build();
     }
 
 }

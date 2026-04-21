@@ -6,6 +6,7 @@ export interface SolicitudVehiculoRequest {
   horaInicio: string;
   horaFin: string;
   motivo: string;
+  destino: string;
 }
 
 export interface SolicitudVehiculo {
@@ -13,6 +14,7 @@ export interface SolicitudVehiculo {
   fecha: string;
   horaInicio: string;
   horaFin: string;
+  destino: string;
   motivo: string;
   estado: string;
   usuario: {
@@ -24,7 +26,7 @@ export interface SolicitudVehiculo {
 /* ================= SERVICE ================= */
 export const solicitudVehiculoService = {
   crear: async (data: SolicitudVehiculoRequest) => {
-    const res = await apiFetch("/vehiculos/solicitudes", {
+    const res = await apiFetch("/api/vehiculos/solicitudes", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -34,26 +36,32 @@ export const solicitudVehiculoService = {
       throw new Error(msg || "Error al enviar solicitud");
     }
 
-    return res.json();
+    const text = await res.text();
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
   },
 
   listarPendientes: async (): Promise<SolicitudVehiculo[]> => {
-    const res = await apiFetch("/vehiculos/solicitudes/pendientes");
+    const res = await apiFetch("/api/vehiculos/solicitudes/pendientes");
 
     if (!res.ok) throw new Error("Error al obtener solicitudes");
     return res.json();
   },
 
-  aprobar: async (id: number) => {
-    const res = await apiFetch(`/vehiculos/solicitudes/${id}/aprobar`, {
+  aprobar: async (id: number, idChofer: number) => {
+    const res = await apiFetch(`/api/vehiculos/solicitudes/${id}/aprobar`, {
       method: "POST",
+      body: JSON.stringify({ idChofer }),
     });
-
     if (!res.ok) throw new Error(await res.text());
   },
 
   rechazar: async (id: number) => {
-    const res = await apiFetch(`/vehiculos/solicitudes/${id}/rechazar`, {
+    const res = await apiFetch(`/api/vehiculos/solicitudes/${id}/rechazar`, {
       method: "POST",
     });
 

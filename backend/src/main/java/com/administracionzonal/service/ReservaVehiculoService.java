@@ -13,8 +13,10 @@ import com.administracionzonal.dto.ReservaVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoResponseDTO;
 import com.administracionzonal.entity.ReservaVehiculo;
 import com.administracionzonal.entity.Usuario;
+import com.administracionzonal.entity.Vehiculo;
 import com.administracionzonal.repository.ReservaVehiculoRepository;
 import com.administracionzonal.repository.UsuarioRepository;
+import com.administracionzonal.repository.VehiculoRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +27,8 @@ public class ReservaVehiculoService {
     private final ReservaVehiculoRepository repository;
 
     private final UsuarioRepository usuarioRepo;
+
+    private final VehiculoRepository vehiculoRepo;
 
     @Transactional
     public ReservaVehiculoResponseDTO crearReserva(Long idUsuario, ReservaVehiculoDTO dto) {
@@ -51,9 +55,12 @@ public class ReservaVehiculoService {
         Usuario usuario = usuarioRepo.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        Vehiculo vehiculo = vehiculoRepo.findById(dto.getIdVehiculo())
+                .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
+
         ReservaVehiculo reserva = ReservaVehiculo.builder()
                 .usuario(usuario)
-                .idVehiculo(dto.getIdVehiculo())
+                .vehiculo(vehiculo)
                 .chofer(usuario)
                 .fechaReserva(dto.getFechaReserva())
                 .horaInicio(dto.getHoraInicio())
@@ -80,9 +87,9 @@ public class ReservaVehiculoService {
     private ReservaVehiculoResponseDTO mapToDTO(ReservaVehiculo r) {
         return ReservaVehiculoResponseDTO.builder()
                 .idReserva(r.getIdReserva())
-                .idVehiculo(r.getIdVehiculo())
-                .idUsuario(r.getUsuario().getIdUsuario())
-                .idChofer(r.getChofer().getIdUsuario())
+                .usuario(r.getUsuario())
+                .idVehiculo(r.getVehiculo().getIdVehiculo())
+                .idChofer(r.getChofer() != null ? r.getChofer().getIdUsuario() : null)
                 .fechaReserva(r.getFechaReserva())
                 .horaInicio(r.getHoraInicio())
                 .horaFin(r.getHoraFin())
@@ -144,7 +151,7 @@ public class ReservaVehiculoService {
 
     public List<String> obtenerHorasOcupadas(Long idVehiculo, LocalDate fecha) {
 
-        List<ReservaVehiculo> reservas = repository.findByIdVehiculoAndFechaReserva(idVehiculo, fecha);
+        List<ReservaVehiculo> reservas = repository.findByVehiculo_IdVehiculoAndFechaReserva(idVehiculo, fecha);
 
         List<String> ocupadas = new ArrayList<>();
 

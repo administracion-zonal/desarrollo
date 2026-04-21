@@ -14,7 +14,7 @@ import com.administracionzonal.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/vehiculos")
+@RequestMapping("/api/vehiculos")
 @RequiredArgsConstructor
 public class VehiculoController {
 

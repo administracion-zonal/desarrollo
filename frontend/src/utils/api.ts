@@ -19,14 +19,21 @@ export async function apiFetch(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}${url}`, {
-    // 🔥 AQUI EL FIX
+  const fullUrl = `${BASE_URL.replace(/\/$/, "")}${url}`;
+  console.log("🌐 URL:", fullUrl);
+
+  const response = await fetch(fullUrl, {
     ...options,
     headers,
   });
 
-  if (response.status === 401) {
-    throw new Error("No autorizado");
+  // 🔥 MANEJO DE ERRORES MEJORADO
+  if (!response.ok) {
+    const text = await response.text();
+
+    console.error("❌ ERROR BACKEND:", text);
+
+    throw new Error(text || `Error HTTP ${response.status}`);
   }
 
   return response;

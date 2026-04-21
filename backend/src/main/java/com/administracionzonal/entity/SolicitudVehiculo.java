@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import com.administracionzonal.enums.EstadoSolicitud;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -32,12 +33,14 @@ public class SolicitudVehiculo {
     private LocalTime horaFin;
 
     private String motivo;
+    private String destino;
 
     @Enumerated(EnumType.STRING)
     private EstadoSolicitud estado;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario")
+    @JsonIgnore
     private Usuario usuario;
 
     // getters y setters

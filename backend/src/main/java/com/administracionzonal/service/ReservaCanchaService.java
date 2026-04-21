@@ -194,4 +194,29 @@ public class ReservaCanchaService {
         return "Ingreso validado correctamente";
     }
 
+    public void cancelarReserva(Long id, String cedula) {
+
+        if (id == null) {
+            throw new RuntimeException("ID de reserva no proporcionado");
+        }
+
+        ReservaCancha reserva = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+        // 🔐 VALIDAR QUE SEA DEL USUARIO
+        if (!reserva.getUsuario().getCedula().equals(cedula)) {
+            throw new RuntimeException("No autorizado para cancelar esta reserva");
+        }
+
+        // 🔥 VALIDAR ESTADO
+        if (!"RESERVADO".equals(reserva.getEstado())) {
+            throw new RuntimeException("Solo se pueden cancelar reservas activas");
+        }
+
+        // ✅ CAMBIAR ESTADO (NO BORRAR)
+        reserva.setEstado("CANCELADO");
+
+        repo.save(reserva);
+    }
+
 }

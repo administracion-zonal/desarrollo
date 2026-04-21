@@ -59,12 +59,22 @@ export default function ReservaVehiculoForm() {
   const guardar = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    console.log("DATA ENVIADA:", {
+      fecha: form.fechaReserva,
+      horaInicio: form.horaInicio,
+      horaFin: form.horaFin,
+      motivo: form.observaciones,
+      destino: form.destino,
+    });
+
     setError(null);
     setOk(null);
 
     if (!form.fechaReserva) return setError("Seleccione una fecha");
-    if (!form.horaInicio || !form.horaFin)
+    if (!form.horaInicio || !form.horaFin) {
+      console.error("HORAS INVALIDAS", form);
       return setError("Seleccione un horario válido");
+    }
     if (!form.destino) return setError("Ingrese un destino");
 
     try {
@@ -72,7 +82,8 @@ export default function ReservaVehiculoForm() {
         fecha: form.fechaReserva,
         horaInicio: form.horaInicio,
         horaFin: form.horaFin,
-        motivo: `${form.destino} - ${form.observaciones}`,
+        motivo: form.observaciones,
+        destino: form.destino,
       });
 
       setOk("✅ Reserva realizada correctamente");

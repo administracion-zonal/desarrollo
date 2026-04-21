@@ -43,15 +43,12 @@ export default function AdminSolicitudesVehiculo() {
     }
 
     try {
-      await apiFetch(
-        `/vehiculos/solicitudes/${solicitudSeleccionada.id}/aprobar`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            idChofer: choferSeleccionado,
-          }),
-        },
-      );
+      await apiFetch(`/apitudes/${solicitudSeleccionada.id}/aprobar`, {
+        method: "POST",
+        body: JSON.stringify({
+          idChofer: choferSeleccionado,
+        }),
+      });
 
       setModalOpen(false);
       setChoferSeleccionado(null);
@@ -78,7 +75,7 @@ export default function AdminSolicitudesVehiculo() {
 
   // 🔥 CARGAR CHOFERES
   useEffect(() => {
-    apiFetch("/vehiculos/choferes")
+    apiFetch("/api/vehiculos/choferes")
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();
@@ -124,6 +121,7 @@ export default function AdminSolicitudesVehiculo() {
           <tr>
             <th>Usuario</th>
             <th>Cédula</th>
+            <th>Destino</th>
             <th>Fecha</th>
             <th>Horario</th>
             <th>Motivo</th>
@@ -136,6 +134,7 @@ export default function AdminSolicitudesVehiculo() {
             <tr key={s.id}>
               <td>{s.usuario?.nombres}</td>
               <td>{s.usuario?.cedula}</td>
+              <td>{s.destino}</td>
               <td>{s.fecha}</td>
               <td>
                 {s.horaInicio} - {s.horaFin}

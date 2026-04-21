@@ -546,17 +546,73 @@ button:disabled {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.6); /* oscuro elegante */
+  backdrop-filter: blur(4px); /* 🔥 glass effect */
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 999;
 }
 
 .modal {
-  background: rgb(59, 57, 206);
+  display: inline-flex;
+  flex-direction: column; /* 🔥 CLAVE */
+  width: auto; /* 🔥 CLAVE */
+  max-width: 90%;
+  min-width: 280px;
+
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+
+  animation: fadeIn 0.25s ease;
+}
+
+/* HEADER */
+.modal-header {
+  background: #1e293b;
+  color: #fff;
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* BODY */
+.modal-body {
   padding: 20px;
-  border-radius: 10px;
-  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #1f2937;
+}
+
+.modal-body p {
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+/* FOOTER */
+.modal-footer {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: flex-end;
+  background: #f1f5f9;
+}
+
+/* BOTÓN */
+.modal-footer button {
+  padding: 8px 16px;
+  background: #1d4ed8;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-footer button:hover {
+  background: #1e40af;
 }
 
 .login-container {
