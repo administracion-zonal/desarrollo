@@ -3,7 +3,6 @@ package com.administracionzonal.controller;
 import java.time.LocalDate;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,9 +17,8 @@ import com.administracionzonal.service.ReservaService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/public/reservas")
+@RequestMapping("/api/public/reservas")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class PublicReservaController {
 
     private final ReservaService reservaService;
