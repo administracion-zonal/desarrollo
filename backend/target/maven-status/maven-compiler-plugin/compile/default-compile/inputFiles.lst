@@ -18,6 +18,7 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\AuthController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\VehiculoController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\security\JwtUtil.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\MisReservasVehiculoDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\ReservaVehiculoRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\SalvoconductoController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\ReservaCoworking.java

@@ -1016,27 +1016,114 @@ body,
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
 }
 
-.tabs {
+/* ===== CONTENEDOR TABS ===== */
+.tabs-container {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
+/* ===== TAB ===== */
 .tab {
-  padding: 10px 20px;
+  position: relative;
+  padding: 12px 20px;
   border: none;
-  background: #2c3e50;
-  color: white;
+  border-radius: 12px;
+  background: #1e293b;
+  color: #cbd5f5;
   cursor: pointer;
-  border-radius: 8px;
-  transition: 0.3s;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
+/* HOVER */
 .tab:hover {
-  background: #34495e;
+  background: #334155;
+  transform: translateY(-2px);
 }
 
+/* ACTIVO */
 .tab.active {
-  background: #3498db;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* ===== BADGE (contador) ===== */
+.badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: bold;
+}
+
+/* ===== CONTENIDO ANIMADO ===== */
+.tab-content {
+  animation: fadeSlide 0.35s ease;
+}
+
+/* ===== ANIMACIÓN ===== */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== TABLA MODERNA ===== */
+.reservas-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0f172a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* HEADER */
+.reservas-table thead {
+  background: #1e293b;
+}
+
+/* CELDAS */
+.reservas-table th,
+.reservas-table td {
+  padding: 14px;
+  text-align: left;
+  color: #e2e8f0;
+}
+
+/* FILAS */
+.reservas-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.2s;
+}
+
+/* HOVER FILA */
+.reservas-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* BOTONES */
+button {
+  background: #2563eb;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+  transform: scale(1.05);
 }

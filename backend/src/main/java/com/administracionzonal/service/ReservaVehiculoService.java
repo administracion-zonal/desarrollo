@@ -9,6 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.administracionzonal.dto.MisReservasVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoResponseDTO;
 import com.administracionzonal.entity.ReservaVehiculo;
@@ -80,8 +81,37 @@ public class ReservaVehiculoService {
         return mapToDTO(guardado);
     }
 
-    public List<ReservaVehiculo> misReservas(Long idUsuario) {
-        return repository.findByUsuarioIdUsuarioAndEstado(idUsuario, "APROBADA");
+    public List<MisReservasVehiculoDTO> misReservas(Long idUsuario) {
+        return repository.findByUsuarioIdUsuarioAndEstado(idUsuario, "APROBADA")
+                .stream()
+                .map(r -> {
+                    MisReservasVehiculoDTO dto = new MisReservasVehiculoDTO();
+
+                    dto.setIdReserva(r.getIdReserva());
+                    dto.setFechaReserva(r.getFechaReserva().toString());
+                    dto.setHoraInicio(r.getHoraInicio().toString());
+                    dto.setHoraFin(r.getHoraFin().toString());
+
+                    dto.setDestino(r.getDestino());
+                    dto.setObservaciones(r.getObservaciones());
+                    dto.setEstado(r.getEstado());
+
+                    // 👨‍✈️ chofer
+                    dto.setNombreChofer(
+                            r.getChofer() != null
+                                    ? r.getChofer().getNombres()
+                                    : "Sin asignar");
+
+                    // 🚗 vehículo
+                    if (r.getVehiculo() != null) {
+                        dto.setMarcaVehiculo(r.getVehiculo().getMarca());
+                        dto.setModeloVehiculo(r.getVehiculo().getModelo());
+                        dto.setPlacaVehiculo(r.getVehiculo().getPlaca());
+                    }
+
+                    return dto;
+                })
+                .toList();
     }
 
     public List<ReservaVehiculo> reservasChofer(Long idChofer) {

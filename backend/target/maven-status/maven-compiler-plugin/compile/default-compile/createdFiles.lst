@@ -47,6 +47,7 @@ com\administracionzonal\repository\UsuarioDocumentoRepository.class
 com\administracionzonal\service\SalvoconductoService.class
 com\administracionzonal\dto\ChoferDTO.class
 com\administracionzonal\dto\ReservaAdminDTO.class
+com\administracionzonal\dto\MisReservasVehiculoDTO.class
 com\administracionzonal\repository\UsuarioRepository.class
 com\administracionzonal\dto\ReservaVehiculoDTO.class
 com\administracionzonal\entity\ChecklistDetalle.class

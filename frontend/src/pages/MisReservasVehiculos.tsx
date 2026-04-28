@@ -71,108 +71,112 @@ export default function MisReservasVehiculos() {
     <>
       <h2>🚗 Mis Reservas Vehículos</h2>
 
-      <div className="tabs">
+      <div className="tabs-container">
         <button
-          className={tab === "solicitudes" ? "tab active" : "tab"}
+          className={`tab ${tab === "solicitudes" ? "active" : ""}`}
           onClick={() => setTab("solicitudes")}
         >
           📝 Solicitudes
+          <span className="badge">{solicitudes.length}</span>
         </button>
 
         <button
-          className={tab === "reservas" ? "tab active" : "tab"}
+          className={`tab ${tab === "reservas" ? "active" : ""}`}
           onClick={() => setTab("reservas")}
         >
           🚗 Reservas
+          <span className="badge">{reservas.length}</span>
         </button>
       </div>
 
       {/* ================= SOLICITUDES ================= */}
 
       {/* ================= TAB SOLICITUDES ================= */}
-      {tab === "solicitudes" && (
-        <>
-          <h3>📝 Solicitudes enviadas</h3>
 
-          {solicitudes.length === 0 && <p>No tienes solicitudes</p>}
+      <div className="tab-content">
+        {tab === "solicitudes" && (
+          <>
+            <h3>📝 Solicitudes enviadas</h3>
 
-          {solicitudes.length > 0 && (
-            <table className="reservas-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Destino</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
+            {solicitudes.length === 0 && <p>No tienes solicitudes</p>}
 
-              <tbody>
-                {solicitudes.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.fecha}</td>
-                    <td>{s.destino}</td>
-
-                    <td>
-                      <button onClick={() => setDetalleSolicitud(s)}>
-                        Ver
-                      </button>
-
-                      <button
-                        style={{ color: "red", marginLeft: "10px" }}
-                        onClick={() => cancelarSolicitud(s.id)}
-                      >
-                        Cancelar
-                      </button>
-                    </td>
+            {solicitudes.length > 0 && (
+              <table className="reservas-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Destino</th>
+                    <th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </>
-      )}
+                </thead>
 
-      {/* ================= TAB RESERVAS ================= */}
-      {tab === "reservas" && (
-        <>
-          <h3>📂 Historial de reservas</h3>
+                <tbody>
+                  {solicitudes.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.fecha}</td>
+                      <td>{s.destino}</td>
 
-          {reservas.length === 0 && <p>No tienes reservas</p>}
+                      <td>
+                        <button onClick={() => setDetalleSolicitud(s)}>
+                          Ver
+                        </button>
 
-          {reservas.length > 0 && (
-            <table className="reservas-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Destino</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
+                        <button
+                          style={{ color: "red", marginLeft: "10px" }}
+                          onClick={() => cancelarSolicitud(s.id)}
+                        >
+                          Cancelar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
 
-              <tbody>
-                {reservas.map((r) => (
-                  <tr key={r.idReserva}>
-                    <td>{r.fechaReserva}</td>
-                    <td>{r.destino}</td>
+        {/* ================= TAB RESERVAS ================= */}
+        {tab === "reservas" && (
+          <>
+            <h3>📂 Historial de reservas</h3>
 
-                    <td>
-                      {r.estado === "PENDIENTE" && "🟡 Pendiente"}
-                      {r.estado === "APROBADA" && "🟢 Aprobado"}
-                      {r.estado === "RECHAZADO" && "🔴 Rechazado"}
-                    </td>
+            {reservas.length === 0 && <p>No tienes reservas</p>}
 
-                    <td>
-                      <button onClick={() => setDetalle(r)}>Ver</button>
-                    </td>
+            {reservas.length > 0 && (
+              <table className="reservas-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Destino</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </>
-      )}
+                </thead>
 
+                <tbody>
+                  {reservas.map((r) => (
+                    <tr key={r.idReserva}>
+                      <td>{r.fechaReserva}</td>
+                      <td>{r.destino}</td>
+
+                      <td>
+                        {r.estado === "PENDIENTE" && "🟡 Pendiente"}
+                        {r.estado === "APROBADA" && "🟢 Aprobado"}
+                        {r.estado === "RECHAZADO" && "🔴 Rechazado"}
+                      </td>
+
+                      <td>
+                        <button onClick={() => setDetalle(r)}>Ver</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
+      </div>
       {/* ================= MODAL SOLICITUD ================= */}
       {detalleSolicitud && (
         <div className="modal-overlay">
@@ -204,10 +208,24 @@ export default function MisReservasVehiculos() {
             <div className="field">
               <label>Fecha:</label>
               <input readOnly value={detalle.fechaReserva} />
+
               <label>Destino:</label>
               <input readOnly value={detalle.destino} />
+
               <label>Motivo:</label>
               <input readOnly value={detalle.observaciones} />
+
+              <label>Chofer asignado:</label>
+              <input readOnly value={detalle.nombreChofer} />
+
+              <label>Vehículo:</label>
+              <input
+                readOnly
+                value={`${detalle.marcaVehiculo} ${detalle.modeloVehiculo}`}
+              />
+
+              <label>Placa:</label>
+              <input readOnly value={detalle.placaVehiculo} />
             </div>
 
             <div className="modal-footer">

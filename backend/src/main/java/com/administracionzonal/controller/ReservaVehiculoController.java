@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.administracionzonal.dto.AsignarChoferDTO;
+import com.administracionzonal.dto.MisReservasVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoResponseDTO;
 import com.administracionzonal.entity.ReservaVehiculo;
@@ -50,7 +51,7 @@ public class ReservaVehiculoController {
     }
 
     @GetMapping("/mis")
-    public List<ReservaVehiculo> misReservas(Authentication auth) {
+    public List<MisReservasVehiculoDTO> misReservas(Authentication auth) {
 
         String cedula = auth.getName();
 
