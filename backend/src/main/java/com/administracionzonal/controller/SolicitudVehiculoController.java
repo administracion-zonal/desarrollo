@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.administracionzonal.dto.AprobarSolicitudRequest;
 import com.administracionzonal.dto.SolicitudVehiculoRequest;
-import com.administracionzonal.entity.SolicitudVehiculo;
 import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.service.SolicitudVehiculoService;
@@ -47,7 +46,7 @@ public class SolicitudVehiculoController {
         LocalTime horaInicio = LocalTime.parse(req.getHoraInicio() + ":00");
         LocalTime horaFin = LocalTime.parse(req.getHoraFin() + ":00");
 
-        SolicitudVehiculo s = service.crearSolicitud(
+        service.crearSolicitud(
                 usuario,
                 fecha,
                 horaInicio,

@@ -21,16 +21,6 @@ export default function AdminSolicitudesVehiculo() {
     null,
   );
 
-  // 🔍 BUSCADOR
-  const [busquedaChofer, setBusquedaChofer] = useState("");
-
-  // 🔥 FILTRO + BUSCADOR
-  const choferesFiltrados = choferes
-    .filter((c) =>
-      c.nombres.toLowerCase().includes(busquedaChofer.toLowerCase()),
-    )
-    .sort((a, b) => a.nombres.localeCompare(b.nombres));
-
   const abrirModal = (solicitud: SolicitudVehiculo) => {
     setSolicitudSeleccionada(solicitud);
     setModalOpen(true);
@@ -43,16 +33,13 @@ export default function AdminSolicitudesVehiculo() {
     }
 
     try {
-      await apiFetch(`/apitudes/${solicitudSeleccionada.id}/aprobar`, {
-        method: "POST",
-        body: JSON.stringify({
-          idChofer: choferSeleccionado,
-        }),
-      });
+      await solicitudVehiculoService.aprobar(
+        solicitudSeleccionada.id,
+        choferSeleccionado,
+      );
 
       setModalOpen(false);
       setChoferSeleccionado(null);
-      setBusquedaChofer("");
 
       await cargar();
     } catch (e) {
@@ -116,7 +103,7 @@ export default function AdminSolicitudesVehiculo() {
 
       {solicitudes.length === 0 && <p>No hay solicitudes pendientes</p>}
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table className="reservas-table">
         <thead>
           <tr>
             <th>Usuario</th>
@@ -132,8 +119,8 @@ export default function AdminSolicitudesVehiculo() {
         <tbody>
           {solicitudes.map((s) => (
             <tr key={s.id}>
-              <td>{s.usuario?.nombres}</td>
-              <td>{s.usuario?.cedula}</td>
+              <td>{s.nombres}</td>
+              <td>{s.cedula}</td>
               <td>{s.destino}</td>
               <td>{s.fecha}</td>
               <td>
@@ -151,62 +138,36 @@ export default function AdminSolicitudesVehiculo() {
       </table>
 
       {modalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: "20px",
-              borderRadius: "10px",
-              width: "400px",
-            }}
-          >
-            <h3>Asignar Chofer</h3>
+        <div className="modal-overlay">
+          <div className="modal">
+            {/* HEADER */}
+            <div className="modal-header">Actualizar datos</div>
 
-            {/* 🔍 BUSCADOR */}
-            <input
-              type="text"
-              placeholder="Buscar chofer..."
-              value={busquedaChofer}
-              onChange={(e) => setBusquedaChofer(e.target.value)}
-              style={{
-                width: "100%",
-                marginBottom: "10px",
-                padding: "5px",
-              }}
-            />
+            <div className="field">
+              <label>Asignar Chofer</label>
 
-            {/* 🔽 SELECT */}
-            <select
-              value={choferSeleccionado ?? ""}
-              onChange={(e) =>
-                setChoferSeleccionado(
-                  e.target.value ? Number(e.target.value) : null,
-                )
-              }
-              style={{ width: "100%", marginBottom: "10px" }}
-            >
-              <option value="">Seleccione un chofer</option>
-              {choferesFiltrados.map((c) => (
-                <option key={c.idUsuario} value={c.idUsuario}>
-                  {c.nombres}
-                </option>
-              ))}
-            </select>
+              {/* 🔽 SELECT */}
+              <select
+                className="select-chofer"
+                value={choferSeleccionado ?? ""}
+                onChange={(e) =>
+                  setChoferSeleccionado(
+                    e.target.value ? Number(e.target.value) : null,
+                  )
+                }
+              >
+                <option value="">Seleccione un chofer</option>
 
-            <button onClick={confirmarAprobacion}>✅ Confirmar</button>
-            <button onClick={() => setModalOpen(false)}>❌ Cancelar</button>
+                {choferes.map((c) => (
+                  <option key={c.idUsuario} value={c.idUsuario}>
+                    {c.nombres}
+                  </option>
+                ))}
+              </select>
+
+              <button onClick={confirmarAprobacion}>✅ Confirmar</button>
+              <button onClick={() => setModalOpen(false)}>❌ Cancelar</button>
+            </div>
           </div>
         </div>
       )}

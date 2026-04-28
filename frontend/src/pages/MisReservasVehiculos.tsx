@@ -6,7 +6,7 @@ import { apiFetch } from "../utils/api";
 export default function MisReservasVehiculos() {
   const [reservas, setReservas] = useState<VehiculoReserva[]>([]);
   const [detalle, setDetalle] = useState<VehiculoReserva | null>(null);
-
+  const [tab, setTab] = useState<"solicitudes" | "reservas">("solicitudes");
   const [solicitudes, setSolicitudes] = useState<SolicitudVehiculo[]>([]);
   const [detalleSolicitud, setDetalleSolicitud] =
     useState<SolicitudVehiculo | null>(null);
@@ -71,10 +71,30 @@ export default function MisReservasVehiculos() {
     <>
       <h2>🚗 Mis Reservas Vehículos</h2>
 
+      <div className="tabs">
+        <button
+          className={tab === "solicitudes" ? "tab active" : "tab"}
+          onClick={() => setTab("solicitudes")}
+        >
+          📝 Solicitudes
+        </button>
+
+        <button
+          className={tab === "reservas" ? "tab active" : "tab"}
+          onClick={() => setTab("reservas")}
+        >
+          🚗 Reservas
+        </button>
+      </div>
+
       {/* ================= SOLICITUDES ================= */}
-      {solicitudes.length > 0 && (
+
+      {/* ================= TAB SOLICITUDES ================= */}
+      {tab === "solicitudes" && (
         <>
           <h3>📝 Solicitudes enviadas</h3>
+
+          {solicitudes.length === 0 && <p>No tienes solicitudes</p>}
 
           {solicitudes.length > 0 && (
             <table className="reservas-table">
@@ -111,39 +131,46 @@ export default function MisReservasVehiculos() {
           )}
         </>
       )}
-      <h3>📂 Historial de reservas</h3>
 
-      {reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Destino</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
+      {/* ================= TAB RESERVAS ================= */}
+      {tab === "reservas" && (
+        <>
+          <h3>📂 Historial de reservas</h3>
 
-          <tbody>
-            {reservas.map((r) => (
-              <tr key={r.idReserva}>
-                <td>{r.fechaReserva}</td>
+          {reservas.length === 0 && <p>No tienes reservas</p>}
 
-                <td>{r.destino}</td>
+          {reservas.length > 0 && (
+            <table className="reservas-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Destino</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
 
-                <td>
-                  {r.estado === "PENDIENTE" && "🟡 Pendiente"}
-                  {r.estado === "APROBADA" && "🟢 Aprobado"}
-                  {r.estado === "RECHAZADO" && "🔴 Rechazado"}
-                </td>
+              <tbody>
+                {reservas.map((r) => (
+                  <tr key={r.idReserva}>
+                    <td>{r.fechaReserva}</td>
+                    <td>{r.destino}</td>
 
-                <td>
-                  <button onClick={() => setDetalle(r)}>Ver</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    <td>
+                      {r.estado === "PENDIENTE" && "🟡 Pendiente"}
+                      {r.estado === "APROBADA" && "🟢 Aprobado"}
+                      {r.estado === "RECHAZADO" && "🔴 Rechazado"}
+                    </td>
+
+                    <td>
+                      <button onClick={() => setDetalle(r)}>Ver</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
 
       {/* ================= MODAL SOLICITUD ================= */}
@@ -152,16 +179,13 @@ export default function MisReservasVehiculos() {
           <div className="modal">
             <div className="modal-header">Detalle de solicitud</div>
 
-            <div className="modal-body">
-              <p>
-                <b>Fecha:</b> {detalleSolicitud.fecha}
-              </p>
-              <p>
-                <b>Destino:</b> {detalleSolicitud.destino}
-              </p>
-              <p>
-                <b>Motivo:</b> {detalleSolicitud.motivo}
-              </p>
+            <div className="field">
+              <label>Fecha:</label>
+              <input readOnly value={detalleSolicitud.fecha} />
+              <label>Destino:</label>
+              <input readOnly value={detalleSolicitud.destino} />
+              <label>Motivo:</label>
+              <input readOnly value={detalleSolicitud.motivo} />
             </div>
 
             <div className="modal-footer">
@@ -177,16 +201,13 @@ export default function MisReservasVehiculos() {
           <div className="modal">
             <div className="modal-header">Detalle de reserva</div>
 
-            <div className="modal-body">
-              <p>
-                <b>Fecha:</b> {detalle.fechaReserva}
-              </p>
-              <p>
-                <b>Destino:</b> {detalle.destino}
-              </p>
-              <p>
-                <b>Observaciones:</b> {detalle.observaciones}
-              </p>
+            <div className="field">
+              <label>Fecha:</label>
+              <input readOnly value={detalle.fechaReserva} />
+              <label>Destino:</label>
+              <input readOnly value={detalle.destino} />
+              <label>Motivo:</label>
+              <input readOnly value={detalle.observaciones} />
             </div>
 
             <div className="modal-footer">

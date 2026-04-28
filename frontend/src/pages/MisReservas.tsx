@@ -130,23 +130,34 @@ export default function MisReservas() {
           <div className="modal">
             <div className="modal-header">Detalle de reserva</div>
 
-            <div className="modal-body">
-              <p>
-                <b>Fecha:</b> {detalle.fecha}
-              </p>
-              <p>
-                <b>Horario:</b> {detalle.horaInicio} - {detalle.horaFin}
-              </p>
-              <p>
-                <b>Área:</b> {detalle.nombreArea}
-              </p>
-              <p>
-                <b>Institución:</b> {detalle.nombreInstitucion}
-              </p>
-
-              {detalle.vigente && detalle.qrToken && (
-                <QRCodeCanvas value={detalle.qrToken!} size={200} />
-              )}
+            <div className="field">
+              <div className="grid-2">
+                <div>
+                  <label>Fecha: </label>
+                  <input value={detalle.fecha} readOnly />
+                </div>
+                <div>
+                  <label>Horario: </label>
+                  <input
+                    value={`${detalle.horaInicio} - ${detalle.horaFin}`}
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label>Área: </label>
+                  <input value={detalle.nombreArea} readOnly />
+                </div>
+                <div>
+                  <label>Institución: </label>
+                  <input value={detalle.nombreInstitucion} readOnly />
+                </div>
+              </div>
+              <label>Codigo QR: </label>
+              <center>
+                {detalle.vigente && detalle.qrToken && (
+                  <QRCodeCanvas value={detalle.qrToken!} size={150} />
+                )}
+              </center>
             </div>
 
             <div className="modal-footer">

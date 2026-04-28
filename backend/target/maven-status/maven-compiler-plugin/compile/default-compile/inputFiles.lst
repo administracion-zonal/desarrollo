@@ -21,6 +21,7 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\ReservaVehiculoRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\SalvoconductoController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\ReservaCoworking.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\UnidadRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\service\SalvoconductoService.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\service\UsuarioService.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\RolRepository.java
@@ -31,6 +32,7 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\UsuarioRolId.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\ReservaCanchaRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\security\UserDetailsServiceImpl.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\SolicitudVehiculoDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\UsuarioDocumento.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\entity\UsuarioInstitucion.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\DocumentoTipoRepository.java
@@ -43,6 +45,7 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\enums\EstadoDocumento.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\enums\TipoProceso.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\CambioPasswordDTO.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\DireccionRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\BloqueHorarioDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\SolicitudVehiculoRequest.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\ReservaCanchaDTO.java
@@ -57,6 +60,7 @@ C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\controller\ReservaController.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\ReservaVehiculoDTO.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\AprobarSolicitudRequest.java
+C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\DenominacionPuestoRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\service\SolicitudVehiculoService.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\repository\UsuarioProcesoRepository.java
 C:\woksSpace\ADMINISTRACION_ZONAL\backend\src\main\java\com\administracionzonal\dto\ReservaCanchaUsuarioDTO.java

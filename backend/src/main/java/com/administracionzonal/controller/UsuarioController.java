@@ -10,17 +10,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.administracionzonal.dto.CambioPasswordDTO;
 import com.administracionzonal.dto.PerfilUsuarioDTO;
 import com.administracionzonal.entity.Usuario;
+import com.administracionzonal.entity.UsuarioInstitucion;
+import com.administracionzonal.repository.UsuarioInstitucionRepository;
 import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.service.UsuarioService;
 
@@ -34,6 +40,12 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UsuarioInstitucionRepository usuarioInstitucionRepo;
 
     @GetMapping("/perfil/{id}")
     public ResponseEntity<PerfilUsuarioDTO> obtenerPerfil(
@@ -57,20 +69,6 @@ public class UsuarioController {
                 .orElse(ResponseEntity.notFound().build());
 
     }
-
-    // @GetMapping("/cedula/{cedula}")
-    // public ResponseEntity<?> buscarPorCedula(@PathVariable String cedula) {
-
-    // System.out.println("CEDULA BUSCADA: " + cedula);
-
-    // List<Usuario> usuarios = usuarioRepo.findAll();
-
-    // System.out.println("TOTAL USUARIOS: " + usuarios.size());
-
-    // usuarios.forEach(u -> System.out.println("BD -> " + u.getCedula()));
-
-    // return ResponseEntity.ok(usuarios);
-    // }
 
     /*
      * =====================================
@@ -216,4 +214,108 @@ public class UsuarioController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/cambiar-password")
+    public ResponseEntity<?> cambiarPassword(
+            @RequestBody CambioPasswordDTO dto,
+            Authentication auth) {
+
+        if (dto.getPasswordActual() == null || dto.getPasswordNueva() == null) {
+            return ResponseEntity.badRequest().body("Datos incompletos");
+        }
+
+        String cedula = auth.getName();
+
+        Usuario usuario = usuarioRepo.findByCedula(cedula)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // 🔐 VALIDAR PASSWORD ACTUAL
+        if (!passwordEncoder.matches(dto.getPasswordActual(), usuario.getPassword())) {
+            return ResponseEntity.badRequest().body("Contraseña actual incorrecta");
+        }
+
+        // 🔥 ACTUALIZAR NUEVA
+        usuario.setPassword(passwordEncoder.encode(dto.getPasswordNueva()));
+
+        usuarioRepo.save(usuario);
+
+        return ResponseEntity.ok("Contraseña actualizada");
+    }
+
+    @PutMapping("/actualizar")
+    public ResponseEntity<?> actualizarPerfil(
+            @RequestBody PerfilUsuarioDTO dto,
+            Authentication auth) {
+
+        String cedula = auth.getName();
+
+        Usuario usuario = usuarioRepo.findByCedula(cedula)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        /*
+         * =========================
+         * USUARIO NORMAL
+         * =========================
+         */
+        if (!"SERVIDOR_AZVCH".equals(usuario.getTipoUsuario())) {
+
+            if (dto.getInstitucion() != null) {
+                usuario.setInstitucion(dto.getInstitucion());
+            }
+
+            usuarioRepo.save(usuario);
+            return ResponseEntity.ok("Perfil actualizado");
+        }
+
+        /*
+         * =========================
+         * USUARIO INSTITUCIONAL
+         * =========================
+         */
+
+        UsuarioInstitucion ui = usuarioInstitucionRepo
+                .findByUsuario(usuario)
+                .orElse(null);
+
+        if (ui == null) {
+            ui = new UsuarioInstitucion();
+            ui.setUsuario(usuario);
+            ui.setActivo(true); // 🔥 OBLIGATORIO
+        }
+
+        /*
+         * =========================
+         * ACTUALIZAR SOLO CAMPOS NECESARIOS
+         * =========================
+         */
+
+        // 👤 DATOS BÁSICOS (si quieres permitirlos)
+
+        if (dto.getInstitucion() != null) {
+            usuario.setInstitucion(dto.getInstitucion());
+        }
+
+        usuarioRepo.save(usuario);
+
+        /*
+         * =========================
+         * CAMPOS INSTITUCIONALES
+         * =========================
+         */
+
+        if (dto.getTelefonoExtension() != null) {
+            ui.setTelefonoExtension(dto.getTelefonoExtension());
+        }
+
+        /*
+         * =========================
+         * RELACIONES (SIN CAMBIAR TU LÓGICA)
+         * =========================
+         */
+
+        usuarioInstitucionRepo.save(ui);
+
+        return ResponseEntity.ok("Perfil actualizado");
+    }
+
 }

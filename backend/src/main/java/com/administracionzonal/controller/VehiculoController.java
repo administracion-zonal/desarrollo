@@ -2,14 +2,14 @@ package com.administracionzonal.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.administracionzonal.dto.ChoferDTO;
 import com.administracionzonal.entity.Vehiculo;
 import com.administracionzonal.repository.VehiculoRepository;
-import com.administracionzonal.service.UsuarioService;
+import com.administracionzonal.service.VehiculoService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class VehiculoController {
 
     private final VehiculoRepository vehiculoRepository;
-    private final UsuarioService usuarioService;
+    private final VehiculoService vehiculoService;
 
     @GetMapping
     public List<Vehiculo> listarVehiculos() {
@@ -27,8 +27,7 @@ public class VehiculoController {
     }
 
     @GetMapping("/choferes")
-    public List<ChoferDTO> listarChoferes() {
-        return usuarioService.obtenerChoferes();
+    public ResponseEntity<?> obtenerChoferes() {
+        return ResponseEntity.ok(vehiculoService.listarChoferes());
     }
-
 }

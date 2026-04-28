@@ -42,6 +42,10 @@ public class ReservaVehiculoService {
             throw new RuntimeException("El idUsuario no puede ser null");
         }
 
+        if (dto.getIdVehiculo() == null) {
+            throw new RuntimeException("El idVehiculo no puede ser null");
+        }
+
         List<ReservaVehiculo> conflictos = repository.validarDisponibilidad(
                 dto.getIdVehiculo(),
                 dto.getFechaReserva(),

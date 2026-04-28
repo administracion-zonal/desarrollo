@@ -1,7 +1,9 @@
 package com.administracionzonal.dto;
 
-import lombok.Data;
 import java.util.List;
+
+import lombok.Data;
+
 @Data
 public class PerfilUsuarioDTO {
 
@@ -15,8 +17,14 @@ public class PerfilUsuarioDTO {
     private String institucion;
 
     // institucional
+
+    private Long direccionId;
     private String direccion;
-    private String Unidad;
+
+    private Long unidadId;
+    private String unidad;
+
+    private Long cargoId;
     private String cargo;
     private String correoInstitucional;
     private String telefonoExtension;

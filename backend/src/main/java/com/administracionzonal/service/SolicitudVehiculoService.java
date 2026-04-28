@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.administracionzonal.dto.SolicitudVehiculoDTO;
 import com.administracionzonal.dto.SolicitudVehiculoRequest;
 import com.administracionzonal.entity.ReservaVehiculo;
 import com.administracionzonal.entity.SolicitudVehiculo;
@@ -115,10 +116,28 @@ public class SolicitudVehiculoService {
         return repo.findAll();
     }
 
-    @SuppressWarnings("unlikely-arg-type")
-    public List<SolicitudVehiculo> listarPendientes() {
-        return repo.findAll().stream()
-                .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE)
+    public List<SolicitudVehiculoDTO> listarPendientes() {
+
+        return repo.findByEstado(EstadoSolicitud.PENDIENTE)
+                .stream()
+                .map(s -> {
+                    SolicitudVehiculoDTO dto = new SolicitudVehiculoDTO();
+
+                    dto.setId(s.getId());
+                    dto.setFecha(s.getFecha().toString());
+                    dto.setHoraInicio(s.getHoraInicio().toString());
+                    dto.setHoraFin(s.getHoraFin().toString());
+
+                    dto.setDestino(s.getDestino());
+                    dto.setMotivo(s.getMotivo());
+
+                    dto.setEstado(s.getEstado().name());
+
+                    dto.setNombres(s.getUsuario().getNombres());
+                    dto.setCedula(s.getUsuario().getCedula());
+
+                    return dto;
+                })
                 .toList();
     }
 

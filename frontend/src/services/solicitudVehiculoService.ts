@@ -17,10 +17,9 @@ export interface SolicitudVehiculo {
   destino: string;
   motivo: string;
   estado: string;
-  usuario: {
-    nombres: string;
-    cedula: string;
-  };
+
+  nombres: string;
+  cedula: string;
 }
 
 /* ================= SERVICE ================= */

@@ -66,7 +66,10 @@ public class SecurityConfig {
 
                                                 .requestMatchers("/api/usuarios/aceptar-acuerdo")
                                                 .authenticated()
-
+                                                .requestMatchers(HttpMethod.PUT, "/api/usuarios/cambiar-password")
+                                                .authenticated()
+                                                .requestMatchers(HttpMethod.PUT, "/api/usuarios/actualizar")
+                                                .authenticated()
                                                 .requestMatchers("/api/auth/**").permitAll()
 
                                                 .requestMatchers("/api/public/**").permitAll()

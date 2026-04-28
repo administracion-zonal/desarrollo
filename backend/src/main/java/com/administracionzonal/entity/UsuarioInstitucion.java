@@ -1,6 +1,14 @@
 package com.administracionzonal.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,8 +31,6 @@ public class UsuarioInstitucion {
     @JoinColumn(name = "id_denominacion")
     private DenominacionPuesto denominacion;
 
-    private String departamento;
-
     @Column(name = "correo_institucional")
     private String correoInstitucional;
 
@@ -36,10 +42,10 @@ public class UsuarioInstitucion {
     private String institucion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "id_unidad")
-private Unidad unidad;
+    @JoinColumn(name = "id_unidad")
+    private Unidad unidad;
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "id_direccion")
-private Direccion direccion;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_direccion")
+    private Direccion direccion;
 }
