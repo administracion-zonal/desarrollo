@@ -1,18 +1,29 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { apiFetch } from "../utils/api";
 import {
+  soloTexto,
   validarCedula,
   validarCorreo,
   validarPassword,
 } from "../utils/validaciones";
 
-const API = `/auth/register`;
+const API = `/api/auth/register`;
 
 export default function Register() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    cedula: "",
+    nombres: "",
+    correo: "",
+    password: "",
+    confirmarPassword: "",
+  });
 
   const [form, setForm] = useState({
     cedula: "",
@@ -29,15 +40,15 @@ export default function Register() {
     const name = e.target.name;
     let value = e.target.value;
 
-    // CÉDULA → SOLO NÚMEROS
     if (name === "cedula") {
       value = value.replace(/\D/g, "");
     }
 
-    // NOMBRES → SOLO LETRAS Y MAYÚSCULAS
     if (name === "nombres") {
       value = value.replace(/[^a-zA-ZÁÉÍÓÚÑáéíóúñ\s]/g, "").toUpperCase();
     }
+
+    setFieldErrors((prev) => ({ ...prev, [name]: "" }));
 
     setForm((prev) => ({
       ...prev,
@@ -50,77 +61,91 @@ export default function Register() {
   ========================= */
   const registrarUsuario = async () => {
     setError(null);
+    setLoading(true);
 
-    const res = await apiFetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        aceptaAcuerdo: true,
-      }),
-    });
+    try {
+      const res = await apiFetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          aceptaAcuerdo: true,
+        }),
+      });
 
-    const text = await res.text();
+      const text = await res.text();
 
-    if (!res.ok) {
-      if (text.toLowerCase().includes("cédula")) {
-        setError("❌ Cédula ya registrada");
-      } else if (text.toLowerCase().includes("correo")) {
-        setError("❌ Correo ya registrado");
-      } else {
-        setError(text);
+      if (!res.ok) {
+        if (text.toLowerCase().includes("cédula")) {
+          setError("❌ Cédula ya registrada");
+        } else if (text.toLowerCase().includes("correo")) {
+          setError("❌ Correo ya registrado");
+        } else {
+          setError(text);
+        }
+        return;
       }
-      return;
+
+      const data = JSON.parse(text);
+
+      localStorage.setItem("token", data.token);
+
+      setSuccess("✅ Registro exitoso. Redirigiendo...");
+
+      setTimeout(() => {
+        window.location.href = "/perfil";
+      }, 1500);
+    } catch (error) {
+      console.error(error);
+      setError("Error de conexión con el servidor");
+    } finally {
+      setLoading(false);
     }
-
-    const data = JSON.parse(text);
-
-    localStorage.setItem("token", data.token);
-
-    setSuccess("✅ Registro exitoso. Redirigiendo...");
-
-    setTimeout(() => {
-      window.location.href = "/perfil";
-    }, 1500);
   };
 
   /* =========================
      SUBMIT FORM
   ========================= */
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError(null);
     setSuccess(null);
 
+    const errors = {
+      cedula: "",
+      nombres: "",
+      correo: "",
+      password: "",
+      confirmarPassword: "",
+    };
+
     if (!validarCedula(form.cedula)) {
-      setError("❌ Cédula inválida");
-      return;
+      errors.cedula = "Cédula inválida";
+    }
+
+    if (!form.nombres || form.nombres.length < 3 || !soloTexto(form.nombres)) {
+      errors.nombres = "Ingresa nombres válidos";
     }
 
     if (!validarCorreo(form.correo)) {
-      setError("❌ Correo inválido");
-      return;
-    }
-
-    if (form.password.length < 8) {
-      setError("❌ La contraseña debe tener al menos 8 caracteres");
-      return;
+      errors.correo = "Correo inválido";
     }
 
     if (!validarPassword(form.password)) {
-      setError(
-        "❌ Password debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo",
-      );
-      return;
+      errors.password =
+        "Contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo";
     }
 
     if (form.password !== form.confirmarPassword) {
-      setError("❌ Las contraseñas no coinciden");
+      errors.confirmarPassword = "Las contraseñas no coinciden";
+    }
+
+    if (Object.values(errors).some(Boolean)) {
+      setFieldErrors(errors);
       return;
     }
 
-    // 🔥 ABRIR MODAL
     setMostrarModal(true);
   };
 
@@ -139,6 +164,9 @@ export default function Register() {
           value={form.cedula}
           onChange={handleChange}
         />
+        {fieldErrors.cedula && (
+          <p className="field-error">{fieldErrors.cedula}</p>
+        )}
 
         <input
           name="nombres"
@@ -146,6 +174,9 @@ export default function Register() {
           placeholder="Nombres"
           onChange={handleChange}
         />
+        {fieldErrors.nombres && (
+          <p className="field-error">{fieldErrors.nombres}</p>
+        )}
 
         <input
           name="correo"
@@ -154,27 +185,51 @@ export default function Register() {
           value={form.correo}
           onChange={handleChange}
         />
+        {fieldErrors.correo && (
+          <p className="field-error">{fieldErrors.correo}</p>
+        )}
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Contraseña"
-          value={form.password}
-          onChange={handleChange}
-        />
+        <div className="password-field">
+          <input
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={handleChange}
+          />
+          <button
+            type="button"
+            className="toggle-password"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? "Ocultar" : "Mostrar"}
+          </button>
+        </div>
+        {fieldErrors.password && (
+          <p className="field-error">{fieldErrors.password}</p>
+        )}
 
         <input
           name="confirmarPassword"
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Confirmar contraseña"
           value={form.confirmarPassword}
           onChange={handleChange}
         />
+        {fieldErrors.confirmarPassword && (
+          <p className="field-error">{fieldErrors.confirmarPassword}</p>
+        )}
 
-        <button type="submit">Registrarse</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Procesando..." : "Registrarse"}
+        </button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
+        {error && <p className="login-error">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
+
+        <p className="form-footer">
+          ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>
+        </p>
       </form>
 
       {/* MODAL DE ACUERDO */}

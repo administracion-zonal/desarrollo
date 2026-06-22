@@ -1,0 +1,46 @@
+.icon-action {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d6e1e8;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #12384b;
+  font-size: 1rem;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.icon-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+}
+
+.icon-action.is-primary {
+  background: #ecf4ff;
+  color: #155eef;
+  border-color: #bfd4ff;
+}
+
+.icon-action.is-success {
+  background: #ecfdf3;
+  color: #15803d;
+  border-color: #b7e6c5;
+}
+
+.icon-action.is-danger {
+  background: #fef2f2;
+  color: #b42318;
+  border-color: #f0c0bd;
+}
+
+.icon-action.is-warning {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #f6c7a6;
+}
+
+.actions-inline .icon-action + .icon-action {
+  margin-left: 0;
+}

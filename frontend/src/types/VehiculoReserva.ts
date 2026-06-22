@@ -1,5 +1,6 @@
 export interface VehiculoReserva {
   idReserva: number;
+  idSolicitud?: number;
 
   fechaReserva: string;
   horaInicio: string;

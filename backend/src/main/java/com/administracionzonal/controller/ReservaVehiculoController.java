@@ -20,6 +20,7 @@ import com.administracionzonal.dto.AsignarChoferDTO;
 import com.administracionzonal.dto.MisReservasVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoDTO;
 import com.administracionzonal.dto.ReservaVehiculoResponseDTO;
+import com.administracionzonal.dto.ViajeVehiculoDTO;
 import com.administracionzonal.entity.ReservaVehiculo;
 import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.service.ReservaVehiculoService;
@@ -63,7 +64,7 @@ public class ReservaVehiculoController {
     }
 
     @GetMapping("/chofer")
-    public List<ReservaVehiculo> reservasChofer(Authentication auth) {
+    public List<ViajeVehiculoDTO> reservasChofer(Authentication auth) {
 
         String cedula = auth.getName();
 
@@ -71,12 +72,52 @@ public class ReservaVehiculoController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"))
                 .getIdUsuario();
 
-        return service.reservasChofer(idChofer);
+        return service.viajesChoferDetalle(idChofer);
+    }
+
+    @GetMapping("/chofer/viajes")
+    public List<ViajeVehiculoDTO> viajesChofer(Authentication auth) {
+        return reservasChofer(auth);
+    }
+
+    @PutMapping("/chofer/viajes/{idReserva}/iniciar")
+    public ReservaVehiculo iniciarViajeChofer(
+            @PathVariable Long idReserva,
+            Authentication auth) {
+
+        String cedula = auth.getName();
+
+        Long idChofer = usuarioRepository.findByCedula(cedula)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"))
+                .getIdUsuario();
+
+        return service.iniciarViajeChofer(idReserva, idChofer);
+    }
+
+    @PutMapping("/chofer/viajes/{idReserva}/no-presento")
+    public ReservaVehiculo noPresentoChofer(
+            @PathVariable Long idReserva,
+            @RequestBody Map<String, String> body,
+            Authentication auth) {
+
+        String cedula = auth.getName();
+        String comentario = body.get("comentario");
+
+        Long idChofer = usuarioRepository.findByCedula(cedula)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"))
+                .getIdUsuario();
+
+        return service.marcarNoPresentado(idReserva, idChofer, comentario);
     }
 
     @GetMapping("/admin/todas")
     public List<ReservaVehiculo> todas() {
         return service.obtenerTodas();
+    }
+
+    @GetMapping("/admin/aprobadas")
+    public List<ViajeVehiculoDTO> aprobadasAdminVehiculos() {
+        return service.reservasAprobadasAdminDetalle();
     }
 
     @PutMapping("/admin/aprobar/{id}")

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import ActionIconButton from "../components/ActionIconButton";
 import { useVehiculos } from "../hooks/useVehiculos";
 import { vehiculosService } from "../services/vehiculosService";
 import type { VehiculoReserva } from "../types/VehiculoReserva";
@@ -62,20 +63,54 @@ export default function AdminVehiculos() {
   };
 
   return (
-    <div>
-      <h2>Admin Vehículos</h2>
+    <section className="page-shell is-compact">
+      <h2 className="page-title">Administrar vehículos</h2>
 
-      {data.map((r: VehiculoReserva) => (
-        <div key={r.idReserva}>
-          <p>{r.destino}</p>
-          <p>{r.estado}</p>
+      <div className="section-panel">
+        {data.map((r: VehiculoReserva) => (
+          <div
+            key={r.idReserva}
+            className="actions-inline"
+            style={{
+              justifyContent: "space-between",
+              width: "100%",
+              marginBottom: "1rem",
+            }}
+          >
+            <div>
+              <strong>{r.destino}</strong>
+              <div>{r.estado}</div>
+            </div>
 
-          <button onClick={() => aprobar(r.idReserva!)}>Aprobar</button>
-          <button onClick={() => rechazar(r.idReserva!)}>Rechazar</button>
-          <button onClick={() => asignar(r.idReserva!)}>Chofer</button>
-          <button onClick={() => descargar(r.idReserva!)}>PDF</button>
-        </div>
-      ))}
-    </div>
+            <div className="actions-inline">
+              <ActionIconButton
+                icon="✓"
+                label="Aprobar"
+                variant="success"
+                onClick={() => aprobar(r.idReserva!)}
+              />
+              <ActionIconButton
+                icon="✕"
+                label="Rechazar"
+                variant="danger"
+                onClick={() => rechazar(r.idReserva!)}
+              />
+              <ActionIconButton
+                icon="👤"
+                label="Asignar chofer"
+                variant="warning"
+                onClick={() => asignar(r.idReserva!)}
+              />
+              <ActionIconButton
+                icon="⬇"
+                label="Descargar PDF"
+                variant="primary"
+                onClick={() => descargar(r.idReserva!)}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

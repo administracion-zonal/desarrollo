@@ -7,6 +7,9 @@ export interface SolicitudVehiculoRequest {
   horaFin: string;
   motivo: string;
   destino: string;
+  observaciones: string;
+  origen: string;
+  servidores: string;
 }
 
 export interface SolicitudVehiculo {
@@ -17,6 +20,10 @@ export interface SolicitudVehiculo {
   destino: string;
   motivo: string;
   estado: string;
+  observacionRechazo?: string;
+  observaciones?: string;
+  origen?: string;
+  servidores?: string;
 
   nombres: string;
   cedula: string;
@@ -25,9 +32,16 @@ export interface SolicitudVehiculo {
 /* ================= SERVICE ================= */
 export const solicitudVehiculoService = {
   crear: async (data: SolicitudVehiculoRequest) => {
+    const payload = {
+      ...data,
+      observaciones: data.observaciones ?? "",
+      origen: data.origen ?? "",
+      servidores: data.servidores ?? "",
+    };
+
     const res = await apiFetch("/api/vehiculos/solicitudes", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
@@ -59,9 +73,10 @@ export const solicitudVehiculoService = {
     if (!res.ok) throw new Error(await res.text());
   },
 
-  rechazar: async (id: number) => {
+  rechazar: async (id: number, observacion: string) => {
     const res = await apiFetch(`/api/vehiculos/solicitudes/${id}/rechazar`, {
       method: "POST",
+      body: JSON.stringify({ observacion }),
     });
 
     if (!res.ok) throw new Error(await res.text());

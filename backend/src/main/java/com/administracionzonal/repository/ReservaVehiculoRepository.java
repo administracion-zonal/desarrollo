@@ -2,7 +2,9 @@ package com.administracionzonal.repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,8 +42,19 @@ public interface ReservaVehiculoRepository extends JpaRepository<ReservaVehiculo
 
     List<ReservaVehiculo> findByChoferIdUsuario(Long idChofer);
 
+    boolean existsByChoferIdUsuarioAndFechaReservaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqualAndEstado(
+            Long idChofer,
+            LocalDate fechaReserva,
+            LocalTime horaFin,
+            LocalTime horaInicio,
+            String estado);
+
     List<ReservaVehiculo> findByUsuarioIdUsuarioAndEstado(Long idUsuario, String estado);
 
     List<ReservaVehiculo> findByVehiculo_IdVehiculoAndFechaReserva(Long idVehiculo, LocalDate fecha);
+
+    Optional<ReservaVehiculo> findByIdReservaAndChoferIdUsuario(Long idReserva, Long idChofer);
+
+    List<ReservaVehiculo> findByEstadoInOrderByFechaReservaDescHoraInicioDesc(Collection<String> estados);
 
 }

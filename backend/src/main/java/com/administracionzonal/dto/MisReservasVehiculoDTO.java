@@ -6,6 +6,7 @@ import lombok.Data;
 public class MisReservasVehiculoDTO {
 
     private Long idReserva;
+    private Long idSolicitud;
 
     private String fechaReserva;
     private String horaInicio;

@@ -1,18 +1,22 @@
 import type { AuthUser } from "../types/Auth";
 
 export const permisos = (user: AuthUser) => {
-  const roles = user.roles;
+  const roles = new Set(user.roles);
+  const has = (role: string) => roles.has(role as never);
+  const esSuperAdmin = has("ADMIN");
 
   return {
-    puedeAdminCoworking:
-      roles.includes("ADMIN_COWORKING") || roles.includes("ADMIN"),
-
-    puedeAdminCanchas: roles.includes("ADMIN"),
-    puedeAdminVehiculos: roles.includes("ADMIN_VEHICULOS"), // luego separas por rol real
-
+    esSuperAdmin,
+    puedeAdminCoworking: esSuperAdmin || has("ADMIN_COWORKING"),
+    puedeAdminCanchas: esSuperAdmin || has("ADMIN_CANCHAS"),
+    puedeAdminVehiculos: esSuperAdmin || has("ADMIN_VEHICULOS"),
     puedeVerVehiculos:
-      roles.includes("SERVIDOR_AZVCH") || roles.includes("TALENTO_HUMANO"),
-
-    esTalentoHumano: roles.includes("TALENTO_HUMANO"), // luego cambias a TALENTO_HUMANO
+      esSuperAdmin ||
+      has("SERVIDOR_AZVCH") ||
+      has("SERVIDOR_PUBLICO") ||
+      has("TALENTO_HUMANO") ||
+      has("CHOFER"),
+    esTalentoHumano: esSuperAdmin || has("TALENTO_HUMANO"),
+    puedeConducir: esSuperAdmin || has("CHOFER"),
   };
 };

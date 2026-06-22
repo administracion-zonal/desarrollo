@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import ActionIconButton from "../components/ActionIconButton";
 import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
 import { apiFetch } from "../utils/api";
 import { formatearFecha } from "../utils/validaciones";
@@ -154,8 +155,8 @@ export default function Dashboard() {
   }, [token]);
 
   return (
-    <>
-      <h2>📊 Dashboard de Reservas</h2>
+    <section className="page-shell">
+      <h2 className="page-title">Administrar coworking</h2>
 
       {loading && <p>Cargando reservas...</p>}
 
@@ -166,99 +167,113 @@ export default function Dashboard() {
       )}
 
       {!loading && reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>
-                Cédula
-                <br />
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                  className="table-input"
-                />
-              </th>
-              <th>Nombres</th>
+        <div className="section-panel table-wrap">
+          <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>
+                  Cédula
+                  <br />
+                  <input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    className="table-input"
+                  />
+                </th>
+                <th>Nombres</th>
 
-              <th>Fecha</th>
-              <th>Hora Inicio</th>
-              <th>Hora Fin</th>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
 
-              <th>Asistencia</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reservasFiltradas.map((reserva) => (
-              <tr key={reserva.id}>
-                <td>{reserva.cedula}</td>
-                <td>{reserva.nombres}</td>
-
-                <td>{formatearFecha(reserva.fecha)}</td>
-                <td>{reserva.horaInicio}</td>
-                <td>{reserva.horaFin}</td>
-
-                <td>
-                  {(() => {
-                    const estado = obtenerEstadoReserva(reserva);
-
-                    if (estado === "VALIDADA") {
-                      return (
-                        <span style={{ color: "#00e676", fontWeight: "bold" }}>
-                          ✅ Validada correctamente
-                        </span>
-                      );
-                    }
-
-                    if (estado === "ASISTIDA_FINALIZADA") {
-                      return (
-                        <span style={{ color: "#2196f3", fontWeight: "bold" }}>
-                          ✔ Asistida y finalizada
-                        </span>
-                      );
-                    }
-
-                    if (estado === "NO_ASISTIO") {
-                      return (
-                        <span style={{ color: "#ff5252", fontWeight: "bold" }}>
-                          ❌ No asistió
-                        </span>
-                      );
-                    }
-
-                    if (estado === "FUTURA") {
-                      return (
-                        <span style={{ color: "#ff9800", fontWeight: "bold" }}>
-                          🕓 Se validará el día indicado
-                        </span>
-                      );
-                    }
-
-                    if (estado === "DISPONIBLE_VALIDAR") {
-                      return (
-                        <>
-                          <button
-                            onClick={() => {
-                              setReservaQR(reserva);
-                              setMostrarQR(true);
-                            }}
-                          >
-                            Validar QR
-                          </button>
-
-                          <button onClick={() => setDetalle(reserva)}>
-                            Ver
-                          </button>
-                        </>
-                      );
-                    }
-                  })()}
-                </td>
+                <th>Asistencia</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reservasFiltradas.map((reserva) => (
+                <tr key={reserva.id}>
+                  <td>{reserva.cedula}</td>
+                  <td>{reserva.nombres}</td>
+
+                  <td>{formatearFecha(reserva.fecha)}</td>
+                  <td>{reserva.horaInicio}</td>
+                  <td>{reserva.horaFin}</td>
+
+                  <td>
+                    {(() => {
+                      const estado = obtenerEstadoReserva(reserva);
+
+                      if (estado === "VALIDADA") {
+                        return (
+                          <span
+                            style={{ color: "#00e676", fontWeight: "bold" }}
+                          >
+                            ✅ Validada correctamente
+                          </span>
+                        );
+                      }
+
+                      if (estado === "ASISTIDA_FINALIZADA") {
+                        return (
+                          <span
+                            style={{ color: "#2196f3", fontWeight: "bold" }}
+                          >
+                            ✔ Asistida y finalizada
+                          </span>
+                        );
+                      }
+
+                      if (estado === "NO_ASISTIO") {
+                        return (
+                          <span
+                            style={{ color: "#ff5252", fontWeight: "bold" }}
+                          >
+                            ❌ No asistió
+                          </span>
+                        );
+                      }
+
+                      if (estado === "FUTURA") {
+                        return (
+                          <span
+                            style={{ color: "#ff9800", fontWeight: "bold" }}
+                          >
+                            🕓 Se validará el día indicado
+                          </span>
+                        );
+                      }
+
+                      if (estado === "DISPONIBLE_VALIDAR") {
+                        return (
+                          <div className="actions-inline">
+                            <ActionIconButton
+                              onClick={() => {
+                                setReservaQR(reserva);
+                                setMostrarQR(true);
+                              }}
+                              icon="📷"
+                              label="Validar QR"
+                              variant="primary"
+                            />
+
+                            <ActionIconButton
+                              onClick={() => setDetalle(reserva)}
+                              icon="👁"
+                              label="Ver detalle"
+                              variant="neutral"
+                            />
+                          </div>
+                        );
+                      }
+                    })()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {detalle && (
@@ -288,7 +303,12 @@ export default function Dashboard() {
               <b>Tipo:</b> {detalle.tipoUsuario}
             </p>
 
-            <button onClick={() => setDetalle(null)}>Cerrar</button>
+            <ActionIconButton
+              onClick={() => setDetalle(null)}
+              icon="✕"
+              label="Cerrar"
+              variant="danger"
+            />
           </div>
         </div>
       )}
@@ -312,9 +332,21 @@ export default function Dashboard() {
             <br />
             <br />
 
-            <button onClick={validarQR}>Validar</button>
+            <div className="actions-inline">
+              <ActionIconButton
+                onClick={validarQR}
+                icon="✓"
+                label="Validar"
+                variant="success"
+              />
 
-            <button onClick={() => setMostrarQR(false)}>Cancelar</button>
+              <ActionIconButton
+                onClick={() => setMostrarQR(false)}
+                icon="✕"
+                label="Cancelar"
+                variant="danger"
+              />
+            </div>
 
             {mensajeQR && (
               <p style={{ marginTop: "10px", fontWeight: 600 }}>{mensajeQR}</p>
@@ -322,6 +354,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

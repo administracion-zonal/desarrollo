@@ -1,0 +1,290 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #f4f6f7;
+  color: #0e2431;
+}
+
+#root {
+  display: block;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  flex: 1 0 auto;
+}
+
+.public-layout,
+.private-layout {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+}
+
+.public-content,
+.private-content {
+  width: 100%;
+}
+
+.footer {
+  width: min(1200px, calc(100% - 2rem));
+  margin: 1.5rem auto 0;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  color: #1f3340;
+  border: 1px solid #d7dde1;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+  text-align: center;
+}
+
+.footer .header-footer {
+  display: block;
+  height: auto;
+  width: auto;
+  min-height: 56px;
+  max-width: min(100%, 520px);
+  margin: 0 auto 0.75rem;
+  object-fit: contain;
+}
+
+.footer p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.footer strong {
+  color: #0e2431;
+}
+
+.login-container {
+  width: 100%;
+  min-height: clamp(460px, calc(100vh - 320px), 720px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+  background: transparent;
+}
+
+.login-card {
+  width: min(100%, 430px);
+  background: #ffffff;
+  border: 1px solid #d4dde2;
+  border-radius: 20px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.login-card h2 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.8rem, 3.5vw, 2.2rem);
+  text-align: center;
+  color: #032f4d;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 0.78rem 0.9rem;
+  border: 1px solid #bac8d1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #162b3a;
+}
+
+.password-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.toggle-password {
+  min-width: 100px;
+  height: 46px;
+  border: 1px solid #c2d0d8;
+  border-radius: 10px;
+  background: #f7fafc;
+  color: #13334a;
+}
+
+.form-footer {
+  text-align: center;
+  color: #4f6370;
+  margin-top: 0.25rem;
+}
+
+/* Menu + submenu always over content */
+.menu {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 2200;
+  overflow: visible;
+}
+
+.menu-item {
+  position: relative;
+}
+
+.menu-item span {
+  font-weight: 700;
+}
+
+.submenu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  min-width: 230px;
+  padding: 0.45rem;
+  border-radius: 12px;
+  border: 1px solid #d6e1e8;
+  background: #ffffff;
+  box-shadow: 0 20px 34px rgba(15, 23, 42, 0.2);
+  z-index: 5000;
+}
+
+.submenu a {
+  color: #0f2d44;
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+}
+
+.submenu a:hover {
+  background: #eaf4fb;
+  color: #083a64;
+}
+
+/* Compact profile header block */
+.private-layout .perfil-header {
+  padding: 1rem 1.2rem;
+  gap: 0.9rem;
+}
+
+.private-layout .perfil-foto-container {
+  padding: 0.5rem;
+  gap: 0.6rem;
+}
+
+.private-layout .perfil-foto {
+  width: 112px;
+  height: 112px;
+}
+
+.private-layout .perfil-info-container {
+  padding-left: 0.35rem;
+}
+
+.private-layout .perfil-nombre {
+  margin: 0;
+  font-size: clamp(1.28rem, 1.7vw, 1.72rem);
+  line-height: 1.14;
+}
+
+.private-layout .perfil-header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.96rem;
+}
+
+.private-layout .perfil-boton-foto {
+  width: auto;
+  min-width: 128px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* Vehiculo form: compact title and better vertical rhythm */
+.vehiculo-page {
+  width: 100%;
+}
+
+.vehiculo-title {
+  margin: 0 0 0.9rem;
+  text-align: left;
+  color: #0e2431;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+}
+
+.vehiculo-page .reserva-layout {
+  padding-top: 0.35rem;
+}
+
+.vehiculo-page .form-card {
+  max-width: 940px;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .public-layout,
+  .private-layout {
+    padding: 0 0.75rem 1.25rem;
+  }
+
+  .footer {
+    width: calc(100% - 1rem);
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .footer p {
+    font-size: 0.86rem;
+  }
+
+  .login-container {
+    min-height: clamp(420px, calc(100vh - 290px), 680px);
+    padding: 1.25rem 0.5rem;
+  }
+
+  .login-card {
+    padding: 1.3rem 1rem;
+    border-radius: 16px;
+  }
+
+  .menu {
+    position: relative;
+    top: 0;
+  }
+
+  .submenu {
+    min-width: 200px;
+  }
+
+  .private-layout .perfil-header {
+    padding: 0.85rem;
+    align-items: center;
+    text-align: center;
+  }
+
+  .private-layout .perfil-info-container {
+    padding-left: 0;
+  }
+
+  .private-layout .perfil-foto {
+    width: 92px;
+    height: 92px;
+  }
+
+  .vehiculo-title {
+    text-align: center;
+  }
+
+  .vehiculo-page .form-card {
+    max-width: 100%;
+  }
+}

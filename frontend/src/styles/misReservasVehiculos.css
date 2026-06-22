@@ -1,0 +1,96 @@
+.vehicle-modal {
+  width: min(920px, 95vw);
+  border-radius: 14px;
+}
+
+.vehicle-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vehicle-modal__header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.vehicle-modal__header small {
+  color: #64748b;
+}
+
+.vehicle-modal__body {
+  padding: 12px 0;
+}
+
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.vehicle-card {
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.vehicle-card h4 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.vehicle-card p {
+  margin: 0 0 6px;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.vehicle-card--warning {
+  border-color: #f5c2c7;
+  background: #fff5f5;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.status-pendiente {
+  color: #9a6700;
+  background: #fff8db;
+  border-color: #f4d68a;
+}
+
+.status-aprobada,
+.status-aprobado {
+  color: #116530;
+  background: #eaf8ef;
+  border-color: #9ad3ad;
+}
+
+.status-rechazada,
+.status-rechazado {
+  color: #9f1239;
+  background: #ffe8ee;
+  border-color: #f7b4c6;
+}
+
+@media (max-width: 640px) {
+  .vehicle-modal {
+    width: 96vw;
+  }
+
+  .vehicle-modal__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

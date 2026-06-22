@@ -1,13 +1,25 @@
 package com.administracionzonal.service;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.LocalDate;
+import java.util.HexFormat;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
+import com.administracionzonal.entity.OrdenMovilizacion;
 import com.administracionzonal.entity.ReservaVehiculo;
 import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.entity.Vehiculo;
+import com.administracionzonal.repository.OrdenMovilizacionRepository;
 import com.administracionzonal.repository.ReservaVehiculoRepository;
+import com.administracionzonal.repository.UsuarioRepository;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -29,13 +41,28 @@ import lombok.RequiredArgsConstructor;
 public class OrdenMovilizacionService {
 
         private final ReservaVehiculoRepository repository;
+        private final OrdenMovilizacionRepository ordenRepository;
+        private final UsuarioRepository usuarioRepository;
 
-        public byte[] generarOrdenMovilizacion(Long idReserva) {
+        public OrdenMovilizacion asegurarOrdenMovilizacion(Long idReserva, String cedulaAutorizado) {
+                Long reservaId = Objects.requireNonNull(idReserva, "Id reserva obligatorio");
+                ReservaVehiculo reserva = repository.findById(reservaId)
+                                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+                return obtenerOCrearOrden(reserva, cedulaAutorizado);
+        }
+
+        public byte[] generarOrdenMovilizacion(Long idReserva, String cedulaAutorizado) {
 
                 try {
 
-                        ReservaVehiculo r = repository.findById(idReserva)
+                        Long reservaId = Objects.requireNonNull(idReserva, "Id reserva obligatorio");
+                        ReservaVehiculo r = repository.findById(reservaId)
                                         .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+                        OrdenMovilizacion orden = asegurarOrdenMovilizacion(reservaId, cedulaAutorizado);
+                        String qrPayload = construirPayloadQr(orden, r);
+                        byte[] qrImage = generarQr(qrPayload);
 
                         Vehiculo vehiculo = r.getVehiculo();
                         Usuario usuario = r.getUsuario();
@@ -60,15 +87,19 @@ public class OrdenMovilizacionService {
 
                         contenedor.addCell(crearBloqueOrdenMovilizacion(
                                         r,
+                                        orden,
                                         vehiculo,
                                         usuario,
-                                        chofer));
+                                        chofer,
+                                        qrImage));
 
                         contenedor.addCell(crearBloqueOrdenMovilizacion(
                                         r,
+                                        orden,
                                         vehiculo,
                                         usuario,
-                                        chofer));
+                                        chofer,
+                                        qrImage));
 
                         doc.add(contenedor);
 
@@ -82,6 +113,21 @@ public class OrdenMovilizacionService {
                 }
         }
 
+        public byte[] generarOrdenMovilizacionChofer(Long idReserva, String cedulaChofer) {
+                Long reservaId = Objects.requireNonNull(idReserva, "Id reserva obligatorio");
+                String cedula = Objects.requireNonNull(cedulaChofer, "Cedula de chofer obligatoria");
+
+                ReservaVehiculo reserva = repository.findById(reservaId)
+                                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+                if (reserva.getChofer() == null || reserva.getChofer().getCedula() == null
+                                || !cedula.equals(reserva.getChofer().getCedula())) {
+                        throw new RuntimeException("La reserva no está asignada al chofer autenticado");
+                }
+
+                return generarOrdenMovilizacion(reservaId, cedulaChofer);
+        }
+
         /*
          * =========================================
          * BLOQUE INDIVIDUAL DE OrdenMovilizacion
@@ -90,9 +136,11 @@ public class OrdenMovilizacionService {
 
         private Cell crearBloqueOrdenMovilizacion(
                         ReservaVehiculo r,
+                        OrdenMovilizacion orden,
                         Vehiculo vehiculo,
                         Usuario usuario,
-                        Usuario chofer) throws Exception {
+                        Usuario chofer,
+                        byte[] qrImage) throws Exception {
 
                 Table bloque = new Table(1);
                 bloque.setWidth(UnitValue.createPercentValue(100));
@@ -142,8 +190,8 @@ public class OrdenMovilizacionService {
                 Table tabla = new Table(new float[] { 2, 4 });
                 tabla.setWidth(UnitValue.createPercentValue(100));
 
-                agregarFila(tabla, "Salvo:", "N° " + r.getIdReserva());
-                agregarFila(tabla, "Fecha:", r.getFechaReserva().toString());
+                agregarFila(tabla, "Orden:", orden.getCodigo());
+                agregarFila(tabla, "Fecha emisión:", String.valueOf(orden.getFechaEmision()));
                 agregarFila(tabla, "Marca:", vehiculo.getMarca());
                 agregarFila(tabla, "Placa:", vehiculo.getPlaca());
 
@@ -173,8 +221,20 @@ public class OrdenMovilizacionService {
                 agregarFila(tabla, "Tiempo Comisión:",
                                 r.getHoraInicio() + " - " + r.getHoraFin());
 
-                agregarFila(tabla, "Elaborado por:", r.getHoraInicio() +
-                                "RESPONSABLE PARQUE AUTOMOTOR");
+                agregarFila(tabla, "Elaborado por:",
+                                orden.getAutorizado() != null ? orden.getAutorizado().getNombres()
+                                                : "RESPONSABLE PARQUE AUTOMOTOR");
+
+                Image qr = new Image(ImageDataFactory.create(qrImage));
+                qr.setWidth(85);
+
+                Cell qrCell = new Cell(1, 2)
+                                .add(new Paragraph("Código QR de verificación").setFontSize(8).setBold())
+                                .add(qr)
+                                .setTextAlignment(TextAlignment.CENTER)
+                                .setPadding(4);
+
+                tabla.addCell(qrCell);
 
                 bloque.addCell(new Cell()
                                 .add(tabla)
@@ -228,6 +288,66 @@ public class OrdenMovilizacionService {
                                 .add(bloque)
                                 .setPadding(5)
                                 .setBorder(Border.NO_BORDER);
+        }
+
+        private OrdenMovilizacion obtenerOCrearOrden(ReservaVehiculo reserva, String cedulaAutorizado) {
+                return ordenRepository.findByReserva_IdReserva(reserva.getIdReserva())
+                                .orElseGet(() -> {
+                                        OrdenMovilizacion orden = new OrdenMovilizacion();
+                                        orden.setReserva(reserva);
+                                        orden.setFechaEmision(LocalDate.now());
+                                        orden.setEstado("EMITIDA");
+                                        orden.setCodigo(generarCodigoCorrelativo(LocalDate.now().getYear()));
+
+                                        if (cedulaAutorizado != null && !cedulaAutorizado.isBlank()) {
+                                                usuarioRepository.findByCedula(cedulaAutorizado)
+                                                                .ifPresent(orden::setAutorizado);
+                                        }
+
+                                        return ordenRepository.save(orden);
+                                });
+        }
+
+        private String generarCodigoCorrelativo(int anio) {
+                String prefijo = "GAD_DMQ_AZVCH_RV_" + anio + "_";
+                Integer ultimo = ordenRepository.obtenerUltimoCorrelativoPorPrefijo(prefijo);
+                int siguiente = (ultimo == null ? 0 : ultimo) + 1;
+                return prefijo + String.format("%04d", siguiente);
+        }
+
+        private String construirPayloadQr(OrdenMovilizacion orden, ReservaVehiculo reserva) {
+                String base = "codigo=" + orden.getCodigo()
+                                + "|idOrden=" + orden.getIdOrdenMovilizacion()
+                                + "|idReserva=" + reserva.getIdReserva()
+                                + "|fecha=" + orden.getFechaEmision();
+
+                return base + "|hash=" + hashSha256(base).substring(0, 16);
+        }
+
+        private byte[] generarQr(String contenido) {
+                try {
+                        BitMatrix matrix = new MultiFormatWriter().encode(
+                                        contenido,
+                                        BarcodeFormat.QR_CODE,
+                                        180,
+                                        180);
+
+                        ByteArrayOutputStream qrBaos = new ByteArrayOutputStream();
+                        MatrixToImageWriter.writeToStream(matrix, "PNG", qrBaos);
+                        return qrBaos.toByteArray();
+                } catch (Exception e) {
+                        throw new RuntimeException("No se pudo generar QR de la orden: " + e.getMessage(), e);
+                }
+        }
+
+        private String hashSha256(String raw) {
+                try {
+                        MessageDigest md = MessageDigest.getInstance("SHA-256");
+                        byte[] digest = md.digest(raw.getBytes(StandardCharsets.UTF_8));
+                        return HexFormat.of().formatHex(digest);
+                } catch (Exception e) {
+                        throw new RuntimeException("No se pudo generar hash de orden", e);
+                }
         }
 
         /*

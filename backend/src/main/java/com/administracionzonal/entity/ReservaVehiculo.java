@@ -39,6 +39,11 @@ public class ReservaVehiculo {
     @Column(length = 500)
     private String observaciones;
     private String estado;
+    private String estadoViaje;
+    private Boolean noSePresento;
+
+    @Column(length = 500)
+    private String comentarioNoPresentacion;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
@@ -53,4 +58,8 @@ public class ReservaVehiculo {
     @JoinColumn(name = "chofer_id")
     @JsonIgnore
     private Usuario chofer;
+
+    @ManyToOne
+    @JoinColumn(name = "id_solicitud")
+    private SolicitudVehiculo solicitud;
 }

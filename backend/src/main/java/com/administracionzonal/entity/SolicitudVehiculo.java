@@ -34,6 +34,10 @@ public class SolicitudVehiculo {
 
     private String motivo;
     private String destino;
+    private String observaciones;
+    private String observacionRechazo;
+    private String origen;
+    private String servidores;
 
     @Enumerated(EnumType.STRING)
     private EstadoSolicitud estado;

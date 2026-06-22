@@ -10,6 +10,10 @@ public class SolicitudVehiculoRequest {
     private String horaFin;
     private String motivo;
     private String destino;
+    private String observaciones;
+    private String observacionRechazo;
+    private String origen;
+    private String servidores;
     private String estado;
 
     private String nombres;

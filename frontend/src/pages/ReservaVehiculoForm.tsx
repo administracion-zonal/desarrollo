@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import "../App.css";
 
 import { useVehiculosCatalogo } from "../hooks/useVehiculosCatalogo";
 import { solicitudVehiculoService } from "../services/solicitudVehiculoService";
@@ -12,7 +11,10 @@ export default function ReservaVehiculoForm() {
     horaInicio: "",
     horaFin: "",
     destino: "",
+    motivo: "",
     observaciones: "",
+    origen: "",
+    servidores: "",
   });
 
   const [horaInicioSel, setHoraInicioSel] = useState<string | null>(null);
@@ -63,8 +65,11 @@ export default function ReservaVehiculoForm() {
       fecha: form.fechaReserva,
       horaInicio: form.horaInicio,
       horaFin: form.horaFin,
-      motivo: form.observaciones,
+      motivo: form.motivo,
       destino: form.destino,
+      observaciones: form.observaciones,
+      origen: form.origen,
+      servidores: form.servidores,
     });
 
     setError(null);
@@ -76,14 +81,18 @@ export default function ReservaVehiculoForm() {
       return setError("Seleccione un horario válido");
     }
     if (!form.destino) return setError("Ingrese un destino");
+    if (!form.motivo) return setError("Ingrese el motivo");
 
     try {
       await solicitudVehiculoService.crear({
         fecha: form.fechaReserva,
         horaInicio: form.horaInicio,
         horaFin: form.horaFin,
-        motivo: form.observaciones,
+        motivo: form.motivo,
         destino: form.destino,
+        observaciones: form.observaciones,
+        origen: form.origen,
+        servidores: form.servidores,
       });
 
       setOk("✅ Reserva realizada correctamente");
@@ -93,7 +102,10 @@ export default function ReservaVehiculoForm() {
         horaInicio: "",
         horaFin: "",
         destino: "",
+        motivo: "",
         observaciones: "",
+        origen: "",
+        servidores: "",
       });
 
       setHoraInicioSel(null);
@@ -109,94 +121,141 @@ export default function ReservaVehiculoForm() {
 
   /* ================= UI ================= */
   return (
-    <>
-      <h2 style={{ textAlign: "center" }}>🚗 Solicitud de Vehículo</h2>
+    <section className="vehiculo-page reservation-shell">
+      <h2 className="vehiculo-title">Solicitud de Vehículo</h2>
 
       <div className="reserva-layout">
         <div className="reserva-content">
-          <form onSubmit={guardar} className="form-grid-2">
-            {/* FECHA */}
-            <div className="field span-2">
-              <label>Fecha</label>
-              <input
-                type="date"
-                value={form.fechaReserva}
-                min={new Date().toISOString().split("T")[0]}
-                onKeyDown={(e) => e.preventDefault()}
-                onClick={(e) => e.currentTarget.showPicker?.()}
-                onChange={(e) =>
-                  setForm({ ...form, fechaReserva: e.target.value })
-                }
-              />
-            </div>
-
-            {/* HORARIO */}
-            <div className="field span-2">
-              <label>Horario</label>
-
-              <div className="time-grid">
-                {generarBloques().map((hora) => {
-                  const esInicio = hora === horaInicioSel;
-                  const esFin = hora === horaFinSel;
-
-                  const seleccionada =
-                    horaInicioSel &&
-                    horaFinSel &&
-                    toMinutes(hora) >= toMinutes(horaInicioSel) &&
-                    toMinutes(hora) <= toMinutes(horaFinSel);
-
-                  return (
-                    <button
-                      key={hora}
-                      type="button"
-                      className={`time-slot
-                        
-                        ${seleccionada ? "selected" : ""}
-                        ${esInicio ? "start" : ""}
-                        ${esFin ? "end" : ""}
-                      `}
-                      onClick={() => seleccionarHora(hora)}
-                    >
-                      {hora}
-                    </button>
-                  );
-                })}
+          <div className="form-card reservation-panel">
+            <form onSubmit={guardar} className="form-grid-2">
+              <div className="section-header span-2">
+                <h3>Detalle de la movilización</h3>
               </div>
 
-              {horaInicioSel && horaFinSel && (
-                <p className="hint">
-                  {horaInicioSel} - {horaFinSel}
-                </p>
-              )}
-            </div>
+              {/* FECHA MOVILIZACIÓN */}
+              <div className="field field--date">
+                <label>Fecha de movilización</label>
+                <input
+                  type="date"
+                  value={form.fechaReserva}
+                  min={new Date().toISOString().split("T")[0]}
+                  onKeyDown={(e) => e.preventDefault()}
+                  onClick={(e) => e.currentTarget.showPicker?.()}
+                  onChange={(e) => {
+                    setForm({
+                      ...form,
+                      fechaReserva: e.target.value,
+                      horaInicio: "",
+                      horaFin: "",
+                    });
+                    setHoraInicioSel(null);
+                    setHoraFinSel(null);
+                  }}
+                />
+              </div>
 
-            {/* DESTINO */}
-            <div className="field span-2">
-              <label>Destino</label>
-              <input
-                value={form.destino}
-                onChange={(e) => setForm({ ...form, destino: e.target.value })}
-              />
-            </div>
+              {/* MOTIVO */}
+              <div className="field field--motivo">
+                <label>Motivo</label>
+                <input
+                  placeholder="Ej. traslado de equipo, reunión de trabajo"
+                  value={form.motivo}
+                  onChange={(e) => setForm({ ...form, motivo: e.target.value })}
+                />
+              </div>
 
-            {/* OBSERVACIONES */}
-            <div className="field span-2">
-              <label>Observaciones</label>
-              <textarea
-                value={form.observaciones}
-                onChange={(e) =>
-                  setForm({ ...form, observaciones: e.target.value })
-                }
-              />
-            </div>
+              {/* SERVIDORES */}
+              <div className="field field--servidores">
+                <label>Servidores</label>
+                <textarea
+                  placeholder="Nombre(s) de las personas que viajan"
+                  value={form.servidores}
+                  onChange={(e) =>
+                    setForm({ ...form, servidores: e.target.value })
+                  }
+                />
+              </div>
 
-            <button className="actions span-2">Solicitar vehículo</button>
+              {/* ORIGEN */}
+              <div className="field">
+                <label>Origen</label>
+                <input
+                  placeholder="Lugar de origen"
+                  value={form.origen}
+                  onChange={(e) => setForm({ ...form, origen: e.target.value })}
+                />
+              </div>
 
-            {error && <p className="error">{error}</p>}
-            {ok && <p style={{ color: "green" }}>{ok}</p>}
-          </form>
+              {/* DESTINO */}
+              <div className="field">
+                <label>Destino</label>
+                <input
+                  placeholder="Lugar de destino"
+                  value={form.destino}
+                  onChange={(e) =>
+                    setForm({ ...form, destino: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* HORARIO */}
+              <div className="field field--horario">
+                <label>Horario</label>
+                <div className="time-grid">
+                  {generarBloques(form.fechaReserva).map((hora) => {
+                    const esInicio = hora === horaInicioSel;
+                    const esFin = hora === horaFinSel;
+
+                    const seleccionada =
+                      horaInicioSel &&
+                      horaFinSel &&
+                      toMinutes(hora) >= toMinutes(horaInicioSel) &&
+                      toMinutes(hora) <= toMinutes(horaFinSel);
+
+                    return (
+                      <button
+                        key={hora}
+                        type="button"
+                        className={`time-slot
+                          ${seleccionada ? "selected" : ""}
+                          ${esInicio ? "start" : ""}
+                          ${esFin ? "end" : ""}
+                        `}
+                        onClick={() => seleccionarHora(hora)}
+                      >
+                        {hora}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {horaInicioSel && horaFinSel && (
+                  <p className="hint">
+                    {horaInicioSel} - {horaFinSel}
+                  </p>
+                )}
+              </div>
+
+              {/* OBSERVACIONES */}
+              <div className="field field--observaciones">
+                <label>Observaciones</label>
+                <textarea
+                  placeholder="Información adicional, requerimientos o detalles relevantes"
+                  value={form.observaciones}
+                  onChange={(e) =>
+                    setForm({ ...form, observaciones: e.target.value })
+                  }
+                />
+              </div>
+
+              <button className="actions span-2">Solicitar vehículo</button>
+
+              {error && <p className="error">{error}</p>}
+              {ok && <p className="success-message">{ok}</p>}
+            </form>
+          </div>
         </div>
       </div>
-    </>
+    </section>
   );
 }

@@ -8,10 +8,12 @@ import PublicLayout from "./components/layout/PublicLayout";
 import Menu from "./components/Menu";
 import AuthProvider from "./context/AuthProvider";
 import { useAuth } from "./context/useAuth";
+import AdminReservasAprobadasVehiculo from "./pages/AdminReservasAprobadasVehiculo";
 import AdminSolicitudesVehiculo from "./pages/AdminSolicitudesVehiculo";
 import AdminVehiculos from "./pages/AdminVehiculos";
 import CambiarPassword from "./pages/CambiarPassword";
 import ChecklistWizard from "./pages/ChecklistWizard";
+import ChoferViajes from "./pages/ChoferViajes";
 import Dashboard from "./pages/Dashboard";
 import DashboardCancha from "./pages/DashboardCancha";
 import GestionTH from "./pages/GestionTH";
@@ -168,6 +170,17 @@ function AppContent() {
           }
         />
 
+        <Route
+          path="/admin/vehiculos/aprobadas"
+          element={
+            <AdminRoute>
+              <PrivateLayout>
+                <AdminReservasAprobadasVehiculo />
+              </PrivateLayout>
+            </AdminRoute>
+          }
+        />
+
         {/* =========================
            MIS RESERVAS
            PRIVADO / ESTUDIANTE / ADMIN
@@ -260,6 +273,17 @@ function AppContent() {
         />
 
         <Route
+          path="/vehiculos/chofer"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <ChoferViajes />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/vehiculos/admin"
           element={
             <AdminRoute>
@@ -287,7 +311,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <div className="app-container">
-          <AppContent />
+          <div className="app-content">
+            <AppContent />
+          </div>
           <Footer />
         </div>
       </AuthProvider>

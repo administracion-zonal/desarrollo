@@ -1,6 +1,5 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
-import "../App.css";
 import { useAuth } from "../context/useAuth";
 import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
 import type { Reserva } from "../types/Reserva";
@@ -249,7 +248,7 @@ export default function ReservaForm() {
   /* ================= UI ================= */
   return (
     <>
-      <h2 style={{ textAlign: "center" }}>Reserva Coworking</h2>
+      <h2 className="page-heading">Reserva Coworking</h2>
       <div className="reserva-layout">
         <div className="reserva-content">
           <div className="form-panel">

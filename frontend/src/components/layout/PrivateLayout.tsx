@@ -6,9 +6,9 @@ type Props = Readonly<{
 
 export default function PrivateLayout({ children }: Props) {
   return (
-    <>
+    <div className="private-layout">
       <Navbar />
-      <main style={{ padding: "20px" }}>{children}</main>
-    </>
+      <main className="private-content">{children}</main>
+    </div>
   );
 }

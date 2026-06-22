@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { vehiculosService } from "../services/vehiculosService";
 import type { VehiculoReserva } from "../types/VehiculoReserva";
 import { apiFetch } from "../utils/api";
@@ -6,7 +6,7 @@ export const useVehiculos = () => {
   const [data, setData] = useState<VehiculoReserva[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const cargarMis = async () => {
+  const cargarMis = useCallback(async () => {
     const res = await apiFetch("/vehiculos/mis");
 
     const text = await res.text();
@@ -26,14 +26,24 @@ export const useVehiculos = () => {
     } else {
       setData([]); // fallback seguro
     }
-  };
+  }, []);
 
-  const cargarTodas = async () => {
+  const cargarTodas = useCallback(async () => {
     setLoading(true);
-    const res = await vehiculosService.todas();
-    setData(res.data);
-    setLoading(false);
-  };
+    try {
+      const res = await vehiculosService.todas();
+
+      if (Array.isArray(res)) {
+        setData(res);
+      } else if (res && Array.isArray((res as { data?: unknown }).data)) {
+        setData((res as { data: VehiculoReserva[] }).data);
+      } else {
+        setData([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     data,

@@ -11,6 +11,7 @@ export type RolUsuario =
   | "ADMIN_CANCHAS"
   | "TALENTO_HUMANO"
   | "SERVIDOR"
+  | "SERVIDOR_PUBLICO"
   | "SERVIDOR_AZVCH"
   | "PRIVADO"
   | "ESTUDIANTE"

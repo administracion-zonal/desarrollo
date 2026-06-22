@@ -1,8 +1,10 @@
+import { publicAssets } from "../utils/publicAssets";
+
 export default function Footer() {
   return (
     <footer className="footer">
       <img
-        src="/LosChillos-footer.png"
+        src={publicAssets.footerBanner}
         alt="Institución"
         className="header-footer"
       />

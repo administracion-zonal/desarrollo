@@ -1,5 +1,6 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useState } from "react";
+import ActionIconButton from "../components/ActionIconButton";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
 
@@ -108,56 +109,64 @@ export default function MisReservasCancha() {
   }, []);
 
   return (
-    <>
-      <h2>⚽ Mis Reservas de Cancha</h2>
+    <section className="reservation-shell">
+      <h2 className="page-title">Mis reservas de cancha</h2>
 
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
       {reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Horario</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {reservas.map((r) => (
-              <tr key={r.id}>
-                <td>{r.fecha}</td>
-
-                <td>
-                  {r.horaInicio} - {r.horaFin}
-                </td>
-
-                {/* ✅ ESTADO VISUAL */}
-                <td>
-                  {r.estado === "RESERVADO" && "🟡 Pendiente"}
-                  {r.estado === "ASISTIO" && "🟢 Asistió"}
-                  {r.estado === "NO_ASISTIO" && "🔴 No asistió"}
-                </td>
-
-                {/* ✅ ACCIONES */}
-
-                <td>
-                  <button onClick={() => setDetalle(r)}>Ver</button>
-
-                  {r.estado === "RESERVADO" && (
-                    <button
-                      style={{ color: "red", marginLeft: "10px" }}
-                      onClick={() => cancelarReserva(r.id)}
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                </td>
+        <div className="reservation-table-panel table-wrap">
+          <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Horario</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {reservas.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.fecha}</td>
+
+                  <td>
+                    {r.horaInicio} - {r.horaFin}
+                  </td>
+
+                  {/* ✅ ESTADO VISUAL */}
+                  <td>
+                    {r.estado === "RESERVADO" && "🟡 Pendiente"}
+                    {r.estado === "ASISTIO" && "🟢 Asistió"}
+                    {r.estado === "NO_ASISTIO" && "🔴 No asistió"}
+                  </td>
+
+                  {/* ✅ ACCIONES */}
+
+                  <td>
+                    <div className="actions-inline">
+                      <ActionIconButton
+                        onClick={() => setDetalle(r)}
+                        icon="👁"
+                        label="Ver detalle"
+                      />
+
+                      {r.estado === "RESERVADO" && (
+                        <ActionIconButton
+                          onClick={() => cancelarReserva(r.id)}
+                          icon="✕"
+                          label="Cancelar reserva"
+                          variant="danger"
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* MODAL DETALLE */}
@@ -187,15 +196,23 @@ export default function MisReservasCancha() {
 
             <div className="modal-footer">
               {detalle.estado === "RESERVADO" && detalle.qrToken && (
-                <button className="btn" onClick={imprimirQR}>
-                  🖨 Imprimir QR
-                </button>
+                <ActionIconButton
+                  onClick={imprimirQR}
+                  icon="🖨"
+                  label="Imprimir QR"
+                  variant="primary"
+                />
               )}
-              <button onClick={() => setDetalle(null)}>Cerrar</button>
+              <ActionIconButton
+                onClick={() => setDetalle(null)}
+                icon="✕"
+                label="Cerrar"
+                variant="danger"
+              />
             </div>
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

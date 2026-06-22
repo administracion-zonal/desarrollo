@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ActionIconButton from "../components/ActionIconButton";
 import type { SolicitudVehiculo } from "../services/solicitudVehiculoService";
 import { solicitudVehiculoService } from "../services/solicitudVehiculoService";
 import { apiFetch } from "../utils/api";
@@ -83,8 +84,16 @@ export default function AdminSolicitudesVehiculo() {
   }, []);
 
   const rechazar = async (id: number) => {
+    const observacion = window
+      .prompt("Ingrese la observación de rechazo:")
+      ?.trim();
+    if (!observacion) {
+      setError("La observación de rechazo es obligatoria");
+      return;
+    }
+
     try {
-      await solicitudVehiculoService.rechazar(id);
+      await solicitudVehiculoService.rechazar(id, observacion);
       await cargar();
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -96,46 +105,60 @@ export default function AdminSolicitudesVehiculo() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>📋 Solicitudes de Vehículos (Admin)</h2>
+    <section className="page-shell admin-solicitudes">
+      <h2 className="page-title">Solicitudes de vehículos</h2>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {solicitudes.length === 0 && <p>No hay solicitudes pendientes</p>}
 
-      <table className="reservas-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Cédula</th>
-            <th>Destino</th>
-            <th>Fecha</th>
-            <th>Horario</th>
-            <th>Motivo</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {solicitudes.map((s) => (
-            <tr key={s.id}>
-              <td>{s.nombres}</td>
-              <td>{s.cedula}</td>
-              <td>{s.destino}</td>
-              <td>{s.fecha}</td>
-              <td>
-                {s.horaInicio} - {s.horaFin}
-              </td>
-              <td>{s.motivo}</td>
-
-              <td>
-                <button onClick={() => abrirModal(s)}>✅ Aprobar</button>
-                <button onClick={() => rechazar(s.id)}>❌ Rechazar</button>
-              </td>
+      <div className="section-panel table-wrap">
+        <table className="reservas-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Cédula</th>
+              <th>Destino</th>
+              <th>Fecha</th>
+              <th>Horario</th>
+              <th>Motivo</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {solicitudes.map((s) => (
+              <tr key={s.id}>
+                <td>{s.nombres}</td>
+                <td>{s.cedula}</td>
+                <td>{s.destino}</td>
+                <td>{s.fecha}</td>
+                <td>
+                  {s.horaInicio} - {s.horaFin}
+                </td>
+                <td>{s.motivo}</td>
+
+                <td>
+                  <div className="actions-inline">
+                    <ActionIconButton
+                      icon="✓"
+                      label="Aprobar solicitud"
+                      variant="success"
+                      onClick={() => abrirModal(s)}
+                    />
+                    <ActionIconButton
+                      icon="✕"
+                      label="Rechazar solicitud"
+                      variant="danger"
+                      onClick={() => rechazar(s.id)}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {modalOpen && (
         <div className="modal-overlay">
@@ -165,12 +188,24 @@ export default function AdminSolicitudesVehiculo() {
                 ))}
               </select>
 
-              <button onClick={confirmarAprobacion}>✅ Confirmar</button>
-              <button onClick={() => setModalOpen(false)}>❌ Cancelar</button>
+              <div className="actions-inline" style={{ marginTop: "0.75rem" }}>
+                <ActionIconButton
+                  icon="✓"
+                  label="Confirmar aprobación"
+                  variant="success"
+                  onClick={confirmarAprobacion}
+                />
+                <ActionIconButton
+                  icon="✕"
+                  label="Cancelar"
+                  variant="danger"
+                  onClick={() => setModalOpen(false)}
+                />
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

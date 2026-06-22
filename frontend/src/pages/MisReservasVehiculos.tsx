@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import ActionIconButton from "../components/ActionIconButton";
 import type { SolicitudVehiculo } from "../services/solicitudVehiculoService";
+import "../styles/misReservasVehiculos.css";
 import type { VehiculoReserva } from "../types/VehiculoReserva";
 import { apiFetch } from "../utils/api";
 
@@ -10,6 +12,11 @@ export default function MisReservasVehiculos() {
   const [solicitudes, setSolicitudes] = useState<SolicitudVehiculo[]>([]);
   const [detalleSolicitud, setDetalleSolicitud] =
     useState<SolicitudVehiculo | null>(null);
+
+  const estadoEtiqueta = (estado?: string) => {
+    if (!estado) return "PENDIENTE";
+    return estado;
+  };
 
   /* ================= CARGA ================= */
   useEffect(() => {
@@ -68,132 +75,195 @@ export default function MisReservasVehiculos() {
   /* ================= UI ================= */
 
   return (
-    <>
-      <h2>🚗 Mis Reservas Vehículos</h2>
+    <section className="reservation-shell">
+      <h2 className="page-title">Mis reservas de vehículos</h2>
 
-      <div className="tabs-container">
-        <button
-          className={`tab ${tab === "solicitudes" ? "active" : ""}`}
-          onClick={() => setTab("solicitudes")}
-        >
-          📝 Solicitudes
-          <span className="badge">{solicitudes.length}</span>
-        </button>
+      <div className="tabs-shell">
+        <div className="tabs-container">
+          <button
+            className={`tab ${tab === "solicitudes" ? "active" : ""}`}
+            onClick={() => setTab("solicitudes")}
+          >
+            📝 Solicitudes
+            <span className="badge">{solicitudes.length}</span>
+          </button>
 
-        <button
-          className={`tab ${tab === "reservas" ? "active" : ""}`}
-          onClick={() => setTab("reservas")}
-        >
-          🚗 Reservas
-          <span className="badge">{reservas.length}</span>
-        </button>
-      </div>
+          <button
+            className={`tab ${tab === "reservas" ? "active" : ""}`}
+            onClick={() => setTab("reservas")}
+          >
+            🚗 Reservas
+            <span className="badge">{reservas.length}</span>
+          </button>
+        </div>
 
-      {/* ================= SOLICITUDES ================= */}
+        {/* ================= SOLICITUDES ================= */}
 
-      {/* ================= TAB SOLICITUDES ================= */}
+        {/* ================= TAB SOLICITUDES ================= */}
 
-      <div className="tab-content">
-        {tab === "solicitudes" && (
-          <>
-            <h3>📝 Solicitudes enviadas</h3>
+        <div className="tab-content">
+          {tab === "solicitudes" && (
+            <div className="reservation-table-panel">
+              <h3 className="tab-panel-title">Solicitudes enviadas</h3>
 
-            {solicitudes.length === 0 && <p>No tienes solicitudes</p>}
+              {solicitudes.length === 0 && <p>No tienes solicitudes</p>}
 
-            {solicitudes.length > 0 && (
-              <table className="reservas-table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Destino</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
+              {solicitudes.length > 0 && (
+                <div className="table-wrap">
+                  <table className="reservas-table">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Destino</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
 
-                <tbody>
-                  {solicitudes.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.fecha}</td>
-                      <td>{s.destino}</td>
+                    <tbody>
+                      {solicitudes.map((s) => (
+                        <tr key={s.id}>
+                          <td>{s.fecha}</td>
+                          <td>{s.destino}</td>
 
-                      <td>
-                        <button onClick={() => setDetalleSolicitud(s)}>
-                          Ver
-                        </button>
+                          <td>
+                            <div className="actions-inline">
+                              <ActionIconButton
+                                onClick={() => setDetalleSolicitud(s)}
+                                icon="👁"
+                                label="Ver detalle"
+                              />
 
-                        <button
-                          style={{ color: "red", marginLeft: "10px" }}
-                          onClick={() => cancelarSolicitud(s.id)}
-                        >
-                          Cancelar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </>
-        )}
+                              <ActionIconButton
+                                onClick={() => cancelarSolicitud(s.id)}
+                                icon="✕"
+                                label="Cancelar solicitud"
+                                variant="danger"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* ================= TAB RESERVAS ================= */}
-        {tab === "reservas" && (
-          <>
-            <h3>📂 Historial de reservas</h3>
+          {/* ================= TAB RESERVAS ================= */}
+          {tab === "reservas" && (
+            <div className="reservation-table-panel">
+              <h3 className="tab-panel-title">Historial de reservas</h3>
 
-            {reservas.length === 0 && <p>No tienes reservas</p>}
+              {reservas.length === 0 && <p>No tienes reservas</p>}
 
-            {reservas.length > 0 && (
-              <table className="reservas-table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Destino</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
+              {reservas.length > 0 && (
+                <div className="table-wrap">
+                  <table className="reservas-table">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Destino</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
 
-                <tbody>
-                  {reservas.map((r) => (
-                    <tr key={r.idReserva}>
-                      <td>{r.fechaReserva}</td>
-                      <td>{r.destino}</td>
+                    <tbody>
+                      {reservas.map((r) => (
+                        <tr key={r.idReserva}>
+                          <td>{r.fechaReserva}</td>
+                          <td>{r.destino}</td>
 
-                      <td>
-                        {r.estado === "PENDIENTE" && "🟡 Pendiente"}
-                        {r.estado === "APROBADA" && "🟢 Aprobado"}
-                        {r.estado === "RECHAZADO" && "🔴 Rechazado"}
-                      </td>
+                          <td>
+                            {r.estado === "PENDIENTE" && "🟡 Pendiente"}
+                            {r.estado === "APROBADA" && "🟢 Aprobado"}
+                            {r.estado === "RECHAZADO" && "🔴 Rechazado"}
+                          </td>
 
-                      <td>
-                        <button onClick={() => setDetalle(r)}>Ver</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </>
-        )}
+                          <td>
+                            <ActionIconButton
+                              onClick={() => setDetalle(r)}
+                              icon="👁"
+                              label="Ver detalle"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       {/* ================= MODAL SOLICITUD ================= */}
       {detalleSolicitud && (
         <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">Detalle de solicitud</div>
+          <div className="modal vehicle-modal vehicle-modal--solicitud">
+            <div className="modal-header vehicle-modal__header">
+              <div>
+                <h3>Detalle de solicitud</h3>
+                <small>Solicitud #{detalleSolicitud.id}</small>
+              </div>
+              <span
+                className={`status-chip status-${estadoEtiqueta(detalleSolicitud.estado).toLowerCase()}`}
+              >
+                {estadoEtiqueta(detalleSolicitud.estado)}
+              </span>
+            </div>
 
-            <div className="field">
-              <label>Fecha:</label>
-              <input readOnly value={detalleSolicitud.fecha} />
-              <label>Destino:</label>
-              <input readOnly value={detalleSolicitud.destino} />
-              <label>Motivo:</label>
-              <input readOnly value={detalleSolicitud.motivo} />
+            <div className="vehicle-modal__body">
+              <div className="vehicle-grid">
+                <div className="vehicle-card">
+                  <h4>Plan de viaje</h4>
+                  <p>
+                    <b>Fecha:</b> {detalleSolicitud.fecha}
+                  </p>
+                  <p>
+                    <b>Horario:</b> {detalleSolicitud.horaInicio} -{" "}
+                    {detalleSolicitud.horaFin}
+                  </p>
+                  <p>
+                    <b>Origen:</b> {detalleSolicitud.origen || "No registrado"}
+                  </p>
+                  <p>
+                    <b>Destino:</b> {detalleSolicitud.destino}
+                  </p>
+                </div>
+
+                <div className="vehicle-card">
+                  <h4>Justificación</h4>
+                  <p>
+                    <b>Motivo:</b> {detalleSolicitud.motivo}
+                  </p>
+                  <p>
+                    <b>Observaciones:</b>{" "}
+                    {detalleSolicitud.observaciones || "Sin observaciones"}
+                  </p>
+                  <p>
+                    <b>Servidores:</b>{" "}
+                    {detalleSolicitud.servidores || "No registrado"}
+                  </p>
+                </div>
+
+                {detalleSolicitud.observacionRechazo && (
+                  <div className="vehicle-card vehicle-card--warning">
+                    <h4>Motivo de rechazo</h4>
+                    <p>{detalleSolicitud.observacionRechazo}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="modal-footer">
-              <button onClick={() => setDetalleSolicitud(null)}>Cerrar</button>
+              <ActionIconButton
+                onClick={() => setDetalleSolicitud(null)}
+                icon="✕"
+                label="Cerrar"
+                variant="danger"
+              />
             </div>
           </div>
         </div>
@@ -202,38 +272,69 @@ export default function MisReservasVehiculos() {
       {/* ================= MODAL RESERVA ================= */}
       {detalle && (
         <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">Detalle de reserva</div>
+          <div className="modal vehicle-modal">
+            <div className="modal-header vehicle-modal__header">
+              <div>
+                <h3>Detalle de reserva</h3>
+                <small>Reserva #{detalle.idReserva}</small>
+              </div>
+              <span
+                className={`status-chip status-${estadoEtiqueta(detalle.estado).toLowerCase()}`}
+              >
+                {estadoEtiqueta(detalle.estado)}
+              </span>
+            </div>
 
-            <div className="field">
-              <label>Fecha:</label>
-              <input readOnly value={detalle.fechaReserva} />
+            <div className="vehicle-modal__body">
+              <div className="vehicle-grid">
+                <div className="vehicle-card">
+                  <h4>Trayecto</h4>
+                  <p>
+                    <b>Fecha:</b> {detalle.fechaReserva}
+                  </p>
+                  <p>
+                    <b>Horario:</b> {detalle.horaInicio} - {detalle.horaFin}
+                  </p>
+                  <p>
+                    <b>Destino:</b> {detalle.destino}
+                  </p>
+                  <p>
+                    <b>Solicitud origen:</b>{" "}
+                    {detalle.idSolicitud ?? "No aplica"}
+                  </p>
+                </div>
 
-              <label>Destino:</label>
-              <input readOnly value={detalle.destino} />
-
-              <label>Motivo:</label>
-              <input readOnly value={detalle.observaciones} />
-
-              <label>Chofer asignado:</label>
-              <input readOnly value={detalle.nombreChofer} />
-
-              <label>Vehículo:</label>
-              <input
-                readOnly
-                value={`${detalle.marcaVehiculo} ${detalle.modeloVehiculo}`}
-              />
-
-              <label>Placa:</label>
-              <input readOnly value={detalle.placaVehiculo} />
+                <div className="vehicle-card">
+                  <h4>Asignación</h4>
+                  <p>
+                    <b>Chofer:</b> {detalle.nombreChofer || "Sin asignar"}
+                  </p>
+                  <p>
+                    <b>Vehículo:</b>{" "}
+                    {`${detalle.marcaVehiculo} ${detalle.modeloVehiculo}`}
+                  </p>
+                  <p>
+                    <b>Placa:</b> {detalle.placaVehiculo}
+                  </p>
+                  <p>
+                    <b>Observaciones:</b>{" "}
+                    {detalle.observaciones || "Sin observaciones"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="modal-footer">
-              <button onClick={() => setDetalle(null)}>Cerrar</button>
+              <ActionIconButton
+                onClick={() => setDetalle(null)}
+                icon="✕"
+                label="Cerrar"
+                variant="danger"
+              />
             </div>
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "../App.css";
 import { apiFetch } from "../utils/api";
 
 const API = `/talento-humano`;
@@ -44,12 +43,12 @@ export default function GestionTH() {
   };
 
   return (
-    <>
-      <h2 style={{ textAlign: "center" }}>👥 Gestión Talento Humano</h2>
+    <section className="reservation-shell">
+      <h2 className="page-title">Gestión Talento Humano</h2>
 
-      <div className="reserva-layout">
+      <div className="reservation-panel">
         <div className="reserva-content">
-          <div className="form-grid-2">
+          <div className="form-grid-2" style={{ maxWidth: "920px" }}>
             <form onSubmit={crearUsuario}>
               {/* CÉDULA */}
               <div className="field span-2">
@@ -72,7 +71,7 @@ export default function GestionTH() {
               </div>
 
               {/* BOTÓN */}
-              <button className="actions span-2" disabled={loading}>
+              <button className="btn-primary" disabled={loading}>
                 {loading ? "Creando..." : "Crear / Activar Usuario"}
               </button>
 
@@ -83,6 +82,6 @@ export default function GestionTH() {
           </div>
         </div>
       </div>
-    </>
+    </section>
   );
 }

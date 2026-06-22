@@ -107,9 +107,6 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/vehiculos/solicitudes/**")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "ADMIN", "ADMIN_VEHICULOS")
 
-                                                .requestMatchers("/api/vehiculos/**")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
-
                                                 // crear reserva (usuarios normales)
                                                 .requestMatchers(HttpMethod.POST, "/api/vehiculos/reservar")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
@@ -118,28 +115,28 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/api/vehiculos/solicitudes/mis")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
 
-                                                .requestMatchers(HttpMethod.GET, "/vehiculos/mis")
+                                                .requestMatchers(HttpMethod.GET, "/api/vehiculos/mis")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
 
                                                 // admin gestiona todo
                                                 .requestMatchers("/api/vehiculos/admin/**")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 // chofer
                                                 .requestMatchers("/api/vehiculos/chofer/**")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
+                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN", "CHOFER")
 
                                                 .requestMatchers("/api/vehiculos/admin/salvoconducto/**")
                                                 .hasRole("ADMIN")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/pendientes")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/*/aprobar")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/*/rechazar")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 /*
                                                  * =========================

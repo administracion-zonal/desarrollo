@@ -1,5 +1,6 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useState } from "react";
+import ActionIconButton from "../components/ActionIconButton";
 import { useMisReservas } from "../hooks/useMisReservas";
 import type { ReservaUsuario } from "../types/ReservaUsuario";
 import { apiFetch } from "../utils/api";
@@ -83,45 +84,53 @@ export default function MisReservas() {
   if (error) return <p className="error">{error}</p>;
 
   return (
-    <>
-      <h2>📅 Mis Reservas Coworking</h2>
+    <section className="reservation-shell">
+      <h2 className="page-title">Mis reservas de coworking</h2>
 
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
       {reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Horario</th>
-              <th>Área</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reservas.map((r) => (
-              <tr key={r.id}>
-                <td>{r.fecha}</td>
-                <td>
-                  {r.horaInicio} - {r.horaFin}
-                </td>
-                <td>{r.nombreArea}</td>
-                <td>
-                  <button onClick={() => setDetalle(r)}>Ver</button>
-
-                  {r.puedeCancelar && (
-                    <button
-                      style={{ color: "red" }}
-                      onClick={() => cancelarReserva(r.id)}
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                </td>
+        <div className="reservation-table-panel table-wrap">
+          <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Horario</th>
+                <th>Área</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reservas.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.fecha}</td>
+                  <td>
+                    {r.horaInicio} - {r.horaFin}
+                  </td>
+                  <td>{r.nombreArea}</td>
+                  <td>
+                    <div className="actions-inline">
+                      <ActionIconButton
+                        onClick={() => setDetalle(r)}
+                        icon="👁"
+                        label="Ver detalle"
+                      />
+
+                      {r.puedeCancelar && (
+                        <ActionIconButton
+                          onClick={() => cancelarReserva(r.id)}
+                          icon="✕"
+                          label="Cancelar reserva"
+                          variant="danger"
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* MODAL DETALLE */}
@@ -162,15 +171,23 @@ export default function MisReservas() {
 
             <div className="modal-footer">
               {detalle.vigente && detalle.qrToken && (
-                <button className="btn" onClick={imprimirQR}>
-                  🖨 Imprimir QR
-                </button>
+                <ActionIconButton
+                  onClick={imprimirQR}
+                  icon="🖨"
+                  label="Imprimir QR"
+                  variant="primary"
+                />
               )}
-              <button onClick={() => setDetalle(null)}>Cerrar</button>
+              <ActionIconButton
+                onClick={() => setDetalle(null)}
+                icon="✕"
+                label="Cerrar"
+                variant="danger"
+              />
             </div>
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

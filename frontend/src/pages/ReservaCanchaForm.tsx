@@ -1,6 +1,5 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useState } from "react";
-import "../App.css";
 import { useAuth } from "../context/useAuth";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
@@ -178,7 +177,7 @@ export default function ReservaCanchaForm() {
   /* ================= UI ================= */
   return (
     <>
-      <h2 style={{ textAlign: "center" }}>⚽ Reserva de Cancha</h2>
+      <h2 className="page-heading">⚽ Reserva de Cancha</h2>
 
       <div className="reserva-layout">
         <div className="reserva-content">

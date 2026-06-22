@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import "../App.css";
+import ActionIconButton from "../components/ActionIconButton";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
 
@@ -88,12 +88,16 @@ export default function DashboardCancha() {
   };
 
   return (
-    <>
-      <h2>⚽ Reservas de Cancha (ADMIN)</h2>
-
-      <button className="btn" onClick={() => setMostrarQR(true)}>
-        📷 Validar ingreso con QR
-      </button>
+    <section className="page-shell">
+      <div className="page-toolbar">
+        <h2 className="page-title">Administrar canchas</h2>
+        <ActionIconButton
+          icon="📷"
+          label="Validar ingreso con QR"
+          variant="primary"
+          onClick={() => setMostrarQR(true)}
+        />
+      </div>
 
       {mostrarQR && (
         <div className="modal-overlay">
@@ -114,20 +118,25 @@ export default function DashboardCancha() {
             <br />
             <br />
 
-            <button className="btn" onClick={() => validarQR(codigoQR)}>
-              Validar
-            </button>
+            <div className="actions-inline">
+              <ActionIconButton
+                icon="✓"
+                label="Validar QR"
+                variant="success"
+                onClick={() => validarQR(codigoQR)}
+              />
 
-            <button
-              className="btn"
-              onClick={() => {
-                setMostrarQR(false);
-                setCodigoQR("");
-                setMensajeQR(null);
-              }}
-            >
-              Cancelar
-            </button>
+              <ActionIconButton
+                icon="✕"
+                label="Cancelar"
+                variant="danger"
+                onClick={() => {
+                  setMostrarQR(false);
+                  setCodigoQR("");
+                  setMensajeQR(null);
+                }}
+              />
+            </div>
 
             {mensajeQR && (
               <p style={{ marginTop: "10px", fontWeight: 600 }}>{mensajeQR}</p>
@@ -136,41 +145,55 @@ export default function DashboardCancha() {
         </div>
       )}
 
-      <table className="reservas-table">
-        <thead>
-          <tr>
-            <th>Cédula</th>
-            <th>Fecha</th>
-            <th>Horario</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
+      <div className="section-panel table-wrap">
+        <table className="reservas-table">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Fecha</th>
+              <th>Horario</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {Array.isArray(reservas) &&
-            reservas.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  {r.usuario && typeof r.usuario === "object"
-                    ? r.usuario.cedula
-                    : "-"}
-                </td>
+          <tbody>
+            {Array.isArray(reservas) &&
+              reservas.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    {r.usuario && typeof r.usuario === "object"
+                      ? r.usuario.cedula
+                      : "-"}
+                  </td>
 
-                <td>{r.fecha}</td>
+                  <td>{r.fecha}</td>
 
-                <td>
-                  {r.horaInicio} - {r.horaFin}
-                </td>
+                  <td>
+                    {r.horaInicio} - {r.horaFin}
+                  </td>
 
-                <td>
-                  {r.estado === "RESERVADO" && "🟡 Pendiente"}
-                  {r.estado === "ASISTIO" && "🟢 Asistió"}
-                  {r.estado === "NO_ASISTIO" && "🔴 No asistió"}
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    </>
+                  <td>
+                    {r.estado === "RESERVADO" && (
+                      <span className="status-chip">
+                        <span className="status-dot is-warning" /> Pendiente
+                      </span>
+                    )}
+                    {r.estado === "ASISTIO" && (
+                      <span className="status-chip">
+                        <span className="status-dot is-success" /> Asistió
+                      </span>
+                    )}
+                    {r.estado === "NO_ASISTIO" && (
+                      <span className="status-chip">
+                        <span className="status-dot is-danger" /> No asistió
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { publicAssets } from "../../utils/publicAssets";
 
 type Props = Readonly<{
   children: ReactNode;
@@ -11,7 +12,11 @@ export default function PublicLayout({ children }: Props) {
       <header className="public-header">
         {/* IZQUIERDA */}
         <div className="header-left">
-          <img src="/cabecera1.png" alt="Institución" className="header-logo" />
+          <img
+            src={publicAssets.brandLogo}
+            alt="Institución"
+            className="header-logo"
+          />
           <div className="header-text">
             <h1>Administración Zonal Valle de los Chillos</h1>
             <span>Bienvenidos</span>
