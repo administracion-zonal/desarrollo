@@ -1,6 +1,5 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useState } from "react";
-import "../App.css";
 import { useAuth } from "../context/useAuth";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";

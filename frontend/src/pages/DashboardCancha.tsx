@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import "../App.css";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
 

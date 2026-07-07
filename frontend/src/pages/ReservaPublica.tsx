@@ -1,7 +1,6 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../App.css";
 import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { useAuth } from "../context/useAuth";
 import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";

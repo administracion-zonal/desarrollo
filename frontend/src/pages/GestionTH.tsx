@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "../App.css";
 import { apiFetch } from "../utils/api";
 
 const API = `/talento-humano`;
