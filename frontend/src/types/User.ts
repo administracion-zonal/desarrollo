@@ -12,6 +12,7 @@ export type RolUsuario =
   | "TALENTO_HUMANO"
   | "SERVIDOR"
   | "SERVIDOR_AZVCH"
+  | "SERVIDOR_PUBLICO"
   | "PRIVADO"
   | "ESTUDIANTE"
   | "CHOFER";

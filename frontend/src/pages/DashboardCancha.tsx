@@ -87,19 +87,24 @@ export default function DashboardCancha() {
   };
 
   return (
-    <>
-      <h2>⚽ Reservas de Cancha (ADMIN)</h2>
+    <div className="flow-stack">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Panel de canchas</span>
+        <h2>Reservas de cancha</h2>
+      </div>
 
-      <button className="btn" onClick={() => setMostrarQR(true)}>
-        📷 Validar ingreso con QR
-      </button>
+      <div className="table-actions">
+        <button className="btn" onClick={() => setMostrarQR(true)}>
+          Validar ingreso con QR
+        </button>
+      </div>
 
       {mostrarQR && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Validar QR</h3>
+            <div className="modal-header">Validar QR</div>
 
-            <p>Escanee o pegue el código QR</p>
+            <p className="modal-lead">Escanee o pegue el código QR</p>
 
             <input
               autoFocus
@@ -110,27 +115,27 @@ export default function DashboardCancha() {
               }}
             />
 
-            <br />
-            <br />
+            <div className="modal-footer">
+              <button
+                className="btn-primary"
+                onClick={() => validarQR(codigoQR)}
+              >
+                Validar
+              </button>
 
-            <button className="btn" onClick={() => validarQR(codigoQR)}>
-              Validar
-            </button>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setMostrarQR(false);
+                  setCodigoQR("");
+                  setMensajeQR(null);
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
 
-            <button
-              className="btn"
-              onClick={() => {
-                setMostrarQR(false);
-                setCodigoQR("");
-                setMensajeQR(null);
-              }}
-            >
-              Cancelar
-            </button>
-
-            {mensajeQR && (
-              <p style={{ marginTop: "10px", fontWeight: 600 }}>{mensajeQR}</p>
-            )}
+            {mensajeQR && <p className="hint">{mensajeQR}</p>}
           </div>
         </div>
       )}
@@ -162,14 +167,24 @@ export default function DashboardCancha() {
                 </td>
 
                 <td>
-                  {r.estado === "RESERVADO" && "🟡 Pendiente"}
-                  {r.estado === "ASISTIO" && "🟢 Asistió"}
-                  {r.estado === "NO_ASISTIO" && "🔴 No asistió"}
+                  <span
+                    className={`status-pill ${
+                      r.estado === "ASISTIO"
+                        ? "status-pill--success"
+                        : r.estado === "NO_ASISTIO"
+                          ? "status-pill--danger"
+                          : "status-pill--pending"
+                    }`}
+                  >
+                    {r.estado === "RESERVADO" && "Pendiente"}
+                    {r.estado === "ASISTIO" && "Asistio"}
+                    {r.estado === "NO_ASISTIO" && "No asistio"}
+                  </span>
                 </td>
               </tr>
             ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }

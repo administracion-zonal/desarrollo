@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import incognito from "../assets/incognito-ini.jpg";
 import ImageCropper from "../components/ImageCropper";
 import { useAuth } from "../context/useAuth";
@@ -7,6 +8,7 @@ import { apiFetch } from "../utils/api";
 
 export default function Perfil() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [editando, setEditando] = useState(false);
   const esInstitucional =
@@ -25,6 +27,9 @@ export default function Perfil() {
   const [passwordNueva, setPasswordNueva] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorPass, setErrorPass] = useState("");
+
+  const esAdminVehicular =
+    user?.roles.includes("ADMIN") || user?.roles.includes("ADMIN_VEHICULOS");
 
   useEffect(() => {
     const cargarPerfil = async () => {
@@ -102,6 +107,7 @@ export default function Perfil() {
 
         {/* INFO DERECHA */}
         <div className="perfil-info-container">
+          <span className="section-heading__eyebrow">Perfil institucional</span>
           <h2 className="perfil-nombre">{perfil?.nombres || user?.nombres}</h2>
           <p>
             {user?.roles.includes("ADMIN")
@@ -174,10 +180,26 @@ export default function Perfil() {
 
         {/* DERECHA — 20% */}
         <div className="perfil-col-derecha">
-          <div className="perfil-card">
-            <button onClick={() => setModalPass(true)} className="btn-warning">
+          <div className="perfil-card perfil-card--actions">
+            <p className="perfil-card__caption">
+              Acciones rápidas para mantener su acceso y datos al día.
+            </p>
+            <button
+              onClick={() => setModalPass(true)}
+              className="btn-warning perfil-action-btn"
+            >
               Cambiar contraseña
             </button>
+
+            {esAdminVehicular && (
+              <button
+                type="button"
+                className="btn-secondary perfil-action-btn perfil-action-btn--secondary"
+                onClick={() => navigate("/vehiculos/admin")}
+              >
+                Ir a solicitudes de vehiculos
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -421,7 +443,7 @@ export default function Perfil() {
                 placeholder="Nueva contraseña"
               />
 
-              <small style={{ fontSize: "12px", color: "#64748b" }}>
+              <small className="password-help">
                 Mínimo 8 caracteres, mayúscula, minúscula y número
               </small>
 
@@ -434,23 +456,19 @@ export default function Perfil() {
                 placeholder="Confirmar contraseña"
               />
 
-              {errorPass && (
-                <span style={{ color: "red", fontSize: "13px" }}>
-                  {errorPass}
-                </span>
-              )}
+              {errorPass && <span className="password-error">{errorPass}</span>}
 
-              <ul style={{ fontSize: "12px" }}>
-                <li style={{ color: cumple.length ? "green" : "red" }}>
+              <ul className="password-rules">
+                <li className={cumple.length ? "is-valid" : "is-invalid"}>
                   Mínimo 8 caracteres
                 </li>
-                <li style={{ color: cumple.mayus ? "green" : "red" }}>
+                <li className={cumple.mayus ? "is-valid" : "is-invalid"}>
                   Una mayúscula
                 </li>
-                <li style={{ color: cumple.minus ? "green" : "red" }}>
+                <li className={cumple.minus ? "is-valid" : "is-invalid"}>
                   Una minúscula
                 </li>
-                <li style={{ color: cumple.num ? "green" : "red" }}>
+                <li className={cumple.num ? "is-valid" : "is-invalid"}>
                   Un número
                 </li>
               </ul>
@@ -485,7 +503,12 @@ export default function Perfil() {
                 Guardar
               </button>
 
-              <button onClick={() => setModalPass(false)}>Cancelar</button>
+              <button
+                className="btn-secondary"
+                onClick={() => setModalPass(false)}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>

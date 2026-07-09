@@ -318,4 +318,18 @@ public class UsuarioController {
         return ResponseEntity.ok("Perfil actualizado");
     }
 
+    @PutMapping("/{cedula}/desbloquear")
+    public ResponseEntity<?> desbloquearUsuario(
+            @PathVariable String cedula,
+            Authentication auth) {
+
+        try {
+            String adminCedula = auth.getName();
+            usuarioService.desbloquearUsuario(cedula, adminCedula);
+            return ResponseEntity.ok("Usuario desbloqueado");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

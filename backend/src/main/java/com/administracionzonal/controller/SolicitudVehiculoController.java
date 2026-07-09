@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.administracionzonal.dto.AprobarSolicitudRequest;
+import com.administracionzonal.dto.RechazarSolicitudRequest;
 import com.administracionzonal.dto.SolicitudVehiculoRequest;
 import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.UsuarioRepository;
@@ -52,7 +53,10 @@ public class SolicitudVehiculoController {
                 horaInicio,
                 horaFin,
                 req.getMotivo(),
-                req.getDestino()
+                req.getDestino(),
+                req.getObservaciones(),
+                req.getOrigen(),
+                req.getServidores()
 
         );
         System.out.println("REQ 👉 " + req);
@@ -73,19 +77,24 @@ public class SolicitudVehiculoController {
     @PostMapping("/{id}/aprobar")
     public ResponseEntity<?> aprobar(
             @PathVariable Long id,
-            @RequestBody AprobarSolicitudRequest request) {
+            @RequestBody AprobarSolicitudRequest request,
+            Authentication auth) {
 
         System.out.println("APROBANDO 👉 " + id + " chofer: " + request.getIdChofer());
 
-        service.aprobarSolicitud(id, request.getIdChofer());
+        service.aprobarSolicitud(id, request.getIdChofer(), auth.getName());
 
         return ResponseEntity.ok("OK");
     }
 
     /* ================= RECHAZAR ================= */
     @PostMapping("/{id}/rechazar")
-    public ResponseEntity<?> rechazar(@PathVariable Long id) {
-        return ResponseEntity.ok(service.rechazarSolicitud(id));
+    public ResponseEntity<?> rechazar(
+            @PathVariable Long id,
+            @RequestBody(required = false) RechazarSolicitudRequest request) {
+        return ResponseEntity.ok(service.rechazarSolicitud(
+                id,
+                request != null ? request.getObservacionRechazo() : null));
     }
 
     @GetMapping("/mis")

@@ -2,6 +2,7 @@ package com.administracionzonal.service;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class ReservaService {
      */
     public ReservaCoworking crearReservaPublica(ReservaDTO dto) {
 
+        validarFechaHoraReserva(dto.getFecha(), dto.getHoraInicio(), dto.getHoraFin());
+
         Usuario usuario = usuarioService.obtenerOcrearUsuario(
                 dto.getCedula(),
                 dto.getNombres(),
@@ -49,6 +52,18 @@ public class ReservaService {
         if (dto.getTipoUsuario() != null && !dto.getTipoUsuario().isEmpty()) {
             usuario.setTipoUsuario(dto.getTipoUsuario());
             usuarioService.save(usuario);
+        }
+
+        LocalDate inicioMes = dto.getFecha().withDayOfMonth(1);
+        LocalDate finMes = dto.getFecha().withDayOfMonth(dto.getFecha().lengthOfMonth());
+
+        List<ReservaCoworking> reservasMes = reservaRepo.findByUsuario_CedulaAndFechaBetween(
+                usuario.getCedula(),
+                inicioMes,
+                finMes);
+
+        if (reservasMes.size() >= 5) {
+            throw new RuntimeException("Máximo 5 reservas al mes");
         }
 
         validarCapacidadPorBloques(dto);
@@ -72,6 +87,10 @@ public class ReservaService {
         r.setHoraFin(dto.getHoraFin());
         r.setQrToken(UUID.randomUUID().toString());
         r.setUsado(false);
+        r.setCreatedAt(LocalDateTime.now());
+        r.setUpdatedAt(LocalDateTime.now());
+        r.setCreatedBy(usuario.getCedula());
+        r.setUpdatedBy(usuario.getCedula());
 
         return reservaRepo.save(r);
     }
@@ -185,6 +204,8 @@ public class ReservaService {
         }
 
         reserva.setUsado(true);
+        reserva.setUpdatedAt(LocalDateTime.now());
+        reserva.setUpdatedBy("sistema");
         reservaRepo.save(reserva);
 
         return true;
@@ -210,6 +231,8 @@ public class ReservaService {
         }
 
         r.setAsistio(true);
+        r.setUpdatedAt(LocalDateTime.now());
+        r.setUpdatedBy("sistema");
         reservaRepo.save(r);
     }
 
@@ -306,7 +329,31 @@ public class ReservaService {
                     "No se puede cancelar con menos de 30 minutos");
         }
 
+        r.setUpdatedAt(LocalDateTime.now());
+        r.setUpdatedBy(cedula);
+        reservaRepo.save(r);
         reservaRepo.delete(r);
+    }
+
+    private void validarFechaHoraReserva(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
+        LocalDate hoy = LocalDate.now();
+        LocalTime ahora = LocalTime.now();
+
+        if (fecha.isBefore(hoy)) {
+            throw new RuntimeException("No puede reservar fechas anteriores");
+        }
+
+        if (!horaFin.isAfter(horaInicio)) {
+            throw new RuntimeException("La hora fin debe ser mayor que la hora inicio");
+        }
+
+        if (horaInicio.isBefore(HORA_MIN) || horaFin.isAfter(HORA_MAX)) {
+            throw new RuntimeException("Horario permitido de 08:00 a 16:00");
+        }
+
+        if (fecha.isEqual(hoy) && !horaInicio.isAfter(ahora)) {
+            throw new RuntimeException("No puede reservar en horarios pasados");
+        }
     }
 
 }

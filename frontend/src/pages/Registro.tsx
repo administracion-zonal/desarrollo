@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { apiFetch } from "../utils/api";
 import {
@@ -13,6 +14,9 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [tipoRegistro, setTipoRegistro] = useState<
+    "PRIVADO" | "SERVIDOR_PUBLICO" | "ESTUDIANTE"
+  >("PRIVADO");
 
   const [form, setForm] = useState({
     cedula: "",
@@ -56,6 +60,7 @@ export default function Register() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        tipoRegistro,
         aceptaAcuerdo: true,
       }),
     });
@@ -130,6 +135,7 @@ export default function Register() {
   return (
     <div className="login-container">
       <form className="login-card" onSubmit={submit}>
+        <span className="auth-eyebrow">Registro</span>
         <h2>Registrarse</h2>
 
         <input
@@ -155,6 +161,20 @@ export default function Register() {
           onChange={handleChange}
         />
 
+        <select
+          name="tipoRegistro"
+          value={tipoRegistro}
+          onChange={(e) =>
+            setTipoRegistro(
+              e.target.value as "PRIVADO" | "SERVIDOR_PUBLICO" | "ESTUDIANTE",
+            )
+          }
+        >
+          <option value="PRIVADO">Privado</option>
+          <option value="SERVIDOR_PUBLICO">Servidor publico</option>
+          <option value="ESTUDIANTE">Estudiante</option>
+        </select>
+
         <input
           name="password"
           type="password"
@@ -173,8 +193,14 @@ export default function Register() {
 
         <button type="submit">Registrarse</button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
+        {error && <p className="login-error">{error}</p>}
+        {success && (
+          <p className="auth-message auth-message--success">{success}</p>
+        )}
+
+        <p className="auth-switch">
+          ¿Ya tiene cuenta? <Link to="/login">Volver al inicio de sesión</Link>
+        </p>
       </form>
 
       {/* MODAL DE ACUERDO */}

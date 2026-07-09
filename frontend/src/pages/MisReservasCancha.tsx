@@ -108,8 +108,11 @@ export default function MisReservasCancha() {
   }, []);
 
   return (
-    <>
-      <h2>⚽ Mis Reservas de Cancha</h2>
+    <div className="flow-stack">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Canchas</span>
+        <h2>Mis reservas de cancha</h2>
+      </div>
 
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
@@ -135,24 +138,36 @@ export default function MisReservasCancha() {
 
                 {/* ✅ ESTADO VISUAL */}
                 <td>
-                  {r.estado === "RESERVADO" && "🟡 Pendiente"}
-                  {r.estado === "ASISTIO" && "🟢 Asistió"}
-                  {r.estado === "NO_ASISTIO" && "🔴 No asistió"}
+                  <span
+                    className={`status-pill ${
+                      r.estado === "ASISTIO"
+                        ? "status-pill--success"
+                        : r.estado === "NO_ASISTIO"
+                          ? "status-pill--danger"
+                          : "status-pill--pending"
+                    }`}
+                  >
+                    {r.estado === "RESERVADO" && "Pendiente"}
+                    {r.estado === "ASISTIO" && "Asistio"}
+                    {r.estado === "NO_ASISTIO" && "No asistio"}
+                  </span>
                 </td>
 
                 {/* ✅ ACCIONES */}
 
                 <td>
-                  <button onClick={() => setDetalle(r)}>Ver</button>
+                  <div className="table-actions">
+                    <button onClick={() => setDetalle(r)}>Ver</button>
 
-                  {r.estado === "RESERVADO" && (
-                    <button
-                      style={{ color: "red", marginLeft: "10px" }}
-                      onClick={() => cancelarReserva(r.id)}
-                    >
-                      Cancelar
-                    </button>
-                  )}
+                    {r.estado === "RESERVADO" && (
+                      <button
+                        className="btn-danger-inline"
+                        onClick={() => cancelarReserva(r.id)}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -166,36 +181,48 @@ export default function MisReservasCancha() {
           <div className="modal">
             <div className="modal-header">Detalle de reserva</div>
 
-            <div className="modal-body">
-              <p>
-                <b>Fecha:</b> {detalle.fecha}
-              </p>
-              <p>
-                <b>Horario:</b> {detalle.horaInicio} - {detalle.horaFin}
-              </p>
-              <p>
-                {detalle.estado === "RESERVADO" && detalle.qrToken && (
-                  <b>QR:</b>
-                )}
-              </p>
-              <p>
-                {detalle.estado === "RESERVADO" && detalle.qrToken && (
-                  <QRCodeCanvas value={detalle.qrToken} size={200} />
-                )}
-              </p>
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span>Fecha</span>
+                <strong>{detalle.fecha}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Horario</span>
+                <strong>
+                  {detalle.horaInicio} - {detalle.horaFin}
+                </strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Estado</span>
+                <strong>{detalle.estado}</strong>
+              </div>
+              {detalle.estado === "RESERVADO" && detalle.qrToken && (
+                <div
+                  className="detail-item detail-item--full"
+                  style={{ justifyItems: "center" }}
+                >
+                  <span>Codigo QR</span>
+                  <QRCodeCanvas value={detalle.qrToken} size={180} />
+                </div>
+              )}
             </div>
 
             <div className="modal-footer">
               {detalle.estado === "RESERVADO" && detalle.qrToken && (
                 <button className="btn" onClick={imprimirQR}>
-                  🖨 Imprimir QR
+                  Imprimir QR
                 </button>
               )}
-              <button onClick={() => setDetalle(null)}>Cerrar</button>
+              <button
+                className="btn-secondary"
+                onClick={() => setDetalle(null)}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

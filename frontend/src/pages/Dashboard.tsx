@@ -154,8 +154,11 @@ export default function Dashboard() {
   }, [token]);
 
   return (
-    <>
-      <h2>📊 Dashboard de Reservas</h2>
+    <div className="flow-stack">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Panel administrativo</span>
+        <h2>Dashboard de reservas</h2>
+      </div>
 
       {loading && <p>Cargando reservas...</p>}
 
@@ -205,39 +208,39 @@ export default function Dashboard() {
 
                     if (estado === "VALIDADA") {
                       return (
-                        <span style={{ color: "#00e676", fontWeight: "bold" }}>
-                          ✅ Validada correctamente
+                        <span className="status-pill status-pill--success">
+                          Validada correctamente
                         </span>
                       );
                     }
 
                     if (estado === "ASISTIDA_FINALIZADA") {
                       return (
-                        <span style={{ color: "#2196f3", fontWeight: "bold" }}>
-                          ✔ Asistida y finalizada
+                        <span className="status-pill status-pill--info">
+                          Asistida y finalizada
                         </span>
                       );
                     }
 
                     if (estado === "NO_ASISTIO") {
                       return (
-                        <span style={{ color: "#ff5252", fontWeight: "bold" }}>
-                          ❌ No asistió
+                        <span className="status-pill status-pill--danger">
+                          No asistio
                         </span>
                       );
                     }
 
                     if (estado === "FUTURA") {
                       return (
-                        <span style={{ color: "#ff9800", fontWeight: "bold" }}>
-                          🕓 Se validará el día indicado
+                        <span className="status-pill status-pill--pending">
+                          Se validara el dia indicado
                         </span>
                       );
                     }
 
                     if (estado === "DISPONIBLE_VALIDAR") {
                       return (
-                        <>
+                        <div className="table-actions">
                           <button
                             onClick={() => {
                               setReservaQR(reserva);
@@ -250,7 +253,7 @@ export default function Dashboard() {
                           <button onClick={() => setDetalle(reserva)}>
                             Ver
                           </button>
-                        </>
+                        </div>
                       );
                     }
                   })()}
@@ -264,31 +267,49 @@ export default function Dashboard() {
       {detalle && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Detalle de reserva</h3>
+            <div className="modal-header">Detalle de reserva</div>
 
-            <p>
-              <b>Cédula:</b> {detalle.cedula}
-            </p>
-            <p>
-              <b>Nombre:</b> {detalle.nombres}
-            </p>
-            <p>
-              <b>Área:</b> {detalle.nombreArea}
-            </p>
-            <p>
-              <b>Institución:</b> {detalle.nombreInstitucion}
-            </p>
-            <p>
-              <b>Fecha:</b> {detalle.fecha}
-            </p>
-            <p>
-              <b>Horario:</b> {detalle.horaInicio} - {detalle.horaFin}
-            </p>
-            <p>
-              <b>Tipo:</b> {detalle.tipoUsuario}
-            </p>
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span>Cedula</span>
+                <strong>{detalle.cedula}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Nombre</span>
+                <strong>{detalle.nombres}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Area</span>
+                <strong>{detalle.nombreArea}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Institucion</span>
+                <strong>{detalle.nombreInstitucion}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Fecha</span>
+                <strong>{detalle.fecha}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Horario</span>
+                <strong>
+                  {detalle.horaInicio} - {detalle.horaFin}
+                </strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Tipo de usuario</span>
+                <strong>{detalle.tipoUsuario}</strong>
+              </div>
+            </div>
 
-            <button onClick={() => setDetalle(null)}>Cerrar</button>
+            <div className="modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setDetalle(null)}
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -296,32 +317,35 @@ export default function Dashboard() {
       {mostrarQR && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Validar QR</h3>
+            <div className="modal-header">Validar QR</div>
 
-            <p>
-              Reserva de: <b>{reservaQR?.nombres}</b>
+            <p className="modal-lead">
+              Reserva de <strong>{reservaQR?.nombres}</strong>
             </p>
 
             <input
               placeholder="Escanee o pegue el código QR"
               value={codigoQR}
               onChange={(e) => setCodigoQR(e.target.value)}
-              style={{ width: "100%", padding: "10px" }}
             />
 
-            <br />
-            <br />
+            <div className="modal-footer">
+              <button className="btn-primary" onClick={validarQR}>
+                Validar
+              </button>
 
-            <button onClick={validarQR}>Validar</button>
+              <button
+                className="btn-secondary"
+                onClick={() => setMostrarQR(false)}
+              >
+                Cancelar
+              </button>
+            </div>
 
-            <button onClick={() => setMostrarQR(false)}>Cancelar</button>
-
-            {mensajeQR && (
-              <p style={{ marginTop: "10px", fontWeight: 600 }}>{mensajeQR}</p>
-            )}
+            {mensajeQR && <p className="hint">{mensajeQR}</p>}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

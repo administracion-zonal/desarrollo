@@ -83,8 +83,11 @@ export default function MisReservas() {
   if (error) return <p className="error">{error}</p>;
 
   return (
-    <>
-      <h2>📅 Mis Reservas Coworking</h2>
+    <div className="flow-stack">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Coworking</span>
+        <h2>Mis reservas</h2>
+      </div>
 
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
@@ -107,16 +110,18 @@ export default function MisReservas() {
                 </td>
                 <td>{r.nombreArea}</td>
                 <td>
-                  <button onClick={() => setDetalle(r)}>Ver</button>
+                  <div className="table-actions">
+                    <button onClick={() => setDetalle(r)}>Ver</button>
 
-                  {r.puedeCancelar && (
-                    <button
-                      style={{ color: "red" }}
-                      onClick={() => cancelarReserva(r.id)}
-                    >
-                      Cancelar
-                    </button>
-                  )}
+                    {r.puedeCancelar && (
+                      <button
+                        className="btn-danger-inline"
+                        onClick={() => cancelarReserva(r.id)}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -163,14 +168,19 @@ export default function MisReservas() {
             <div className="modal-footer">
               {detalle.vigente && detalle.qrToken && (
                 <button className="btn" onClick={imprimirQR}>
-                  🖨 Imprimir QR
+                  Imprimir QR
                 </button>
               )}
-              <button onClick={() => setDetalle(null)}>Cerrar</button>
+              <button
+                className="btn-secondary"
+                onClick={() => setDetalle(null)}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

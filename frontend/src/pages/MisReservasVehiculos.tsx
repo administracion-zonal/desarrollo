@@ -68,8 +68,13 @@ export default function MisReservasVehiculos() {
   /* ================= UI ================= */
 
   return (
-    <>
-      <h2>🚗 Mis Reservas Vehículos</h2>
+    <div className="flow-stack">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">
+          Movilidad institucional
+        </span>
+        <h2>Mis solicitudes y reservas de vehiculos</h2>
+      </div>
 
       <div className="tabs-container">
         <button
@@ -122,7 +127,7 @@ export default function MisReservasVehiculos() {
                         </button>
 
                         <button
-                          style={{ color: "red", marginLeft: "10px" }}
+                          className="btn-danger-inline"
                           onClick={() => cancelarSolicitud(s.id)}
                         >
                           Cancelar
@@ -161,9 +166,17 @@ export default function MisReservasVehiculos() {
                       <td>{r.destino}</td>
 
                       <td>
-                        {r.estado === "PENDIENTE" && "🟡 Pendiente"}
-                        {r.estado === "APROBADA" && "🟢 Aprobado"}
-                        {r.estado === "RECHAZADO" && "🔴 Rechazado"}
+                        <span
+                          className={`status-pill ${
+                            r.estado === "APROBADA"
+                              ? "status-pill--success"
+                              : r.estado === "RECHAZADO"
+                                ? "status-pill--danger"
+                                : "status-pill--pending"
+                          }`}
+                        >
+                          {r.estado}
+                        </span>
                       </td>
 
                       <td>
@@ -183,17 +196,56 @@ export default function MisReservasVehiculos() {
           <div className="modal">
             <div className="modal-header">Detalle de solicitud</div>
 
-            <div className="field">
-              <label>Fecha:</label>
-              <input readOnly value={detalleSolicitud.fecha} />
-              <label>Destino:</label>
-              <input readOnly value={detalleSolicitud.destino} />
-              <label>Motivo:</label>
-              <input readOnly value={detalleSolicitud.motivo} />
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span>Fecha</span>
+                <strong>{detalleSolicitud.fecha}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Horario</span>
+                <strong>
+                  {detalleSolicitud.horaInicio} - {detalleSolicitud.horaFin}
+                </strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Motivo</span>
+                <strong>{detalleSolicitud.motivo || "Sin motivo"}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Origen</span>
+                <strong>{detalleSolicitud.origen || "No registrado"}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Destino</span>
+                <strong>{detalleSolicitud.destino || "No registrado"}</strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Servidores / acompanantes</span>
+                <strong>
+                  {detalleSolicitud.servidores || "No registrado"}
+                </strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Observaciones</span>
+                <strong>
+                  {detalleSolicitud.observaciones || "Sin observaciones"}
+                </strong>
+              </div>
+              {detalleSolicitud.observacionRechazo && (
+                <div className="detail-item detail-item--full">
+                  <span>Observacion de rechazo</span>
+                  <strong>{detalleSolicitud.observacionRechazo}</strong>
+                </div>
+              )}
             </div>
 
             <div className="modal-footer">
-              <button onClick={() => setDetalleSolicitud(null)}>Cerrar</button>
+              <button
+                className="btn-secondary"
+                onClick={() => setDetalleSolicitud(null)}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
@@ -205,35 +257,50 @@ export default function MisReservasVehiculos() {
           <div className="modal">
             <div className="modal-header">Detalle de reserva</div>
 
-            <div className="field">
-              <label>Fecha:</label>
-              <input readOnly value={detalle.fechaReserva} />
-
-              <label>Destino:</label>
-              <input readOnly value={detalle.destino} />
-
-              <label>Motivo:</label>
-              <input readOnly value={detalle.observaciones} />
-
-              <label>Chofer asignado:</label>
-              <input readOnly value={detalle.nombreChofer} />
-
-              <label>Vehículo:</label>
-              <input
-                readOnly
-                value={`${detalle.marcaVehiculo} ${detalle.modeloVehiculo}`}
-              />
-
-              <label>Placa:</label>
-              <input readOnly value={detalle.placaVehiculo} />
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span>Fecha</span>
+                <strong>{detalle.fechaReserva}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Horario</span>
+                <strong>
+                  {detalle.horaInicio} - {detalle.horaFin}
+                </strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Destino</span>
+                <strong>{detalle.destino}</strong>
+              </div>
+              <div className="detail-item detail-item--full">
+                <span>Detalle del recorrido</span>
+                <strong>{detalle.observaciones || "Sin observaciones"}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Chofer asignado</span>
+                <strong>{detalle.nombreChofer}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Vehiculo</span>
+                <strong>{`${detalle.marcaVehiculo} ${detalle.modeloVehiculo}`}</strong>
+              </div>
+              <div className="detail-item">
+                <span>Placa</span>
+                <strong>{detalle.placaVehiculo}</strong>
+              </div>
             </div>
 
             <div className="modal-footer">
-              <button onClick={() => setDetalle(null)}>Cerrar</button>
+              <button
+                className="btn-secondary"
+                onClick={() => setDetalle(null)}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

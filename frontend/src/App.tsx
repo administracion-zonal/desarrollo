@@ -9,9 +9,9 @@ import Menu from "./components/Menu";
 import AuthProvider from "./context/AuthProvider";
 import { useAuth } from "./context/useAuth";
 import AdminSolicitudesVehiculo from "./pages/AdminSolicitudesVehiculo";
-import AdminVehiculos from "./pages/AdminVehiculos";
 import CambiarPassword from "./pages/CambiarPassword";
 import ChecklistWizard from "./pages/ChecklistWizard";
+import ChoferReservasAsignadas from "./pages/ChoferReservasAsignadas";
 import Dashboard from "./pages/Dashboard";
 import DashboardCancha from "./pages/DashboardCancha";
 import GestionTH from "./pages/GestionTH";
@@ -23,7 +23,6 @@ import Perfil from "./pages/Perfil";
 import Registro from "./pages/Registro";
 import ReservaCanchaForm from "./pages/ReservaCanchaForm";
 import ReservaForm from "./pages/ReservaForm";
-import ReservaPublica from "./pages/ReservaPublica";
 import ReservaVehiculoForm from "./pages/ReservaVehiculoForm";
 /* =========================
    PRIVATE ROUTE
@@ -37,7 +36,7 @@ function PrivateRoute({ children }: Props) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ padding: "20px" }}>Cargando sesión...</div>;
+    return <div className="route-loader">Cargando sesion...</div>;
   }
 
   if (!user) {
@@ -54,26 +53,12 @@ function AppContent() {
   const { user } = useAuth();
 
   return (
-    <>
-      {/* MENU SOLO SI ESTÁ LOGUEADO */}
+    <div className="app-content">
       {user && <Menu />}
 
       <Routes>
-        {/* =========================
-           HOME PÚBLICO
-        ========================= */}
-        <Route
-          path="/"
-          element={
-            <PublicLayout>
-              <ReservaPublica />
-            </PublicLayout>
-          }
-        />
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* =========================
-           LOGIN
-        ========================= */}
         <Route
           path="/login"
           element={
@@ -83,9 +68,6 @@ function AppContent() {
           }
         />
 
-        {/* =========================
-           REGISTRO
-        ========================= */}
         <Route
           path="/registro"
           element={
@@ -94,10 +76,6 @@ function AppContent() {
             </PublicLayout>
           }
         />
-
-        {/* =========================
-           PERFIL
-        ========================= */}
 
         <Route
           path="/checklist"
@@ -132,9 +110,6 @@ function AppContent() {
           }
         />
 
-        {/* =========================
-           DASHBOARD ADMIN
-        ========================= */}
         <Route
           path="/dashboard"
           element={
@@ -168,10 +143,6 @@ function AppContent() {
           }
         />
 
-        {/* =========================
-           MIS RESERVAS
-           PRIVADO / ESTUDIANTE / ADMIN
-        ========================= */}
         <Route
           path="/mis-reservas"
           element={
@@ -194,17 +165,15 @@ function AppContent() {
           }
         />
 
-        {/* =========================
-           NUEVA RUTA → RESERVAS COWORKING
-           ADMIN Y USUARIOS PUEDEN RESERVAR
-        ========================= */}
-        <Route path="/coworking" element={<ReservaPublica />} />
+        <Route path="/coworking" element={<Navigate to="/login" replace />} />
 
         <Route
           path="/reservar"
           element={
             <PrivateRoute>
-              <ReservaForm />
+              <PrivateLayout>
+                <ReservaForm />
+              </PrivateLayout>
             </PrivateRoute>
           }
         />
@@ -213,14 +182,12 @@ function AppContent() {
           path="/cancha"
           element={
             <PrivateRoute>
-              <ReservaCanchaForm />
+              <PrivateLayout>
+                <ReservaCanchaForm />
+              </PrivateLayout>
             </PrivateRoute>
           }
         />
-
-        {/* =========================
-              VEHICULOS
-            ========================= */}
 
         <Route
           path="/vehiculos/reservar"
@@ -232,10 +199,6 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-
-        {/* =========================
-              TALENTO HUMANO
-            ========================= */}
 
         <Route
           path="/gestion-th"
@@ -260,22 +223,29 @@ function AppContent() {
         />
 
         <Route
+          path="/vehiculos/chofer"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <ChoferReservasAsignadas />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/vehiculos/admin"
           element={
             <AdminRoute>
               <PrivateLayout>
-                <AdminVehiculos />
+                <AdminSolicitudesVehiculo />
               </PrivateLayout>
             </AdminRoute>
           }
         />
-
-        {/* =========================
-           FALLBACK
-        ========================= */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </div>
   );
 }
 

@@ -6,7 +6,7 @@ import type { Reserva } from "../types/Reserva";
 import { apiFetch } from "../utils/api";
 import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
 import { solapada } from "../utils/reservaUtils";
-import { generarBloques, toMinutes } from "../utils/timeUtils";
+import { esBloquePasado, generarBloques, toMinutes } from "../utils/timeUtils";
 import { validarCedula } from "../utils/validaciones";
 
 const API_RESERVAS = `/api/public/reservas`;
@@ -47,6 +47,7 @@ export default function ReservaForm() {
   const bloqueBloqueado = (hora: string) => (cuposPorBloque[hora] ?? 0) === 0;
 
   const seleccionarHora = (hora: string) => {
+    if (esBloquePasado(form.fecha, hora)) return;
     if (bloqueBloqueado(hora)) return;
 
     // Primer click → inicio
@@ -247,9 +248,12 @@ export default function ReservaForm() {
 
   /* ================= UI ================= */
   return (
-    <>
-      <h2 style={{ textAlign: "center" }}>Reserva Coworking</h2>
-      <div className="reserva-layout">
+    <div className="reservation-page">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Coworking</span>
+        <h2>Reserva de espacios</h2>
+      </div>
+      <div className="reserva-layout reserva-layout--compact">
         <div className="reserva-content">
           <div className="form-panel">
             <>
@@ -258,7 +262,7 @@ export default function ReservaForm() {
                   {/* 🔹 DESDE AQUÍ TODOS VEN */}
 
                   <div className={`fade-in form-grid-2`}>
-                    <div className="field">
+                    <div className="field span-2">
                       <label>Área</label>
                       <select
                         name="nombreArea"
@@ -330,6 +334,7 @@ export default function ReservaForm() {
                       <div className="time-grid">
                         {generarBloques().map((hora) => {
                           const bloqueada = bloqueBloqueado(hora);
+                          const horaPasada = esBloquePasado(form.fecha, hora);
                           const esInicio = hora === horaInicioSel;
                           const esFin = hora === horaFinSel;
 
@@ -345,7 +350,11 @@ export default function ReservaForm() {
                             <button
                               key={hora}
                               type="button"
-                              disabled={bloqueada || cuposDisponibles === 0}
+                              disabled={
+                                bloqueada ||
+                                cuposDisponibles === 0 ||
+                                horaPasada
+                              }
                               className={`time-slot
                               ${bloqueada ? "blocked" : ""}
                               ${seleccionada ? "selected" : ""}
@@ -396,29 +405,23 @@ export default function ReservaForm() {
                 )}
 
               {reservaCreada && (
-                <div style={{ textAlign: "center", marginTop: "30px" }}>
-                  <div ref={qrRef}>
+                <div className="reservation-summary">
+                  <div className="reservation-summary__card" ref={qrRef}>
                     <h3>Tu código de acceso</h3>
 
-                    <p style={{ fontSize: "15px", marginBottom: "10px" }}>
+                    <p className="reservation-summary__meta">
                       Gracias por confiar en la{" "}
                       <b>Administración Zonal Valle de los Chillos</b>.
                     </p>
 
-                    <p style={{ fontSize: "14px" }}>
+                    <p className="reservation-summary__meta">
                       Su reserva es para el día <b>{reservaCreada.fecha}</b>
                       <br />
                       en el horario de <b>{reservaCreada.horaInicio}</b> a{" "}
                       <b>{reservaCreada.horaFin}</b>
                     </p>
 
-                    <p
-                      style={{
-                        marginTop: "10px",
-                        fontSize: "13px",
-                        color: "#555",
-                      }}
-                    >
+                    <p className="reservation-summary__meta">
                       Código de validación:
                     </p>
 
@@ -427,29 +430,25 @@ export default function ReservaForm() {
                       size={220}
                     />
 
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        color: "#777",
-                        marginTop: "8px",
-                      }}
-                    >
+                    <p className="reservation-summary__code">
                       {reservaCreada.qrToken}
                     </p>
 
-                    <p style={{ fontSize: "12px", marginTop: "10px" }}>
+                    <p className="reservation-summary__code">
                       Presente este código al momento de su ingreso.
                     </p>
                   </div>
-                  <button className="btn" onClick={imprimirQR}>
-                    🖨 Imprimir QR
-                  </button>
+                  <div className="reservation-summary__actions">
+                    <button className="btn" onClick={imprimirQR}>
+                      Imprimir QR
+                    </button>
+                  </div>
                 </div>
               )}
             </>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

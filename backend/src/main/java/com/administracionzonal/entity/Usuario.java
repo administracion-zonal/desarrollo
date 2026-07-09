@@ -1,5 +1,6 @@
 package com.administracionzonal.entity;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +55,27 @@ public class Usuario {
 
     @Column(name = "tipo_usuario")
     private String tipoUsuario;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+    @Column(name = "bloqueado")
+    private Boolean bloqueado = false;
+
+    @Column(name = "motivo_bloqueo")
+    private String motivoBloqueo;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuarios_roles", schema = "administracionzonal", joinColumns = @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario"), inverseJoinColumns = @JoinColumn(name = "id_rol", referencedColumnName = "id_rol"))

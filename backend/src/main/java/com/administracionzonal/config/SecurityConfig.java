@@ -70,6 +70,8 @@ public class SecurityConfig {
                                                 .authenticated()
                                                 .requestMatchers(HttpMethod.PUT, "/api/usuarios/actualizar")
                                                 .authenticated()
+                                                .requestMatchers(HttpMethod.PUT, "/api/usuarios/*/desbloquear")
+                                                .hasAnyRole("ADMIN", "TALENTO_HUMANO")
                                                 .requestMatchers("/api/auth/**").permitAll()
 
                                                 .requestMatchers("/api/public/**").permitAll()
@@ -85,11 +87,11 @@ public class SecurityConfig {
                                                  * =========================
                                                  */
 
-                                                .requestMatchers("/api/cancha/disponibilidad").permitAll()
+                                                .requestMatchers("/api/cancha/disponibilidad").authenticated()
 
                                                 // usuarios
                                                 // .requestMatchers("/api/cancha").authenticated()
-                                                .requestMatchers("/api/cancha").permitAll()
+                                                .requestMatchers("/api/cancha").authenticated()
                                                 .requestMatchers("/api/cancha/mis").authenticated()
                                                 .requestMatchers("/api/cancha/*/cancelar").authenticated()
                                                 // admin
@@ -102,44 +104,51 @@ public class SecurityConfig {
                                                  * =========================
                                                  */
 
-                                                .requestMatchers("/api/vehiculos/choferes").permitAll() // 👈 AQUI
+                                                .requestMatchers("/api/vehiculos/chofer/orden-movilizacion/**")
+                                                .hasAnyRole("CHOFER", "ADMIN", "ADMIN_VEHICULOS")
+
+                                                .requestMatchers("/api/vehiculos/chofer/**")
+                                                .hasAnyRole("CHOFER", "ADMIN", "ADMIN_VEHICULOS")
+
+                                                .requestMatchers("/api/vehiculos/choferes")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/**")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN", "ADMIN_VEHICULOS")
+                                                .hasAnyRole(
+                                                                "SERVIDOR_AZVCH",
+                                                                "CHOFER",
+                                                                "ADMIN",
+                                                                "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/**")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
+                                                .hasAnyRole("SERVIDOR_AZVCH", "CHOFER", "ADMIN", "ADMIN_VEHICULOS")
 
                                                 // crear reserva (usuarios normales)
                                                 .requestMatchers(HttpMethod.POST, "/api/vehiculos/reservar")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
+                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN", "ADMIN_VEHICULOS")
 
                                                 // ver mis reservas
                                                 .requestMatchers(HttpMethod.GET, "/api/vehiculos/solicitudes/mis")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
+                                                .hasAnyRole("SERVIDOR_AZVCH", "CHOFER", "ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers(HttpMethod.GET, "/vehiculos/mis")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
+                                                .hasAnyRole("SERVIDOR_AZVCH", "CHOFER", "ADMIN", "ADMIN_VEHICULOS")
 
                                                 // admin gestiona todo
                                                 .requestMatchers("/api/vehiculos/admin/**")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
-                                                // chofer
-                                                .requestMatchers("/api/vehiculos/chofer/**")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN")
-
-                                                .requestMatchers("/api/vehiculos/admin/salvoconducto/**")
-                                                .hasRole("ADMIN")
+                                                .requestMatchers("/api/vehiculos/admin/orden-movilizacion/**")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/pendientes")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/*/aprobar")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/*/rechazar")
-                                                .hasRole("ADMIN")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 /*
                                                  * =========================

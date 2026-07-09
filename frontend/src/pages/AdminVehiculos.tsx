@@ -51,7 +51,7 @@ export default function AdminVehiculos() {
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = `salvoconducto_${id}.pdf`;
+      link.download = `orden_movilizacion_${id}.pdf`;
       link.click();
 
       window.URL.revokeObjectURL(url);

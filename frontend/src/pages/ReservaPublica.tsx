@@ -374,308 +374,304 @@ export default function ReservaPublica() {
 
   /* ================= UI ================= */
   return (
-    <div className="reserva-layout">
-      {/* VIDEO SOLO SI NO ESTÁ LOGUEADO */}
-      {!user && (
-        <div className="video-panel">
-          <video src="./videos/coworking.mp4" autoPlay muted loop playsInline />
-        </div>
-      )}
+    <div className="reservation-page">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Coworking</span>
+        <h2>Reserva pública de espacios</h2>
+        <p>
+          Complete sus datos, seleccione el área y confirme su ingreso desde un
+          flujo visual más claro para usuarios públicos e institucionales.
+        </p>
+      </div>
 
-      <div className="reserva-content">
-        <div className="form-panel">
-          <>
-            {!reservaCreada && (
-              <form onSubmit={handleSubmit} noValidate>
-                {/* 🔓 SOLO SI NO ESTÁ LOGUEADO */}
-                {!user && (
-                  <>
-                    <label
-                      style={{
-                        textAlign: "center",
-                        fontWeight: 600,
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Cédula
-                    </label>
+      <div className="reserva-layout">
+        {!user && (
+          <div className="video-panel">
+            <video
+              src="./videos/coworking.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          </div>
+        )}
 
-                    <input
-                      style={{ padding: "10px", width: "73%" }}
-                      ref={cedulaRef}
-                      name="cedula"
-                      value={form.cedula}
-                      maxLength={10}
-                      onChange={handleChange}
-                      onBlur={validarCedulaBlur}
-                    />
+        <div className="reserva-content">
+          <div className="form-panel">
+            <>
+              {!reservaCreada && (
+                <form onSubmit={handleSubmit} noValidate>
+                  {!user && (
+                    <div className="reservation-centered-field">
+                      <label>Cédula</label>
 
-                    {mensajeCedula && (
-                      <p className="error" style={{ marginTop: "-10px" }}>
-                        {mensajeCedula}
-                      </p>
-                    )}
-                  </>
-                )}
-
-                {/* FORMULARIO */}
-                {(mostrarFormulario || user) && (
-                  <div
-                    className={`fade-in form-grid-2 ${
-                      reseteando ? "fade-out" : ""
-                    }`}
-                  >
-                    {/* 🔓 CAMPOS PERSONALES SOLO SI NO ESTÁ LOGUEADO */}
-                    {!user && (
-                      <>
-                        <div className="field span-2">
-                          <label>Nombres</label>
-                          <input
-                            name="nombres"
-                            value={form.nombres}
-                            disabled={bloquearNombre}
-                            onChange={handleChange}
-                          />
-
-                          {!bloquearNombre &&
-                            form.nombres &&
-                            !nombreCompletoValido(form.nombres) && (
-                              <p className="error">
-                                Debe ingresar al menos un nombre y un apellido
-                              </p>
-                            )}
-
-                          <label>Correo Persona</label>
-                          <input
-                            name="correo"
-                            type="email"
-                            placeholder="Correo personal"
-                            value={form.correo}
-                            disabled={bloquearCorreo}
-                            onChange={handleChange}
-                          />
-                        </div>
-
-                        <div className="field">
-                          <label>Tipo usuario</label>
-                          <select
-                            name="tipoUsuario"
-                            value={form.tipoUsuario}
-                            disabled={!!form.tipoUsuario}
-                            onChange={handleChange}
-                          >
-                            <option value="">Seleccione</option>
-                            <option value="PRIVADO">PRIVADO</option>
-                            <option value="ESTUDIANTE">ESTUDIANTE</option>
-                            <option value="SERVIDOR_PUBLICO">
-                              SERVIDOR PUBLICO
-                            </option>
-                            <option value="SERVIDOR_AZVCH">
-                              SERVIDOR AZVCH
-                            </option>
-                          </select>
-                        </div>
-                      </>
-                    )}
-
-                    {/* 🔹 DESDE AQUÍ TODOS VEN */}
-                    <div className="field">
-                      <label>Área</label>
-                      <select
-                        name="nombreArea"
-                        value={form.nombreArea}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setForm((prev) => ({
-                            ...prev,
-                            nombreArea: value,
-                            fecha: "",
-                            horaInicio: "",
-                            horaFin: "",
-                          }));
-
-                          setHoraInicioSel(null);
-                          setHoraFinSel(null);
-                          setHorasBloqueadas([]);
-                          setCuposPorBloque({});
-                        }}
-                      >
-                        <option value="">Seleccione</option>
-                        <option value="SALA_REUNIONES">SALA REUNIONES</option>
-                        <option value="TRABAJO_INDIVIDUAL">
-                          TRABAJO INDIVIDUAL
-                        </option>
-                        <option value="COMPARTIDO_A">COMPARTIDO A</option>
-                        <option value="COMPARTIDO_B">COMPARTIDO B</option>
-                      </select>
-                    </div>
-
-                    <div className="field span-2">
-                      <label>Institución a la que pertenece</label>
                       <input
-                        name="nombreInstitucion"
-                        value={form.nombreInstitucion}
+                        ref={cedulaRef}
+                        name="cedula"
+                        value={form.cedula}
+                        maxLength={10}
                         onChange={handleChange}
+                        onBlur={validarCedulaBlur}
                       />
+
+                      {mensajeCedula && (
+                        <p className="error span-2">{mensajeCedula}</p>
+                      )}
                     </div>
+                  )}
 
-                    <div className="field span-2">
-                      <label>Fecha</label>
-                      <input
-                        type="date"
-                        name="fecha"
-                        value={form.fecha}
-                        min={new Date().toISOString().split("T")[0]}
-                        onKeyDown={(e) => e.preventDefault()} // evita escribir manual
-                        onFocus={(e) => e.target.showPicker?.()}
-                        onChange={(e) => {
-                          const value = e.target.value;
+                  {(mostrarFormulario || user) && (
+                    <div
+                      className={`fade-in form-grid-2 ${
+                        reseteando ? "fade-out" : ""
+                      }`}
+                    >
+                      {!user && (
+                        <>
+                          <div className="field span-2">
+                            <label>Nombres</label>
+                            <input
+                              name="nombres"
+                              value={form.nombres}
+                              disabled={bloquearNombre}
+                              onChange={handleChange}
+                            />
 
-                          if (esFinDeSemana(value)) {
-                            alert(
-                              "Solo se permiten reservas de lunes a viernes",
-                            );
-                            return;
-                          }
+                            {!bloquearNombre &&
+                              form.nombres &&
+                              !nombreCompletoValido(form.nombres) && (
+                                <p className="error">
+                                  Debe ingresar al menos un nombre y un apellido
+                                </p>
+                              )}
 
-                          setForm((prev) => ({
-                            ...prev,
-                            fecha: value,
-                          }));
-                        }}
-                      />
-                    </div>
+                            <label>Correo Persona</label>
+                            <input
+                              name="correo"
+                              type="email"
+                              placeholder="Correo personal"
+                              value={form.correo}
+                              disabled={bloquearCorreo}
+                              onChange={handleChange}
+                            />
+                          </div>
 
-                    <div className="field span-2">
-                      <label>Horario y cupos disponible</label>
+                          <div className="field">
+                            <label>Tipo usuario</label>
+                            <select
+                              name="tipoUsuario"
+                              value={form.tipoUsuario}
+                              disabled={!!form.tipoUsuario}
+                              onChange={handleChange}
+                            >
+                              <option value="">Seleccione</option>
+                              <option value="PRIVADO">PRIVADO</option>
+                              <option value="ESTUDIANTE">ESTUDIANTE</option>
+                              <option value="SERVIDOR_PUBLICO">
+                                SERVIDOR PUBLICO
+                              </option>
+                              <option value="SERVIDOR_AZVCH">
+                                SERVIDOR AZVCH
+                              </option>
+                            </select>
+                          </div>
+                        </>
+                      )}
 
-                      <div className="time-grid">
-                        {generarBloques().map((hora) => {
-                          const bloqueada = bloqueBloqueado(hora);
-                          const esInicio = hora === horaInicioSel;
-                          const esFin = hora === horaFinSel;
+                      {/* 🔹 DESDE AQUÍ TODOS VEN */}
+                      <div className="field">
+                        <label>Área</label>
+                        <select
+                          name="nombreArea"
+                          value={form.nombreArea}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setForm((prev) => ({
+                              ...prev,
+                              nombreArea: value,
+                              fecha: "",
+                              horaInicio: "",
+                              horaFin: "",
+                            }));
 
-                          const seleccionada =
-                            horaInicioSel &&
-                            horaFinSel &&
-                            toMinutes(hora) >= toMinutes(horaInicioSel) &&
-                            toMinutes(hora) <= toMinutes(horaFinSel);
+                            setHoraInicioSel(null);
+                            setHoraFinSel(null);
+                            setHorasBloqueadas([]);
+                            setCuposPorBloque({});
+                          }}
+                        >
+                          <option value="">Seleccione</option>
+                          <option value="SALA_REUNIONES">SALA REUNIONES</option>
+                          <option value="TRABAJO_INDIVIDUAL">
+                            TRABAJO INDIVIDUAL
+                          </option>
+                          <option value="COMPARTIDO_A">COMPARTIDO A</option>
+                          <option value="COMPARTIDO_B">COMPARTIDO B</option>
+                        </select>
+                      </div>
 
-                          const cuposDisponibles = cuposPorBloque[hora] ?? 0;
+                      <div className="field span-2">
+                        <label>Institución a la que pertenece</label>
+                        <input
+                          name="nombreInstitucion"
+                          value={form.nombreInstitucion}
+                          onChange={handleChange}
+                        />
+                      </div>
 
-                          return (
-                            <button
-                              key={hora}
-                              type="button"
-                              disabled={bloqueada || cuposDisponibles === 0}
-                              className={`time-slot
+                      <div className="field span-2">
+                        <label>Fecha</label>
+                        <input
+                          type="date"
+                          name="fecha"
+                          value={form.fecha}
+                          min={new Date().toISOString().split("T")[0]}
+                          onKeyDown={(e) => e.preventDefault()} // evita escribir manual
+                          onFocus={(e) => e.target.showPicker?.()}
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (esFinDeSemana(value)) {
+                              alert(
+                                "Solo se permiten reservas de lunes a viernes",
+                              );
+                              return;
+                            }
+
+                            setForm((prev) => ({
+                              ...prev,
+                              fecha: value,
+                            }));
+                          }}
+                        />
+                      </div>
+
+                      <div className="field span-2">
+                        <label>Horario y cupos disponible</label>
+
+                        <div className="time-grid">
+                          {generarBloques().map((hora) => {
+                            const bloqueada = bloqueBloqueado(hora);
+                            const esInicio = hora === horaInicioSel;
+                            const esFin = hora === horaFinSel;
+
+                            const seleccionada =
+                              horaInicioSel &&
+                              horaFinSel &&
+                              toMinutes(hora) >= toMinutes(horaInicioSel) &&
+                              toMinutes(hora) <= toMinutes(horaFinSel);
+
+                            const cuposDisponibles = cuposPorBloque[hora] ?? 0;
+
+                            return (
+                              <button
+                                key={hora}
+                                type="button"
+                                disabled={bloqueada || cuposDisponibles === 0}
+                                className={`time-slot
                               ${bloqueada ? "blocked" : ""}
                               ${seleccionada ? "selected" : ""}
                               ${esInicio ? "start" : ""}
                               ${esFin ? "end" : ""}
                             `}
-                              onClick={() => seleccionarHora(hora)}
-                            >
-                              {hora}
-                              <span className="cupos-mini">
-                                {cuposDisponibles}
-                              </span>
-                            </button>
-                          );
-                        })}
+                                onClick={() => seleccionarHora(hora)}
+                              >
+                                {hora}
+                                <span className="cupos-mini">
+                                  {cuposDisponibles}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {horaInicioSel && horaFinSel && (
+                          <p className="hint">
+                            Horario seleccionado:{" "}
+                            <strong>{horaInicioSel}</strong> –{" "}
+                            <strong>{horaFinSel}</strong>
+                          </p>
+                        )}
                       </div>
 
-                      {horaInicioSel && horaFinSel && (
-                        <p className="hint">
-                          Horario seleccionado: <strong>{horaInicioSel}</strong>{" "}
-                          – <strong>{horaFinSel}</strong>
-                        </p>
-                      )}
+                      <button
+                        className="actions span-2"
+                        disabled={!formularioValido()}
+                      >
+                        Reservar
+                      </button>
+
+                      {error && <p className="error full">{error}</p>}
                     </div>
-
-                    <button
-                      className="actions span-2"
-                      disabled={!formularioValido()}
-                    >
-                      Reservar
-                    </button>
-
-                    {error && <p className="error full">{error}</p>}
-                  </div>
-                )}
-              </form>
-            )}
-
-            <AcuerdoResponsabilidadModal
-              open={mostrarModal}
-              onClose={() => setMostrarModal(false)}
-              onAccept={() => enviarReserva(true)}
-            />
-
-            {(mostrarFormulario || user) &&
-              !reservaCreada &&
-              form.nombreArea &&
-              areaImages[form.nombreArea] && (
-                <div className="area-preview">
-                  <img
-                    src={areaImages[form.nombreArea]}
-                    alt={form.nombreArea}
-                  />
-                </div>
+                  )}
+                </form>
               )}
 
-            {reservaCreada && (
-              <div style={{ textAlign: "center", marginTop: "30px" }}>
-                <div ref={qrRef}>
-                  <h3>Tu código de acceso</h3>
+              <AcuerdoResponsabilidadModal
+                open={mostrarModal}
+                onClose={() => setMostrarModal(false)}
+                onAccept={() => enviarReserva(true)}
+              />
 
-                  <p style={{ fontSize: "15px", marginBottom: "10px" }}>
-                    Gracias por confiar en la{" "}
-                    <b>Administración Zonal Valle de los Chillos</b>.
-                  </p>
+              {(mostrarFormulario || user) &&
+                !reservaCreada &&
+                form.nombreArea &&
+                areaImages[form.nombreArea] && (
+                  <div className="area-preview">
+                    <img
+                      src={areaImages[form.nombreArea]}
+                      alt={form.nombreArea}
+                    />
+                  </div>
+                )}
 
-                  <p style={{ fontSize: "14px" }}>
-                    Su reserva es para el día <b>{reservaCreada.fecha}</b>
-                    <br />
-                    en el horario de <b>{reservaCreada.horaInicio}</b> a{" "}
-                    <b>{reservaCreada.horaFin}</b>
-                  </p>
+              {reservaCreada && (
+                <div className="reservation-summary">
+                  <div className="reservation-summary__card" ref={qrRef}>
+                    <h3>Tu código de acceso</h3>
 
-                  <p
-                    style={{
-                      marginTop: "10px",
-                      fontSize: "13px",
-                      color: "#555",
-                    }}
-                  >
-                    Código de validación:
-                  </p>
+                    <p className="reservation-summary__meta">
+                      Gracias por confiar en la{" "}
+                      <b>Administración Zonal Valle de los Chillos</b>.
+                    </p>
 
-                  <QRCodeCanvas value={`${reservaCreada.qrToken}`} size={220} />
+                    <p className="reservation-summary__meta">
+                      Su reserva es para el día <b>{reservaCreada.fecha}</b>
+                      <br />
+                      en el horario de <b>{reservaCreada.horaInicio}</b> a{" "}
+                      <b>{reservaCreada.horaFin}</b>
+                    </p>
 
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "#777",
-                      marginTop: "8px",
-                    }}
-                  >
-                    {reservaCreada.qrToken}
-                  </p>
+                    <p className="reservation-summary__meta">
+                      Código de validación:
+                    </p>
 
-                  <p style={{ fontSize: "12px", marginTop: "10px" }}>
-                    Presente este código al momento de su ingreso.
-                  </p>
+                    <QRCodeCanvas
+                      value={`${reservaCreada.qrToken}`}
+                      size={220}
+                    />
+
+                    <p className="reservation-summary__code">
+                      {reservaCreada.qrToken}
+                    </p>
+
+                    <p className="reservation-summary__code">
+                      Presente este código al momento de su ingreso.
+                    </p>
+                  </div>
+                  <div className="reservation-summary__actions">
+                    <button className="btn" onClick={imprimirQR}>
+                      Imprimir QR
+                    </button>
+                    <button className="btn" onClick={nuevaReserva}>
+                      Nueva reserva
+                    </button>
+                  </div>
                 </div>
-                <button className="btn" onClick={imprimirQR}>
-                  🖨 Imprimir QR
-                </button>
-                <button className="btn" onClick={nuevaReserva}>
-                  Nueva reserva
-                </button>
-              </div>
-            )}
-          </>
+              )}
+            </>
+          </div>
         </div>
       </div>
     </div>

@@ -1,68 +1,87 @@
 /* CONTENEDOR */
-.modal-container {
+.agreement-modal-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 
   background-color: rgba(0, 0, 0, 0.75);
 
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 
   z-index: 10000;
 }
 
 /* TÍTULO */
-.modal-content h3 {
+.agreement-modal-content h3 {
   color: #0a2540;
-  margin-bottom: 12px;
+  margin: 0;
 }
 
-.modal-content p,
-.modal-content span,
-.modal-content label {
+.agreement-modal-content p,
+.agreement-modal-content span,
+.agreement-modal-content label {
   color: #1f2937; /* negro suave */
 }
 
+.agreement-modal-header-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.agreement-modal-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d0d7e2;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #243b53;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 /* CUERPO PDF */
-.modal-body {
+.agreement-modal-body {
   flex: 1;
 
   width: 100%;
-  min-height: 60vh;
-  max-height: 65vh;
+  min-height: 50vh;
+  max-height: 62vh;
 
   overflow-y: auto;
 
-  border: 1px solid #ddd;
+  border: 1px solid #d6dbe3;
   border-radius: 10px;
   margin-bottom: 12px;
 }
 
-.modal-body iframe {
+.agreement-modal-body iframe {
   width: 100%;
   height: 100%;
   border: none;
 }
 
 /* CHECK */
-.modal-check {
+.agreement-modal-check {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin: 10px 0;
   font-size: 14px;
 }
 
 /* ACCIONES */
-.modal-actions {
+.agreement-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  margin-top: 12px;
 }
 
 /* BOTONES */
@@ -81,19 +100,20 @@
 }
 
 .btn-outline {
-  background: #3d3939;
-  border: 1px solid #3d3939;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #a9b7c8;
   padding: 8px 18px;
   border-radius: 6px;
 }
 
-.modal-content {
+.agreement-modal-content {
   background-color: #ffffff; /* 🟦 blanco */
   color: #0a2540; /* 🟦 azul marino institucional */
 
   width: 100%;
-  max-width: 800px;
-  max-height: 1000px;
+  max-width: 940px;
+  max-height: 92vh;
 
   padding: 20px 24px;
 
@@ -102,4 +122,26 @@
 
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 700px) {
+  .agreement-modal-content {
+    max-width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .agreement-modal-body {
+    min-height: 56vh;
+    max-height: 66vh;
+  }
+
+  .agreement-modal-actions {
+    justify-content: stretch;
+  }
+
+  .agreement-modal-actions .btn-outline,
+  .agreement-modal-actions .btn-primary {
+    flex: 1;
+  }
 }

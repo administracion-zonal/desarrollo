@@ -75,7 +75,7 @@ export const vehiculosService = {
   },
 
   pdf: async (id: number) => {
-    const res = await fetch(`${API}/vehiculos/admin/salvoconducto/${id}`, {
+    const res = await fetch(`${API}/vehiculos/admin/orden-movilizacion/${id}`, {
       headers: getHeaders(),
     });
     await handleResponse(res);

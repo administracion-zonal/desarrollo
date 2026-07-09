@@ -43,12 +43,14 @@ public class ReservaVehiculoService {
             throw new RuntimeException("El idUsuario no puede ser null");
         }
 
-        if (dto.getIdVehiculo() == null) {
+        Long idVehiculo = dto.getIdVehiculo();
+
+        if (idVehiculo == null) {
             throw new RuntimeException("El idVehiculo no puede ser null");
         }
 
         List<ReservaVehiculo> conflictos = repository.validarDisponibilidad(
-                dto.getIdVehiculo(),
+                idVehiculo,
                 dto.getFechaReserva(),
                 dto.getHoraInicio(),
                 dto.getHoraFin());
@@ -60,7 +62,7 @@ public class ReservaVehiculoService {
         Usuario usuario = usuarioRepo.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Vehiculo vehiculo = vehiculoRepo.findById(dto.getIdVehiculo())
+        Vehiculo vehiculo = vehiculoRepo.findById(idVehiculo)
                 .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
 
         ReservaVehiculo reserva = ReservaVehiculo.builder()

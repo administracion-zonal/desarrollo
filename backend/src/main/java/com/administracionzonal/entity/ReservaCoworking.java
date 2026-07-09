@@ -1,11 +1,22 @@
 package com.administracionzonal.entity;
 
-import org.hibernate.annotations.CreationTimestamp;
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import lombok.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "reservas_coworking", schema = "administracionzonal")
@@ -39,8 +50,8 @@ public class ReservaCoworking {
     private LocalTime horaFin;
 
     @CreationTimestamp
-@Column(name = "fecha_creacion", updatable = false)
-private LocalDateTime fechaCreacion;
+    @Column(name = "fecha_creacion", updatable = false)
+    private LocalDateTime fechaCreacion;
 
     @Column(name = "qr_token", unique = true)
     private String qrToken;
@@ -49,5 +60,17 @@ private LocalDateTime fechaCreacion;
 
     private boolean asistio = false;
     private boolean noAsistio = false;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
 
 }

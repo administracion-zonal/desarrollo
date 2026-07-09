@@ -28,7 +28,12 @@ public class ReservaCanchaService {
     private final ReservaCanchaRepository repo;
     private final UsuarioService usuarioService;
 
+    private static final LocalTime HORA_MIN = LocalTime.of(8, 0);
+    private static final LocalTime HORA_MAX = LocalTime.of(16, 0);
+
     public ReservaCancha crearReserva(ReservaCanchaDTO dto) {
+
+        validarFechaHoraReserva(dto.getFecha(), dto.getHoraInicio(), dto.getHoraFin());
 
         Usuario usuario = usuarioService.obtenerOcrearUsuario(
                 dto.getCedula(),
@@ -77,6 +82,10 @@ public class ReservaCanchaService {
         r.setHoraFin(dto.getHoraFin());
         r.setQrToken(UUID.randomUUID().toString());
         r.setEstado("RESERVADO");
+        r.setCreatedAt(LocalDateTime.now());
+        r.setUpdatedAt(LocalDateTime.now());
+        r.setCreatedBy(usuario.getCedula());
+        r.setUpdatedBy(usuario.getCedula());
         return repo.save(r);
     }
 
@@ -157,6 +166,8 @@ public class ReservaCanchaService {
             // 🔥 VALIDACIÓN CORRECTA
             if (ahora.isAfter(limite)) {
                 r.setEstado("NO_ASISTIO");
+                r.setUpdatedAt(LocalDateTime.now());
+                r.setUpdatedBy("sistema");
                 repo.save(r);
             }
         }
@@ -189,6 +200,8 @@ public class ReservaCanchaService {
         }
 
         r.setEstado("ASISTIO");
+        r.setUpdatedAt(LocalDateTime.now());
+        r.setUpdatedBy("sistema");
         repo.save(r);
 
         return "Ingreso validado correctamente";
@@ -215,8 +228,31 @@ public class ReservaCanchaService {
 
         // ✅ CAMBIAR ESTADO (NO BORRAR)
         reserva.setEstado("CANCELADO");
+        reserva.setUpdatedAt(LocalDateTime.now());
+        reserva.setUpdatedBy(cedula);
 
         repo.save(reserva);
+    }
+
+    private void validarFechaHoraReserva(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
+        LocalDate hoy = LocalDate.now();
+        LocalTime ahora = LocalTime.now();
+
+        if (fecha.isBefore(hoy)) {
+            throw new RuntimeException("No puede reservar fechas anteriores");
+        }
+
+        if (!horaFin.isAfter(horaInicio)) {
+            throw new RuntimeException("La hora fin debe ser mayor a la hora inicio");
+        }
+
+        if (horaInicio.isBefore(HORA_MIN) || horaFin.isAfter(HORA_MAX)) {
+            throw new RuntimeException("Horario permitido de 08:00 a 16:00");
+        }
+
+        if (fecha.isEqual(hoy) && !horaInicio.isAfter(ahora)) {
+            throw new RuntimeException("No puede reservar en horarios pasados");
+        }
     }
 
 }

@@ -220,6 +220,10 @@ public class TalentoHumanoService {
             usuario.setAceptaAcuerdo(false);
             usuario.setInstitucion("ADMINISTRACIÓN ZONAL VALLE DE LOS CHILLOS");
             usuario.setTipoUsuario("SERVIDOR_AZVCH");
+            usuario.setCreatedAt(LocalDateTime.now());
+            usuario.setUpdatedAt(LocalDateTime.now());
+            usuario.setCreatedBy("TALENTO_HUMANO");
+            usuario.setUpdatedBy("TALENTO_HUMANO");
 
             usuario = usuarioRepository.save(usuario);
 

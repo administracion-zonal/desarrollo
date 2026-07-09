@@ -31,7 +31,15 @@ export const useVehiculos = () => {
   const cargarTodas = async () => {
     setLoading(true);
     const res = await vehiculosService.todas();
-    setData(res.data);
+
+    if (Array.isArray(res)) {
+      setData(res);
+    } else if (Array.isArray(res?.content)) {
+      setData(res.content);
+    } else {
+      setData([]);
+    }
+
     setLoading(false);
   };
 

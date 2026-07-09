@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AcuerdoResponsabilidadModal from "../components/modals/AcuerdoResponsabilidadModal";
 import { useAuth } from "../context/useAuth";
 import { apiFetch } from "../utils/api";
@@ -23,7 +23,8 @@ export default function Login() {
       });
 
       if (!res.ok) {
-        setError("Credenciales incorrectas");
+        const backendError = await res.text();
+        setError(backendError || "Credenciales incorrectas");
         return;
       }
 
@@ -41,11 +42,7 @@ export default function Login() {
       }
 
       // SOLO si acepta
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data));
       setUser(data);
-
-      navigate("/perfil", { replace: true });
 
       // 🚦 REDIRECCIÓN
       if (data.debeCambiarPassword) {
@@ -53,21 +50,20 @@ export default function Login() {
         return;
       }
 
-      if (!data.aceptaAcuerdo) {
-        setMostrarModal(true);
-        return; // 🚨 CLAVE: DETIENE TODO
-      }
-
       navigate("/perfil", { replace: true });
     } catch (err) {
       console.error(err);
-      setError("Error de conexión con el servidor");
+      if (err instanceof Error) {
+        setError(err.message || "Error de conexion con el servidor");
+      } else {
+        setError("Error de conexion con el servidor");
+      }
     }
   };
 
   const aceptarAcuerdo = async () => {
     try {
-      await apiFetch("/usuarios/aceptar-acuerdo", {
+      await apiFetch("/api/usuarios/aceptar-acuerdo", {
         method: "POST",
       });
 
@@ -95,6 +91,7 @@ export default function Login() {
   return (
     <div className="login-container">
       <form className="login-card" onSubmit={submit}>
+        <span className="auth-eyebrow">Acceso</span>
         <h2>Iniciar sesión</h2>
 
         <input
@@ -114,12 +111,16 @@ export default function Login() {
         <button type="submit">Ingresar</button>
 
         {error && <p className="login-error">{error}</p>}
+
+        <p className="auth-switch">
+          ¿Aún no tiene cuenta? <Link to="/registro">Crear registro</Link>
+        </p>
       </form>
 
       {/* MODAL DE ACUERDO */}
       <AcuerdoResponsabilidadModal
         open={mostrarModal}
-        onClose={() => {}}
+        onClose={() => setMostrarModal(false)}
         onAccept={aceptarAcuerdo}
       />
     </div>

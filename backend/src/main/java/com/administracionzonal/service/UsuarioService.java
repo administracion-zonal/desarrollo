@@ -1,5 +1,6 @@
 package com.administracionzonal.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.lang.NonNull;
@@ -97,6 +98,8 @@ public class UsuarioService {
         }
 
         usuario.setPassword(passwordEncoder.encode(dto.getPasswordNueva()));
+        usuario.setUpdatedAt(LocalDateTime.now());
+        usuario.setUpdatedBy(usuario.getCedula());
 
         usuarioRepo.save(usuario);
     }
@@ -117,7 +120,7 @@ public class UsuarioService {
 
         dto.setRoles(
                 usuario.getRoles().stream()
-                        .map(Rol::getNombre)
+                        .map(rolUsuario -> rolUsuario.getNombre())
                         .toList());
 
         if ("SERVIDOR_AZVCH".equals(usuario.getTipoUsuario())) {
@@ -159,5 +162,17 @@ public class UsuarioService {
                         .correo(u.getCorreo())
                         .build())
                 .toList();
+    }
+
+    public void desbloquearUsuario(String cedulaObjetivo, String adminCedula) {
+        Usuario usuario = usuarioRepo.findByCedula(cedulaObjetivo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setBloqueado(false);
+        usuario.setMotivoBloqueo(null);
+        usuario.setUpdatedAt(LocalDateTime.now());
+        usuario.setUpdatedBy(adminCedula != null ? adminCedula : "sistema");
+
+        usuarioRepo.save(usuario);
     }
 }

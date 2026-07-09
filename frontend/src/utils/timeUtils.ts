@@ -22,3 +22,20 @@ export const generarBloques = () => {
 
   return bloques;
 };
+
+export const esBloquePasado = (fechaISO: string, hora: string) => {
+  if (!fechaISO) return false;
+
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dd = String(hoy.getDate()).padStart(2, "0");
+  const hoyISO = `${yyyy}-${mm}-${dd}`;
+
+  if (fechaISO !== hoyISO) return false;
+
+  const minutosAhora = hoy.getHours() * 60 + hoy.getMinutes();
+  const minutosBloque = toMinutes(hora);
+
+  return minutosBloque <= minutosAhora;
+};

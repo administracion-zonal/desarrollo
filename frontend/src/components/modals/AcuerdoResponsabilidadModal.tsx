@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import acuerdoPdf from "../../assets/documentos/acuerdo.pdf?url";
 import "./AcuerdoResponsabilidadModal.css";
 
 type Props = Readonly<{
@@ -24,15 +25,25 @@ export default function AcuerdoResponsabilidadModal({
   if (!open) return null;
 
   return (
-    <div className="modal-container">
-      <div className="modal-content">
-        <h3>Acuerdo de responsabilidad</h3>
-
-        <div className="modal-body">
-          <iframe src="/src/assets/documentos/acuerdo.pdf" title="Acuerdo" />
+    <div className="agreement-modal-container">
+      <div className="agreement-modal-content">
+        <div className="agreement-modal-header-inline">
+          <h3>Acuerdo de responsabilidad</h3>
+          <button
+            type="button"
+            className="agreement-modal-close"
+            onClick={onClose}
+            aria-label="Cerrar modal"
+          >
+            ×
+          </button>
         </div>
 
-        <div className="modal-check">
+        <div className="agreement-modal-body">
+          <iframe src={acuerdoPdf} title="Acuerdo" />
+        </div>
+
+        <div className="agreement-modal-check">
           <input
             type="checkbox"
             checked={checked}
@@ -42,7 +53,9 @@ export default function AcuerdoResponsabilidadModal({
             Acepto haber leído el contenido del Acuerdo de Responsabilidad y Uso
             de Medios Electrónicos
           </span>
+        </div>
 
+        <div className="agreement-modal-actions">
           <button type="button" className="btn-outline" onClick={onClose}>
             Cancelar
           </button>

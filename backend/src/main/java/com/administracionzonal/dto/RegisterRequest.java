@@ -8,5 +8,6 @@ public class RegisterRequest {
     private String nombres;
     private String password;
     private String correo;
+    private String tipoRegistro;
     private Boolean aceptaAcuerdo;
 }

@@ -4,7 +4,7 @@ import { useAuth } from "../context/useAuth";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
 import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
-import { generarBloques, toMinutes } from "../utils/timeUtils";
+import { esBloquePasado, generarBloques, toMinutes } from "../utils/timeUtils";
 
 const API = `/api/cancha`;
 
@@ -57,6 +57,7 @@ export default function ReservaCanchaForm() {
 
   /* ================= SELECCIÓN HORAS ================= */
   const seleccionarHora = (hora: string) => {
+    if (esBloquePasado(form.fecha, hora)) return;
     if (bloqueBloqueado(hora)) return;
 
     // inicio
@@ -176,13 +177,16 @@ export default function ReservaCanchaForm() {
 
   /* ================= UI ================= */
   return (
-    <>
-      <h2 style={{ textAlign: "center" }}>⚽ Reserva de Cancha</h2>
+    <div className="reservation-page">
+      <div className="section-heading">
+        <span className="section-heading__eyebrow">Canchas</span>
+        <h2>Reserva de cancha</h2>
+      </div>
 
-      <div className="reserva-layout">
+      <div className="reserva-layout reserva-layout--compact">
         <div className="reserva-content">
-          <div className="form-grid-2">
-            <form onSubmit={handleSubmit}>
+          <div className="form-panel form-panel--narrow">
+            <form onSubmit={handleSubmit} className="form-grid-2">
               {/* FECHA */}
               <div className="field span-2">
                 <label>Fecha</label>
@@ -220,9 +224,10 @@ export default function ReservaCanchaForm() {
               <div className="field span-2">
                 <label>Horario disponible</label>
 
-                <div className="time-grid">
+                <div className="time-grid time-grid--cancha">
                   {generarBloques().map((hora) => {
                     const bloqueada = bloqueBloqueado(hora);
+                    const horaPasada = esBloquePasado(form.fecha, hora);
                     const esInicio = hora === horaInicioSel;
                     const esFin = hora === horaFinSel;
 
@@ -236,7 +241,7 @@ export default function ReservaCanchaForm() {
                       <button
                         key={hora}
                         type="button"
-                        disabled={bloqueada}
+                        disabled={bloqueada || horaPasada}
                         className={`time-slot
                           ${bloqueada ? "blocked" : ""}
                           ${seleccionada ? "selected" : ""}
@@ -265,48 +270,44 @@ export default function ReservaCanchaForm() {
               </button>
 
               {reservaCreada && (
-                <div style={{ textAlign: "center", marginTop: "20px" }}>
-                  <h3>Tu código de acceso</h3>
+                <div className="reservation-summary span-2">
+                  <div className="reservation-summary__card">
+                    <h3>Tu código de acceso</h3>
 
-                  <p style={{ fontSize: "14px" }}>
-                    Tu reserva está confirmada para el día:
-                    <br />
-                    <strong>{reservaCreada.fecha}</strong>
-                  </p>
+                    <p className="reservation-summary__meta">
+                      Tu reserva está confirmada para el día:
+                      <br />
+                      <strong>{reservaCreada.fecha}</strong>
+                    </p>
 
-                  <p style={{ fontSize: "14px" }}>
-                    Horario:
-                    <br />
-                    <strong>
-                      {reservaCreada.horaInicio} - {reservaCreada.horaFin}
-                    </strong>
-                  </p>
+                    <p className="reservation-summary__meta">
+                      Horario:
+                      <br />
+                      <strong>
+                        {reservaCreada.horaInicio} - {reservaCreada.horaFin}
+                      </strong>
+                    </p>
 
-                  <p style={{ fontSize: "13px", color: "#666" }}>
-                    Presenta este código al ingresar
-                  </p>
+                    <p className="reservation-summary__meta">
+                      Presenta este código al ingresar
+                    </p>
 
-                  <QRCodeCanvas value={reservaCreada.qrToken} size={200} />
+                    <QRCodeCanvas value={reservaCreada.qrToken} size={200} />
 
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      marginTop: "10px",
-                      color: "#888",
-                    }}
-                  >
-                    Código: {reservaCreada.qrToken}
-                  </p>
+                    <p className="reservation-summary__code">
+                      Código: {reservaCreada.qrToken}
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* MENSAJES */}
-              {error && <p className="error">{error}</p>}
-              {ok && <p style={{ color: "green" }}>{ok}</p>}
+              {error && <p className="error span-2">{error}</p>}
+              {ok && <p className="success-message span-2">{ok}</p>}
             </form>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

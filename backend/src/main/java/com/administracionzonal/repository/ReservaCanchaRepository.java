@@ -19,6 +19,8 @@ public interface ReservaCanchaRepository extends JpaRepository<ReservaCancha, Lo
             LocalDate inicio,
             LocalDate fin);
 
+    long countByUsuario_CedulaAndNoAsistioTrue(String cedula);
+
     boolean existsByUsuario_CedulaAndFecha(String cedula, LocalDate fecha);
 
     List<ReservaCancha> findByFecha(LocalDate fecha);
