@@ -202,11 +202,13 @@ public class ReservaCanchaService {
                 r.setUpdatedBy("sistema");
                 repo.save(r);
 
-                LocalDate hoy = LocalDate.now();
+                LocalDate inicioMesReserva = r.getFecha().withDayOfMonth(1);
+                LocalDate finMesReserva = r.getFecha().withDayOfMonth(
+                        r.getFecha().lengthOfMonth());
                 long faltasDelMes = repo.countByUsuario_CedulaAndFechaBetweenAndNoAsistioTrue(
                         r.getUsuario().getCedula(),
-                        hoy.withDayOfMonth(1),
-                        hoy.withDayOfMonth(hoy.lengthOfMonth()));
+                        inicioMesReserva,
+                        finMesReserva);
                 if (faltasDelMes >= 2 && !Boolean.TRUE.equals(r.getUsuario().getCanchaBloqueado())) {
                     r.getUsuario().setCanchaBloqueado(true);
                     r.getUsuario().setMotivoBloqueoCancha(
@@ -379,6 +381,10 @@ public class ReservaCanchaService {
     }
 
     private void validarFechaHoraReserva(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
+        if (fecha == null || horaInicio == null || horaFin == null) {
+            throw new IllegalArgumentException("La fecha y las horas son obligatorias");
+        }
+
         LocalDate hoy = LocalDate.now();
         LocalTime ahora = LocalTime.now();
 
