@@ -1,0 +1,46 @@
+# ======================
+# GIT / IDE
+# ======================
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# ======================
+# BACKEND JAVA / MAVEN
+# ======================
+backend/target/
+**/target/
+backend/*.log
+*.class
+
+# Archivos temporales
+*.log
+*.tmp
+
+# ======================
+# FRONTEND REACT / VITE
+# ======================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+
+# ======================
+# VARIABLES DE ENTORNO
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# ARCHIVOS CARGADOS
+# ======================
+backend/uploads/
+
+# ======================
+# SISTEMA OPERATIVO
+# ======================
+.DS_Store
+Thumbs.db
+desktop.ini
