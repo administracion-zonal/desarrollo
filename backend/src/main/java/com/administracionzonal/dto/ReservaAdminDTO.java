@@ -18,6 +18,8 @@ public class ReservaAdminDTO {
 
     private String nombreArea;
     private String nombreInstitucion;
+    private Integer numeroPersonas;
+    private String estado;
 
     private boolean asistio;
     private boolean noAsistio;

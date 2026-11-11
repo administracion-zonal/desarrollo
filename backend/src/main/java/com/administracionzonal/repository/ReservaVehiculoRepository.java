@@ -3,6 +3,7 @@ package com.administracionzonal.repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Collection;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,9 +17,9 @@ public interface ReservaVehiculoRepository extends JpaRepository<ReservaVehiculo
                 SELECT r FROM ReservaVehiculo r
                 WHERE r.vehiculo.idVehiculo = :vehiculo
                 AND r.fechaReserva = :fecha
-                AND (
-                    (r.horaInicio <= :horaFin AND r.horaFin >= :horaInicio)
-                )
+                AND COALESCE(r.estado, '') NOT IN ('RECHAZADO', 'RECHAZADA', 'CANCELADA', 'FINALIZADA')
+                AND r.horaInicio < :horaFin
+                AND r.horaFin > :horaInicio
             """)
     List<ReservaVehiculo> validarDisponibilidad(
             @Param("vehiculo") Long vehiculo,
@@ -30,18 +31,25 @@ public interface ReservaVehiculoRepository extends JpaRepository<ReservaVehiculo
                 SELECT r FROM ReservaVehiculo r
                 WHERE r.vehiculo.idVehiculo = :idVehiculo
                 AND r.fechaReserva = :fecha
-                AND r.estado <> 'RECHAZADO'
+                AND COALESCE(r.estado, '') NOT IN ('RECHAZADO', 'RECHAZADA', 'CANCELADA', 'FINALIZADA')
             """)
     List<ReservaVehiculo> buscarReservas(
             @Param("idVehiculo") Long idVehiculo,
             @Param("fecha") LocalDate fecha);
 
-    List<ReservaVehiculo> findByUsuarioIdUsuario(Long idUsuario);
+    List<ReservaVehiculo> findByUsuarioIdUsuarioOrderByIdReservaDesc(Long idUsuario);
 
     List<ReservaVehiculo> findByChoferIdUsuario(Long idChofer);
+
+    List<ReservaVehiculo> findByChoferIdUsuarioOrderByIdReservaDesc(Long idChofer);
 
     List<ReservaVehiculo> findByUsuarioIdUsuarioAndEstado(Long idUsuario, String estado);
 
     List<ReservaVehiculo> findByVehiculo_IdVehiculoAndFechaReserva(Long idVehiculo, LocalDate fecha);
+
+    List<ReservaVehiculo> findByEstadoAndFechaReservaLessThanEqual(String estado, LocalDate fecha);
+
+    boolean existsByVehiculo_IdVehiculoAndFechaReservaGreaterThanEqualAndEstadoIn(
+            Long idVehiculo, LocalDate fecha, Collection<String> estados);
 
 }

@@ -10,6 +10,7 @@ public class ReservaUsuarioDTO {
     private String horaFin;
     private String nombreArea;
     private String nombreInstitucion;
+    private String estado;
     private boolean puedeCancelar;
     private boolean vigente;
     private String qrToken; // ⚠️ solo si está vigente

@@ -6,10 +6,18 @@ public class UsuarioDocumentoDTO {
     private String nombre;
     private String estado;
     private String tipo;
-    private String rutaArchivo;
+    private boolean archivoDisponible;
+    private String observacionRevision;
+    private boolean obligatorio;
+    private boolean incluidoEnChecklist;
+    private String archivoExtension;
+    private boolean plantillaDisponible;
+    private String plantillaNombre;
 
     public UsuarioDocumentoDTO(Long id, Long idDocumentoTipo, String nombre, String estado, String tipo,
-            String rutaArchivo) {
+            boolean archivoDisponible, String observacionRevision, boolean obligatorio,
+            boolean incluidoEnChecklist, String archivoExtension,
+            boolean plantillaDisponible, String plantillaNombre) {
 
         this.id = id;
 
@@ -17,7 +25,13 @@ public class UsuarioDocumentoDTO {
         this.nombre = nombre;
         this.estado = estado;
         this.tipo = tipo;
-        this.rutaArchivo = rutaArchivo;
+        this.archivoDisponible = archivoDisponible;
+        this.observacionRevision = observacionRevision;
+        this.obligatorio = obligatorio;
+        this.incluidoEnChecklist = incluidoEnChecklist;
+        this.archivoExtension = archivoExtension;
+        this.plantillaDisponible = plantillaDisponible;
+        this.plantillaNombre = plantillaNombre;
     }
 
     public Long getId() {
@@ -40,7 +54,31 @@ public class UsuarioDocumentoDTO {
         return tipo;
     }
 
-    public String getRutaArchivo() {
-        return rutaArchivo;
+    public boolean isArchivoDisponible() {
+        return archivoDisponible;
+    }
+
+    public String getObservacionRevision() {
+        return observacionRevision;
+    }
+
+    public boolean isObligatorio() {
+        return obligatorio;
+    }
+
+    public boolean isIncluidoEnChecklist() {
+        return incluidoEnChecklist;
+    }
+
+    public boolean isPlantillaDisponible() {
+        return plantillaDisponible;
+    }
+
+    public String getArchivoExtension() {
+        return archivoExtension;
+    }
+
+    public String getPlantillaNombre() {
+        return plantillaNombre;
     }
 }

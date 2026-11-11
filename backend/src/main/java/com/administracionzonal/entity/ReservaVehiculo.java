@@ -1,6 +1,7 @@
 package com.administracionzonal.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,9 +37,24 @@ public class ReservaVehiculo {
     private LocalTime horaFin;
 
     private String destino;
-    @Column(length = 500)
+    @Column(columnDefinition = "text")
     private String observaciones;
     private String estado;
+
+    @Column(name = "salida_real")
+    private LocalDateTime salidaReal;
+
+    @Column(name = "retorno_real")
+    private LocalDateTime retornoReal;
+
+    @Column(name = "kilometraje_inicial")
+    private Long kilometrajeInicial;
+
+    @Column(name = "kilometraje_final")
+    private Long kilometrajeFinal;
+
+    @Column(columnDefinition = "text")
+    private String novedades;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")

@@ -3,10 +3,14 @@ package com.administracionzonal.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.util.Locale;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.administracionzonal.dto.SolicitudVehiculoDTO;
@@ -47,14 +51,21 @@ public class SolicitudVehiculoService {
             String origen,
             String servidores) {
 
-        validarFechaHoraSolicitud(fecha, horaInicio, horaFin);
+        validarFechaHoraSolicitud(fecha, horaInicio, horaFin, origen);
+        validarTextoObligatorio(motivo, "El motivo es obligatorio");
+        validarTextoObligatorio(destino, "El destino es obligatorio");
+        validarTextoObligatorio(origen, "El origen es obligatorio");
+        validarTextoObligatorio(servidores, "Debe indicar servidores o acompanantes");
         validarPermisoSolicitudVehiculo(usuario);
 
         boolean extraoficial = esReservaExtraoficial(horaInicio, horaFin);
 
-        // 🔴 VALIDAR QUE NO TENGA OTRA SOLICITUD EN ESE HORARIO
-        boolean existe = repo.existsByUsuarioAndFechaAndHoraInicioLessThanEqualAndHoraFinGreaterThanEqual(
-                usuario, fecha, horaFin, horaInicio);
+        boolean existe = repo.existsSolicitudEnHorario(
+                usuario,
+                fecha,
+                horaInicio,
+                horaFin,
+                List.of(EstadoSolicitud.PENDIENTE, EstadoSolicitud.APROBADA));
 
         if (existe) {
             throw new ResponseStatusException(
@@ -83,25 +94,57 @@ public class SolicitudVehiculoService {
         return repo.save(s);
     }
 
-    @SuppressWarnings("null")
+    @Transactional
     public void aprobarSolicitud(Long idSolicitud, Long idChofer, String cedulaAprobador) {
         if (idSolicitud == null || idChofer == null) {
-            throw new RuntimeException("ID de solicitud y chofer son obligatorios");
-
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID de solicitud y chofer son obligatorios");
         }
         SolicitudVehiculo solicitud = repo.findById(idSolicitud)
-                .orElseThrow();
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada"));
+
+        if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden aprobar solicitudes pendientes");
+        }
+        if (solicitud.getFecha().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "No se puede aprobar una solicitud de una fecha pasada");
+        }
 
         validarAprobadorParaSolicitud(solicitud, cedulaAprobador);
 
         Usuario chofer = usuarioRepository.findById(idChofer)
-                .orElseThrow();
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chofer no encontrado"));
 
-        // 🔥 obtener vehículo del chofer
+        boolean tieneRolChofer = chofer.getRoles().stream()
+                .map(r -> r.getNombre())
+                .anyMatch("CHOFER"::equals);
+        if (!tieneRolChofer) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario seleccionado no tiene rol de chofer");
+        }
+
         Vehiculo vehiculo = vehiculoRepository.findByChoferIdUsuario(idChofer)
-                .orElseThrow(() -> new RuntimeException("Chofer sin vehículo"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "Chofer sin vehículo asignado"));
+        if (!estaOperativo(vehiculo.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El vehículo no está operativo");
+        }
 
-        // 🔥 usuario desde solicitud (IMPORTANTE)
+        if (!reservaRepository.validarDisponibilidad(
+                vehiculo.getIdVehiculo(),
+                solicitud.getFecha(),
+                solicitud.getHoraInicio(),
+                solicitud.getHoraFin()).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El vehículo ya está asignado en ese horario");
+        }
+
+        boolean choferOcupado = reservaRepository.findByChoferIdUsuario(idChofer).stream()
+                .filter(r -> solicitud.getFecha().equals(r.getFechaReserva()))
+                .filter(r -> esReservaActiva(r.getEstado()))
+                .anyMatch(r -> r.getHoraInicio().isBefore(solicitud.getHoraFin())
+                        && r.getHoraFin().isAfter(solicitud.getHoraInicio()));
+        if (choferOcupado) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El chofer ya tiene un viaje en ese horario");
+        }
+
         Usuario usuario = solicitud.getUsuario();
 
         ReservaVehiculo reserva = ReservaVehiculo.builder()
@@ -117,40 +160,66 @@ public class SolicitudVehiculoService {
                 .build();
 
         reservaRepository.save(reserva);
+        vehiculo.setEstado("RESERVADO");
+        vehiculoRepository.save(vehiculo);
 
         solicitud.setEstado(EstadoSolicitud.APROBADA);
         solicitud.setUpdatedAt(LocalDateTime.now());
-        solicitud.setUpdatedBy(chofer.getCedula());
+        solicitud.setUpdatedBy(cedulaAprobador);
         repo.save(solicitud);
     }
 
-    public SolicitudVehiculo rechazarSolicitud(Long id, String observacionRechazo) {
+    @Transactional
+    public SolicitudVehiculo rechazarSolicitud(Long id, String observacionRechazo, String cedulaAprobador) {
 
-        if (id == null) {
-            throw new RuntimeException("ID es obligatorio");
+        if (id == null || observacionRechazo == null || observacionRechazo.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "El ID y la observación de rechazo son obligatorios");
         }
 
         SolicitudVehiculo s = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada"));
+        if (s.getEstado() != EstadoSolicitud.PENDIENTE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden rechazar solicitudes pendientes");
+        }
 
         s.setEstado(EstadoSolicitud.RECHAZADA);
         s.setObservacionRechazo(observacionRechazo);
         s.setUpdatedAt(LocalDateTime.now());
-
-        if (s.getUsuario() != null) {
-            s.setUpdatedBy(s.getUsuario().getCedula());
-        }
+        s.setUpdatedBy(cedulaAprobador);
 
         return repo.save(s);
     }
 
+    @Transactional
+    public SolicitudVehiculo cancelarSolicitud(Long id, String cedulaUsuario) {
+        SolicitudVehiculo solicitud = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada"));
+        if (solicitud.getUsuario() == null
+                || !solicitud.getUsuario().getCedula().equals(cedulaUsuario)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede cancelar esta solicitud");
+        }
+        if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden cancelar solicitudes pendientes");
+        }
+
+        solicitud.setEstado(EstadoSolicitud.CANCELADA);
+        solicitud.setUpdatedAt(LocalDateTime.now());
+        solicitud.setUpdatedBy(cedulaUsuario);
+        return repo.save(solicitud);
+    }
+
     public List<SolicitudVehiculo> listarSolicitudes() {
-        return repo.findAll();
+        return repo.findAll(Sort.by(
+                Sort.Order.desc("createdAt").nullsLast(),
+                Sort.Order.desc("id")));
     }
 
     public List<SolicitudVehiculoDTO> listarPendientes() {
 
-        return repo.findByEstado(EstadoSolicitud.PENDIENTE)
+        return repo.findByEstado(EstadoSolicitud.PENDIENTE, Sort.by(
+                        Sort.Order.desc("createdAt").nullsLast(),
+                        Sort.Order.desc("id")))
                 .stream()
                 .map(s -> {
                     SolicitudVehiculoDTO dto = new SolicitudVehiculoDTO();
@@ -171,7 +240,9 @@ public class SolicitudVehiculoService {
                     dto.setCreatedBy(s.getCreatedBy());
                     dto.setUpdatedBy(s.getUpdatedBy());
 
-                    dto.setEstado(s.getEstado().name());
+                    dto.setEstado(s.getFecha().isBefore(LocalDate.now())
+                            ? "NO_ASISTIO"
+                            : s.getEstado().name());
 
                     dto.setNombres(s.getUsuario().getNombres());
                     dto.setCedula(s.getUsuario().getCedula());
@@ -182,7 +253,9 @@ public class SolicitudVehiculoService {
     }
 
     public List<SolicitudVehiculoRequest> listarPorUsuario(String cedula) {
-        return repo.findByUsuario_Cedula(cedula)
+        return repo.findByUsuario_Cedula(cedula, Sort.by(
+                        Sort.Order.desc("createdAt").nullsLast(),
+                        Sort.Order.desc("id")))
                 .stream()
                 .map(r -> {
                     SolicitudVehiculoRequest dto = new SolicitudVehiculoRequest();
@@ -239,24 +312,35 @@ public class SolicitudVehiculoService {
         detalle.append(linea);
     }
 
-    private void validarFechaHoraSolicitud(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
-        LocalDate hoy = LocalDate.now();
-        LocalTime ahora = LocalTime.now();
+    private void validarFechaHoraSolicitud(
+            LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, String origen) {
+        if (fecha == null || horaInicio == null || horaFin == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fecha y horario son obligatorios");
+        }
 
-        if (fecha.isBefore(hoy)) {
-            throw new RuntimeException("No puede solicitar reservas en fechas pasadas");
+        LocalDateTime inicio = LocalDateTime.of(fecha, horaInicio);
+        if (inicio.isBefore(LocalDateTime.now().plusHours(24))) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "La solicitud debe realizarse con al menos 24 horas de anticipación");
         }
 
         if (!horaFin.isAfter(horaInicio)) {
-            throw new RuntimeException("La hora fin debe ser mayor a la hora inicio");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La hora fin debe ser mayor a la hora inicio");
         }
 
-        if (horaFin.isAfter(LocalTime.of(16, 0))) {
-            throw new RuntimeException("La hora máxima de retorno permitida es 16:00");
+        if (fecha.getDayOfWeek() == DayOfWeek.SATURDAY || fecha.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            String origenMin = origen == null ? "" : origen.toLowerCase(Locale.ROOT);
+            if (origenMin.contains("domicilio") || origenMin.contains("desde casa")) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "No se permite retirar servidores desde sus domicilios durante fines de semana");
+            }
         }
+    }
 
-        if (fecha.isEqual(hoy) && !horaInicio.isAfter(ahora)) {
-            throw new RuntimeException("No puede solicitar horarios pasados");
+    private void validarTextoObligatorio(String texto, String mensaje) {
+        if (texto == null || texto.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, mensaje);
         }
     }
 
@@ -269,8 +353,12 @@ public class SolicitudVehiculoService {
                 .map(r -> r.getNombre())
                 .anyMatch("SERVIDOR_AZVCH"::equals);
 
-        if (!esServidorAzvch || esAdmin) {
+        if (esAdmin) {
             return;
+        }
+        if (!esServidorAzvch) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Solo servidores institucionales pueden solicitar vehículos");
         }
 
         UsuarioInstitucion ui = usuarioInstitucionRepository.findByUsuario(usuario)
@@ -312,9 +400,19 @@ public class SolicitudVehiculoService {
 
     private boolean esReservaExtraoficial(LocalTime horaInicio, LocalTime horaFin) {
         LocalTime inicioNormal = LocalTime.of(8, 0);
-        LocalTime finNormal = LocalTime.of(15, 30);
+        LocalTime finNormal = LocalTime.of(16, 30);
 
         return horaInicio.isBefore(inicioNormal) || horaFin.isAfter(finNormal);
+    }
+
+    private boolean estaOperativo(String estado) {
+        return estado == null || List.of("DISPONIBLE", "ACTIVO", "OPERATIVO", "RESERVADO", "EN_USO")
+                .contains(estado.trim().toUpperCase(Locale.ROOT));
+    }
+
+    private boolean esReservaActiva(String estado) {
+        return estado != null
+                && !List.of("RECHAZADO", "RECHAZADA", "CANCELADA", "FINALIZADA").contains(estado);
     }
 
 }

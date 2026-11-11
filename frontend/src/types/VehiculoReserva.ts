@@ -14,4 +14,9 @@ export interface VehiculoReserva {
   marcaVehiculo: string;
   modeloVehiculo: string;
   placaVehiculo: string;
+  salidaReal?: string | null;
+  retornoReal?: string | null;
+  kilometrajeInicial?: number | null;
+  kilometrajeFinal?: number | null;
+  novedades?: string | null;
 }

@@ -56,6 +56,12 @@ public class ReservaCoworking {
     @Column(name = "qr_token", unique = true)
     private String qrToken;
 
+    @Column(name = "numero_personas", nullable = false)
+    private Integer numeroPersonas = 1;
+
+    @Column(name = "estado", length = 20)
+    private String estado = "RESERVADO";
+
     private boolean usado = false;
 
     private boolean asistio = false;

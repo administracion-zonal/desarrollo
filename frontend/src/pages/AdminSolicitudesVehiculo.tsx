@@ -1,14 +1,29 @@
 import { useEffect, useState } from "react";
+import ModalPortal from "../components/ModalPortal";
 import type { SolicitudVehiculo } from "../services/solicitudVehiculoService";
 import { solicitudVehiculoService } from "../services/solicitudVehiculoService";
 import { apiFetch } from "../utils/api";
+import { fechaActualLocal } from "../utils/dateUtils";
 
 type Chofer = {
   idUsuario: number;
   nombres: string;
 };
 
+type VehiculoFlota = {
+  idVehiculo: number;
+  marca: string;
+  modelo: string;
+  placa: string;
+  estado: string | null;
+};
+
+const esSolicitudVencida = (solicitud: SolicitudVehiculo | null) =>
+  solicitud !== null
+  && (solicitud.estado === "NO_ASISTIO" || solicitud.fecha < fechaActualLocal());
+
 export default function AdminSolicitudesVehiculo() {
+  const [tab, setTab] = useState<"solicitudes" | "flota">("solicitudes");
   const [solicitudes, setSolicitudes] = useState<SolicitudVehiculo[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +39,7 @@ export default function AdminSolicitudesVehiculo() {
     useState<SolicitudVehiculo | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState("");
   const [aprobando, setAprobando] = useState(false);
+  const [vehiculos, setVehiculos] = useState<VehiculoFlota[]>([]);
 
   const abrirModal = (solicitud: SolicitudVehiculo) => {
     setDetalleSolicitud(null);
@@ -34,6 +50,10 @@ export default function AdminSolicitudesVehiculo() {
   const confirmarAprobacion = async () => {
     if (!solicitudSeleccionada || choferSeleccionado === null) {
       alert("Seleccione un chofer");
+      return;
+    }
+    if (esSolicitudVencida(solicitudSeleccionada)) {
+      setError("No se puede aprobar una solicitud de una fecha pasada");
       return;
     }
 
@@ -73,6 +93,37 @@ export default function AdminSolicitudesVehiculo() {
     }
   };
 
+  const cargarFlota = async () => {
+    try {
+      const res = await apiFetch("/api/vehiculos");
+      if (!res.ok) throw new Error(await res.text());
+      setVehiculos(await res.json());
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "No se pudo cargar la flota");
+    }
+  };
+
+  const cambiarEstadoVehiculo = async (idVehiculo: number, estado: string) => {
+    setError(null);
+    try {
+      const res = await apiFetch(`/api/vehiculos/admin/${idVehiculo}/estado`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const vehiculoActualizado: VehiculoFlota = await res.json();
+      setVehiculos((actuales) =>
+        actuales.map((vehiculo) =>
+          vehiculo.idVehiculo === idVehiculo ? vehiculoActualizado : vehiculo,
+        ),
+      );
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "No se pudo actualizar el vehículo");
+      await cargarFlota();
+    }
+  };
+
   // 🔥 CARGAR CHOFERES
   useEffect(() => {
     apiFetch("/api/vehiculos/choferes")
@@ -93,6 +144,7 @@ export default function AdminSolicitudesVehiculo() {
   // 🔥 CARGAR SOLICITUDES
   useEffect(() => {
     cargar();
+    cargarFlota();
   }, []);
 
   const rechazar = async (id: number) => {
@@ -119,12 +171,39 @@ export default function AdminSolicitudesVehiculo() {
         <h2>Solicitudes pendientes</h2>
       </div>
 
+      <div className="tabs-container" role="tablist" aria-label="Administración vehicular">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "solicitudes"}
+          className={`tab ${tab === "solicitudes" ? "active" : ""}`}
+          onClick={() => setTab("solicitudes")}
+        >
+          Solicitudes
+          <span className="badge">{solicitudes.length}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "flota"}
+          className={`tab ${tab === "flota" ? "active" : ""}`}
+          onClick={() => setTab("flota")}
+        >
+          Estado de la flota
+          <span className="badge">{vehiculos.length}</span>
+        </button>
+      </div>
+
       {error && <p className="error">{error}</p>}
 
-      {solicitudes.length === 0 && <p>No hay solicitudes pendientes</p>}
+      {tab === "solicitudes" && (
+        <div className="tab-content" role="tabpanel">
+          <h3>Solicitudes pendientes de aprobación</h3>
+          {solicitudes.length === 0 && <p>No hay solicitudes pendientes</p>}
 
-      {solicitudes.length > 0 && (
-        <table className="reservas-table">
+          {solicitudes.length > 0 && (
+            <div className="table-responsive">
+            <table className="reservas-table">
           <thead>
             <tr>
               <th>Solicitante</th>
@@ -137,52 +216,108 @@ export default function AdminSolicitudesVehiculo() {
           </thead>
 
           <tbody>
-            {solicitudes.map((s) => (
-              <tr key={s.id}>
-                <td>
-                  <strong>{s.nombres}</strong>
-                  <br />
-                  {s.cedula}
-                </td>
-                <td>{s.fecha}</td>
-                <td>
-                  {s.horaInicio} - {s.horaFin}
-                </td>
-                <td>
-                  <strong>{s.origen || "Sin origen"}</strong>
-                  <br />
-                  {s.destino}
-                </td>
-                <td>
-                  <span className="status-pill status-pill--pending">
-                    {s.estado}
-                  </span>
-                </td>
+            {solicitudes.map((s) => {
+              const inasistida = esSolicitudVencida(s);
+              return (
+                <tr key={s.id}>
+                  <td>
+                    <strong>{s.nombres}</strong>
+                    <br />
+                    {s.cedula}
+                  </td>
+                  <td>{s.fecha}</td>
+                  <td>
+                    {s.horaInicio} - {s.horaFin}
+                  </td>
+                  <td>
+                    <strong>{s.origen || "Sin origen"}</strong>
+                    <br />
+                    {s.destino}
+                  </td>
+                  <td>
+                    <span className={`status-pill ${inasistida ? "status-pill--danger" : "status-pill--pending"}`}>
+                      {inasistida ? "NO_ASISTIO" : s.estado}
+                    </span>
+                  </td>
 
-                <td>
-                  <div className="table-actions">
-                    <button
-                      className="btn"
-                      onClick={() => setDetalleSolicitud(s)}
-                    >
-                      Ver detalle
-                    </button>
-                    <button
-                      className="btn-primary"
-                      onClick={() => abrirModal(s)}
-                    >
-                      Aprobar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        className="btn"
+                        onClick={() => setDetalleSolicitud(s)}
+                      >
+                        Ver detalle
+                      </button>
+                      <button
+                        className="btn-primary"
+                        disabled={inasistida}
+                        title={inasistida ? "No se puede aprobar una solicitud de una fecha pasada" : undefined}
+                        onClick={() => abrirModal(s)}
+                      >
+                        Aprobar solicitud
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
-        </table>
+            </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "flota" && (
+        <section className="flow-stack tab-content" role="tabpanel">
+          <h3>Estado operativo de la flota</h3>
+          <p>Un vehículo no operativo no puede asignarse a nuevas solicitudes.</p>
+          {vehiculos.length === 0 && <p>No hay vehículos registrados.</p>}
+          {vehiculos.length > 0 && (
+            <div className="table-responsive">
+            <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>Vehículo</th>
+                <th>Placa</th>
+                <th>Estado operativo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehiculos.map((vehiculo) => (
+                <tr key={vehiculo.idVehiculo}>
+                  <td>{vehiculo.marca} {vehiculo.modelo}</td>
+                  <td>{vehiculo.placa}</td>
+                  <td>
+                    <select
+                      value={vehiculo.estado ?? "DISPONIBLE"}
+                      onChange={(e) =>
+                        cambiarEstadoVehiculo(vehiculo.idVehiculo, e.target.value)
+                      }
+                    >
+                      {!["DISPONIBLE", "MANTENIMIENTO", "FUERA_DE_SERVICIO", "BLOQUEADO"]
+                        .includes(vehiculo.estado ?? "") && (
+                        <option value={vehiculo.estado ?? ""} disabled>
+                          {vehiculo.estado ?? "Sin estado"}
+                        </option>
+                      )}
+                      <option value="DISPONIBLE">Disponible</option>
+                      <option value="MANTENIMIENTO">Mantenimiento</option>
+                      <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
+                      <option value="BLOQUEADO">Bloqueado</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            </table>
+            </div>
+          )}
+        </section>
       )}
 
       {modalOpen && (
-        <div className="modal-overlay">
+        <ModalPortal>
           <div className="modal">
             <div className="modal-header">Asignar chofer y aprobar</div>
 
@@ -213,7 +348,11 @@ export default function AdminSolicitudesVehiculo() {
               </select>
 
               <div className="modal-footer">
-                <button className="btn-primary" onClick={confirmarAprobacion}>
+                <button
+                  className="btn-primary"
+                  disabled={aprobando || esSolicitudVencida(solicitudSeleccionada)}
+                  onClick={confirmarAprobacion}
+                >
                   {aprobando ? "Aprobando..." : "Confirmar aprobacion"}
                 </button>
                 <button
@@ -230,12 +369,12 @@ export default function AdminSolicitudesVehiculo() {
               </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {detalleSolicitud && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <ModalPortal>
+          <div className="modal modal--fullscreen">
             <div className="modal-header">Detalle de solicitud</div>
 
             <div className="detail-grid">
@@ -297,12 +436,19 @@ export default function AdminSolicitudesVehiculo() {
             <div className="modal-footer">
               <button
                 className="btn-warning"
+                disabled={!motivoRechazo.trim()}
                 onClick={() => rechazar(detalleSolicitud.id)}
               >
                 Rechazar solicitud
               </button>
               <button
                 className="btn"
+                disabled={esSolicitudVencida(detalleSolicitud)}
+                title={
+                  esSolicitudVencida(detalleSolicitud)
+                    ? "No se puede aprobar una solicitud de una fecha pasada"
+                    : undefined
+                }
                 onClick={() => abrirModal(detalleSolicitud)}
               >
                 Aprobar
@@ -318,7 +464,7 @@ export default function AdminSolicitudesVehiculo() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

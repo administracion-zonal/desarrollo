@@ -2,6 +2,7 @@ package com.administracionzonal.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +33,10 @@ public class UsuarioService {
 
     public Usuario save(@NonNull Usuario usuario) {
         return usuarioRepo.save(usuario);
+    }
+
+    public Optional<Usuario> obtenerPorCedula(String cedula) {
+        return usuarioRepo.findByCedula(cedula);
     }
 
     public Usuario obtenerOcrearUsuario(
@@ -98,6 +103,7 @@ public class UsuarioService {
         }
 
         usuario.setPassword(passwordEncoder.encode(dto.getPasswordNueva()));
+        usuario.setDebeCambiarPassword(false);
         usuario.setUpdatedAt(LocalDateTime.now());
         usuario.setUpdatedBy(usuario.getCedula());
 

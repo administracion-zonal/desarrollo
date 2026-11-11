@@ -4,7 +4,9 @@ export interface ReservaCancha {
   horaInicio: string;
   horaFin: string;
   qrToken: string;
-  estado: "RESERVADO" | "ASISTIO" | "NO_ASISTIO";
+  estado: "RESERVADO" | "ASISTIO" | "NO_ASISTIO" | "CANCELADO";
+  asistio?: boolean;
+  noAsistio?: boolean;
   usuario?: {
     cedula?: string;
     nombres?: string;

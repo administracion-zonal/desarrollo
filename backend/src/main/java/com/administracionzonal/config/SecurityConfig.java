@@ -94,9 +94,15 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/cancha").authenticated()
                                                 .requestMatchers("/api/cancha/mis").authenticated()
                                                 .requestMatchers("/api/cancha/*/cancelar").authenticated()
-                                                // admin
-                                                .requestMatchers(HttpMethod.POST, "/api/cancha/todas").hasRole("ADMIN")
-                                                .requestMatchers(HttpMethod.GET, "/api/cancha/validar").hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/api/cancha/todas")
+                                                .hasAnyRole("ADMIN", "ADMIN_CANCHAS")
+                                                .requestMatchers(HttpMethod.POST, "/api/cancha/validar")
+                                                .hasAnyRole("ADMIN", "ADMIN_CANCHAS")
+                                                .requestMatchers("/api/cancha/desbloqueo/pendientes",
+                                                                "/api/cancha/desbloqueo/*/resolver")
+                                                .hasAnyRole("ADMIN", "ADMIN_CANCHAS")
+                                                .requestMatchers("/api/cancha/desbloqueo/**")
+                                                .authenticated()
 
                                                 /*
                                                  * =========================
@@ -104,14 +110,26 @@ public class SecurityConfig {
                                                  * =========================
                                                  */
 
+                                                .requestMatchers(HttpMethod.POST, "/api/vehiculos/reservar")
+                                                .denyAll()
+
+                                                .requestMatchers("/api/vehiculos/admin/aprobar/**",
+                                                                "/api/vehiculos/admin/rechazar/**",
+                                                                "/api/vehiculos/admin/asignar-chofer")
+                                                .denyAll()
+
+                                                .requestMatchers("/api/vehiculos/admin/**",
+                                                                "/api/vehiculos/solicitudes/pendientes",
+                                                                "/api/vehiculos/solicitudes/*/aprobar",
+                                                                "/api/vehiculos/solicitudes/*/rechazar",
+                                                                "/api/vehiculos/choferes")
+                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
+
                                                 .requestMatchers("/api/vehiculos/chofer/orden-movilizacion/**")
                                                 .hasAnyRole("CHOFER", "ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/chofer/**")
                                                 .hasAnyRole("CHOFER", "ADMIN", "ADMIN_VEHICULOS")
-
-                                                .requestMatchers("/api/vehiculos/choferes")
-                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
 
                                                 .requestMatchers("/api/vehiculos/solicitudes/**")
                                                 .hasAnyRole(
@@ -123,10 +141,6 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/vehiculos/**")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "CHOFER", "ADMIN", "ADMIN_VEHICULOS")
 
-                                                // crear reserva (usuarios normales)
-                                                .requestMatchers(HttpMethod.POST, "/api/vehiculos/reservar")
-                                                .hasAnyRole("SERVIDOR_AZVCH", "ADMIN", "ADMIN_VEHICULOS")
-
                                                 // ver mis reservas
                                                 .requestMatchers(HttpMethod.GET, "/api/vehiculos/solicitudes/mis")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "CHOFER", "ADMIN", "ADMIN_VEHICULOS")
@@ -134,34 +148,30 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/vehiculos/mis")
                                                 .hasAnyRole("SERVIDOR_AZVCH", "CHOFER", "ADMIN", "ADMIN_VEHICULOS")
 
-                                                // admin gestiona todo
-                                                .requestMatchers("/api/vehiculos/admin/**")
-                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
-
-                                                .requestMatchers("/api/vehiculos/admin/orden-movilizacion/**")
-                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
-
-                                                .requestMatchers("/api/vehiculos/solicitudes/pendientes")
-                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
-
-                                                .requestMatchers("/api/vehiculos/solicitudes/*/aprobar")
-                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
-
-                                                .requestMatchers("/api/vehiculos/solicitudes/*/rechazar")
-                                                .hasAnyRole("ADMIN", "ADMIN_VEHICULOS")
-
                                                 /*
                                                  * =========================
                                                  * TALENTO HUMANO (CORREGIDO)
                                                  * =========================
                                                  */
 
-                                                // público
-                                                .requestMatchers("/talento-humano/proceso-pendiente/**").permitAll()
-
-                                                // crear usuario (solo TH)
+                                                // Gestión de procesos y revisión documental
                                                 .requestMatchers("/talento-humano/crear-o-activar")
                                                 .hasRole("TALENTO_HUMANO")
+
+                                                .requestMatchers(HttpMethod.PUT, "/talento-humano/documento/*/estado")
+                                                .hasAnyRole("TALENTO_HUMANO", "ADMIN")
+
+                                                .requestMatchers(HttpMethod.GET, "/talento-humano/usuarios/**")
+                                                .hasAnyRole("TALENTO_HUMANO", "ADMIN")
+
+                                                .requestMatchers(HttpMethod.POST, "/talento-humano/usuarios/**")
+                                                .hasAnyRole("TALENTO_HUMANO", "ADMIN")
+
+                                                .requestMatchers(HttpMethod.GET, "/talento-humano/checklists")
+                                                .hasAnyRole("TALENTO_HUMANO", "ADMIN")
+
+                                                .requestMatchers(HttpMethod.GET, "/talento-humano/proceso-pendiente/**")
+                                                .hasAnyRole("SERVIDOR_AZVCH", "TALENTO_HUMANO", "ADMIN")
 
                                                 // subir documentos
                                                 .requestMatchers(HttpMethod.POST,
@@ -192,6 +202,18 @@ public class SecurityConfig {
 
                                                 /*
                                                  * =========================
+                                                 * COMPRAS PÚBLICAS
+                                                 * =========================
+                                                 */
+
+                                                .requestMatchers("/api/compras-publicas/expedientes/usuarios/**")
+                                                .hasRole("ADMIN")
+
+                                                .requestMatchers("/api/compras-publicas/**")
+                                                .hasAnyRole("COMPRAS_PUBLICAS", "ADMIN")
+
+                                                /*
+                                                 * =========================
                                                  * ADMIN
                                                  * =========================
                                                  */
@@ -213,13 +235,14 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/reservas/*/cancelar").authenticated()
 
                                                 // ADMIN_COWORKING
-                                                .requestMatchers("/reservas/todas").hasRole("ADMIN_COWORKING")
-                                                .requestMatchers("/reservas/validar-qr/**")
-                                                .hasRole("ADMIN_COWORKING")
-                                                .requestMatchers("/reservas/*/asistir").hasRole("ADMIN_COWORKING")
+                                                .requestMatchers("/api/reservas/todas").hasAnyRole("ADMIN", "ADMIN_COWORKING")
+                                                .requestMatchers("/api/reservas/validar-qr/**")
+                                                .hasAnyRole("ADMIN", "ADMIN_COWORKING")
+                                                .requestMatchers("/api/reservas/*/asistir")
+                                                .hasAnyRole("ADMIN", "ADMIN_COWORKING")
 
                                                 // fallback (importante al final)
-                                                .requestMatchers("/reservas/**").hasRole("ADMIN_COWORKING")
+                                                .requestMatchers("/api/reservas/**").authenticated()
 
                                                 /*
                                                  * =========================

@@ -1,5 +1,6 @@
 import Cropper from "react-easy-crop";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import getCroppedImg from "../utils/cropImage";
 import type { CropArea } from "../utils/cropImage";
@@ -31,9 +32,9 @@ export default function ImageCropper({ image, onComplete, onCancel }: Props) {
     onComplete(blob);
   };
 
-  return (
+  return createPortal(
     <div className="cropper-overlay">
-      <div className="cropper-modal">
+      <div className="cropper-modal" role="dialog" aria-modal="true" aria-label="Recortar imagen">
         <div className="cropper-area">
           <Cropper
             image={image}
@@ -72,6 +73,7 @@ export default function ImageCropper({ image, onComplete, onCancel }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

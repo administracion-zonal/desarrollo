@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ModalPortal from "../components/ModalPortal";
 import type { SolicitudVehiculo } from "../services/solicitudVehiculoService";
 import type { VehiculoReserva } from "../types/VehiculoReserva";
 import { apiFetch } from "../utils/api";
@@ -54,8 +55,9 @@ export default function MisReservasVehiculos() {
 
       if (!res.ok) throw new Error("Error");
 
-      // 🔥 eliminar SOLO de solicitudes
-      setSolicitudes((prev) => prev.filter((r) => r.id !== id));
+      setSolicitudes((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, estado: "CANCELADA" } : r)),
+      );
 
       if (detalleSolicitud?.id === id) {
         setDetalleSolicitud(null);
@@ -106,11 +108,13 @@ export default function MisReservasVehiculos() {
             {solicitudes.length === 0 && <p>No tienes solicitudes</p>}
 
             {solicitudes.length > 0 && (
+              <div className="table-responsive">
               <table className="reservas-table">
                 <thead>
                   <tr>
                     <th>Fecha</th>
                     <th>Destino</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -120,23 +124,40 @@ export default function MisReservasVehiculos() {
                     <tr key={s.id}>
                       <td>{s.fecha}</td>
                       <td>{s.destino}</td>
+                      <td>
+                        <span
+                          className={`status-pill ${
+                            s.estado === "APROBADA"
+                              ? "status-pill--success"
+                              : s.estado === "RECHAZADA" || s.estado === "CANCELADA"
+                                ? "status-pill--danger"
+                                : "status-pill--pending"
+                          }`}
+                        >
+                          {s.estado}
+                        </span>
+                      </td>
 
                       <td>
-                        <button onClick={() => setDetalleSolicitud(s)}>
-                          Ver
-                        </button>
-
-                        <button
-                          className="btn-danger-inline"
-                          onClick={() => cancelarSolicitud(s.id)}
-                        >
-                          Cancelar
-                        </button>
+                        <div className="table-actions">
+                          <button onClick={() => setDetalleSolicitud(s)}>
+                            Ver
+                          </button>
+                          {s.estado === "PENDIENTE" && (
+                            <button
+                              className="btn-danger-inline"
+                              onClick={() => cancelarSolicitud(s.id)}
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </>
         )}
@@ -149,6 +170,7 @@ export default function MisReservasVehiculos() {
             {reservas.length === 0 && <p>No tienes reservas</p>}
 
             {reservas.length > 0 && (
+              <div className="table-responsive">
               <table className="reservas-table">
                 <thead>
                   <tr>
@@ -180,20 +202,23 @@ export default function MisReservasVehiculos() {
                       </td>
 
                       <td>
-                        <button onClick={() => setDetalle(r)}>Ver</button>
+                        <div className="table-actions">
+                          <button onClick={() => setDetalle(r)}>Ver</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </>
         )}
       </div>
       {/* ================= MODAL SOLICITUD ================= */}
       {detalleSolicitud && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <ModalPortal>
+          <div className="modal modal--fullscreen">
             <div className="modal-header">Detalle de solicitud</div>
 
             <div className="detail-grid">
@@ -248,13 +273,13 @@ export default function MisReservasVehiculos() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* ================= MODAL RESERVA ================= */}
       {detalle && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <ModalPortal>
+          <div className="modal modal--fullscreen">
             <div className="modal-header">Detalle de reserva</div>
 
             <div className="detail-grid">
@@ -299,7 +324,7 @@ export default function MisReservasVehiculos() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -22,6 +22,8 @@ public class UsuarioProceso {
     private String tipo; // INGRESO / SALIDA
     private String estado; // EN_PROCESO / COMPLETADO
 
+    private Long idChecklist;
+    private String motivo;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
 }

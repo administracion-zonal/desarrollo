@@ -1,12 +1,15 @@
 import { QRCodeCanvas } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
-import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
+import { esDiaHabil, esFinDeSemana, fechaActualLocal } from "../utils/dateUtils";
 import { esBloquePasado, generarBloques, toMinutes } from "../utils/timeUtils";
+import { printReservationQr } from "../utils/printReservationQr";
 
 const API = `/api/cancha`;
+const HORA_INICIO_CANCHA = "06:00";
+const HORA_FIN_CANCHA = "20:00";
 
 export default function ReservaCanchaForm() {
   const { user } = useAuth();
@@ -27,18 +30,33 @@ export default function ReservaCanchaForm() {
   const [ocupados, setOcupados] = useState<string[]>([]);
 
   const [bloquearDia, setBloquearDia] = useState(false);
+  const [canchaBloqueado, setCanchaBloqueado] = useState(false);
+  const [solicitudDesbloqueo, setSolicitudDesbloqueo] = useState<{
+    id: number;
+    estado: string;
+    observacion: string | null;
+  } | null>(null);
 
   const [reservaCreada, setReservaCreada] = useState<ReservaCancha | null>(
     null,
   );
+  const [errorImpresion, setErrorImpresion] = useState<string | null>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   /* ================= DISPONIBILIDAD ================= */
   useEffect(() => {
     if (!form.fecha) return;
 
-    apiFetch(`${API}/disponibilidad?fecha=${form.fecha}`)
+    apiFetch(
+      `${API}/disponibilidad?fecha=${form.fecha}&cedula=${encodeURIComponent(user?.cedula ?? "")}`,
+    )
       .then((res) => res.json())
-      .then((data: { bloqueado: boolean; horas: string[] }) => {
+      .then((data: {
+        bloqueado: boolean;
+        canchaBloqueado: boolean;
+        horas: string[];
+      }) => {
+        setCanchaBloqueado(data.canchaBloqueado);
         if (data.bloqueado) {
           setBloquearDia(true);
           setOcupados([]);
@@ -49,19 +67,61 @@ export default function ReservaCanchaForm() {
       })
       .catch(() => {
         setBloquearDia(false);
+        setCanchaBloqueado(false);
         setOcupados([]);
       });
-  }, [form.fecha]);
+  }, [form.fecha, user?.cedula]);
+
+  useEffect(() => {
+    if (!user) return;
+    apiFetch(`${API}/desbloqueo/mis`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setSolicitudDesbloqueo(data))
+      .catch(() => setSolicitudDesbloqueo(null));
+  }, [user]);
+
+  const solicitarDesbloqueo = async () => {
+    try {
+      const res = await apiFetch(`${API}/desbloqueo`, { method: "POST" });
+      if (!res.ok) {
+        setError(await res.text());
+        return;
+      }
+      setSolicitudDesbloqueo(await res.json());
+    } catch {
+      setError("No se pudo enviar la solicitud de revisión");
+    }
+  };
 
   const bloqueBloqueado = (hora: string) => ocupados.includes(hora);
+
+  const imprimirQR = () => {
+    const printed = printReservationQr(qrRef.current, "Reserva de cancha", [
+      { label: "Fecha", value: reservaCreada?.fecha ?? "" },
+      {
+        label: "Titular",
+        value: reservaCreada?.usuario?.nombres ?? user?.nombres ?? "",
+      },
+      {
+        label: "Horario",
+        value: `${reservaCreada?.horaInicio ?? ""} - ${reservaCreada?.horaFin ?? ""}`,
+      },
+      { label: "Código", value: reservaCreada?.qrToken ?? "" },
+    ]);
+    setErrorImpresion(
+      printed
+        ? null
+        : "No se pudo abrir la ventana de impresión. Permite las ventanas emergentes e inténtalo otra vez.",
+    );
+  };
 
   /* ================= SELECCIÓN HORAS ================= */
   const seleccionarHora = (hora: string) => {
     if (esBloquePasado(form.fecha, hora)) return;
-    if (bloqueBloqueado(hora)) return;
 
     // inicio
     if (!horaInicioSel) {
+      if (bloqueBloqueado(hora)) return;
       setHoraInicioSel(hora);
       setHoraFinSel(null);
       return;
@@ -110,6 +170,15 @@ export default function ReservaCanchaForm() {
       return;
     }
 
+    if (canchaBloqueado || bloquearDia) {
+      setError(
+        canchaBloqueado
+          ? "Su cuenta está bloqueada para reservas de cancha"
+          : "Ya tiene una reserva este día",
+      );
+      return;
+    }
+
     if (!form.horaInicio || !form.horaFin) {
       setError("Seleccione un horario válido");
       return;
@@ -136,6 +205,7 @@ export default function ReservaCanchaForm() {
         const data: ReservaCancha = await res.json();
 
         setReservaCreada(data); // 👈 GUARDAS LA RESERVA REAL
+        setBloquearDia(true);
         setOk("✅ Reserva realizada correctamente");
 
         // reset UI
@@ -187,15 +257,16 @@ export default function ReservaCanchaForm() {
         <div className="reserva-content">
           <div className="form-panel form-panel--narrow">
             <form onSubmit={handleSubmit} className="form-grid-2">
+              {!reservaCreada && (
+                <>
               {/* FECHA */}
               <div className="field span-2">
                 <label>Fecha</label>
                 <input
                   type="date"
                   value={form.fecha}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={fechaActualLocal()}
                   onKeyDown={(e) => e.preventDefault()}
-                  disabled={bloquearDia}
                   onFocus={(e) => e.target.showPicker?.()}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -220,12 +291,41 @@ export default function ReservaCanchaForm() {
               {bloquearDia && (
                 <p className="error">Ya tiene una reserva este día</p>
               )}
+              {canchaBloqueado && (
+                <div className="field span-2">
+                  <p className="error">
+                    Su cuenta está bloqueada para reservas de cancha. La
+                    reactivación requiere revisión administrativa.
+                  </p>
+                  {solicitudDesbloqueo?.estado === "PENDIENTE" ? (
+                    <p className="hint">Su solicitud está pendiente de revisión.</p>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={solicitarDesbloqueo}
+                    >
+                      Solicitar revisión del bloqueo
+                    </button>
+                  )}
+                  {solicitudDesbloqueo?.estado === "RECHAZADA" &&
+                    solicitudDesbloqueo.observacion && (
+                      <p className="hint">
+                        Respuesta administrativa: {solicitudDesbloqueo.observacion}
+                      </p>
+                    )}
+                </div>
+              )}
               {/* HORARIOS */}
               <div className="field span-2">
                 <label>Horario disponible</label>
 
                 <div className="time-grid time-grid--cancha">
-                  {generarBloques().map((hora) => {
+                  {generarBloques(
+                    HORA_INICIO_CANCHA,
+                    HORA_FIN_CANCHA,
+                    true,
+                  ).map((hora) => {
                     const bloqueada = bloqueBloqueado(hora);
                     const horaPasada = esBloquePasado(form.fecha, hora);
                     const esInicio = hora === horaInicioSel;
@@ -241,7 +341,12 @@ export default function ReservaCanchaForm() {
                       <button
                         key={hora}
                         type="button"
-                        disabled={bloqueada || horaPasada}
+                        disabled={
+                          horaPasada ||
+                          (hora === HORA_FIN_CANCHA
+                            ? !horaInicioSel
+                            : bloqueada)
+                        }
                         className={`time-slot
                           ${bloqueada ? "blocked" : ""}
                           ${seleccionada ? "selected" : ""}
@@ -265,15 +370,24 @@ export default function ReservaCanchaForm() {
               </div>
 
               {/* BOTÓN */}
-              <button className="actions span-2" disabled={!formularioValido}>
+              <button
+                className="actions span-2"
+                disabled={!formularioValido || bloquearDia || canchaBloqueado}
+              >
                 Reservar cancha
               </button>
-
+                </>
+              )}
               {reservaCreada && (
                 <div className="reservation-summary span-2">
-                  <div className="reservation-summary__card">
+                  <div className="reservation-summary__card" ref={qrRef}>
                     <h3>Tu código de acceso</h3>
 
+                    {reservaCreada.usuario?.nombres && (
+                      <p className="reservation-summary__meta">
+                        Titular: <strong>{reservaCreada.usuario.nombres}</strong>
+                      </p>
+                    )}
                     <p className="reservation-summary__meta">
                       Tu reserva está confirmada para el día:
                       <br />
@@ -298,12 +412,34 @@ export default function ReservaCanchaForm() {
                       Código: {reservaCreada.qrToken}
                     </p>
                   </div>
+                  <div className="reservation-summary__actions">
+                    <button type="button" className="btn" onClick={imprimirQR}>
+                      Imprimir QR
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => {
+                        setReservaCreada(null);
+                        setErrorImpresion(null);
+                      }}
+                    >
+                      Volver al formulario
+                    </button>
+                  </div>
+                  {errorImpresion && (
+                    <p className="error">{errorImpresion}</p>
+                  )}
                 </div>
               )}
 
               {/* MENSAJES */}
-              {error && <p className="error span-2">{error}</p>}
-              {ok && <p className="success-message span-2">{ok}</p>}
+              {!reservaCreada && error && (
+                <p className="error span-2">{error}</p>
+              )}
+              {!reservaCreada && ok && (
+                <p className="success-message span-2">{ok}</p>
+              )}
             </form>
           </div>
         </div>

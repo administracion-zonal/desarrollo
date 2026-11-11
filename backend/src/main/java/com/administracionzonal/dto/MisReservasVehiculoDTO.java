@@ -1,5 +1,7 @@
 package com.administracionzonal.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -22,4 +24,9 @@ public class MisReservasVehiculoDTO {
     private String marcaVehiculo;
     private String modeloVehiculo;
     private String placaVehiculo;
+    private LocalDateTime salidaReal;
+    private LocalDateTime retornoReal;
+    private Long kilometrajeInicial;
+    private Long kilometrajeFinal;
+    private String novedades;
 }

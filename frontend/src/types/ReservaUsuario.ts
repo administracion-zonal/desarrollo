@@ -5,6 +5,7 @@ export type ReservaUsuario = {
   horaFin: string;
   nombreArea: string;
   nombreInstitucion: string;
+  estado: string;
   vigente: boolean;
   puedeCancelar: boolean;
   qrToken?: string;

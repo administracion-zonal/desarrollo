@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
-
-import { useVehiculosCatalogo } from "../hooks/useVehiculosCatalogo";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { solicitudVehiculoService } from "../services/solicitudVehiculoService";
-import { esBloquePasado, generarBloques, toMinutes } from "../utils/timeUtils";
-export default function ReservaVehiculoForm() {
-  const { cargarVehiculos } = useVehiculosCatalogo();
+import { fechaActualLocal } from "../utils/dateUtils";
 
+export default function ReservaVehiculoForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     fechaReserva: "",
     horaInicio: "",
@@ -17,74 +16,33 @@ export default function ReservaVehiculoForm() {
     observaciones: "",
   });
 
-  const [horaInicioSel, setHoraInicioSel] = useState<string | null>(null);
-  const [horaFinSel, setHoraFinSel] = useState<string | null>(null);
-
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
-
-  useEffect(() => {
-    cargarVehiculos();
-  }, [cargarVehiculos]);
-
-  /* ================= SELECCIÓN HORAS ================= */
-  const seleccionarHora = (hora: string) => {
-    if (esBloquePasado(form.fechaReserva, hora)) return;
-    if (!horaInicioSel) {
-      setHoraInicioSel(hora);
-      setHoraFinSel(null);
-      return;
-    }
-
-    if (hora === horaInicioSel) {
-      setHoraInicioSel(null);
-      setHoraFinSel(null);
-      setForm((prev) => ({ ...prev, horaInicio: "", horaFin: "" }));
-      return;
-    }
-
-    const inicio = toMinutes(horaInicioSel);
-    const fin = toMinutes(hora);
-
-    if (fin <= inicio) return;
-    if (fin - inicio > 480) return;
-
-    setHoraFinSel(hora);
-
-    setForm((prev) => ({
-      ...prev,
-      horaInicio: horaInicioSel,
-      horaFin: hora,
-    }));
-  };
+  const [solicitudEnviada, setSolicitudEnviada] = useState(false);
 
   /* ================= SUBMIT ================= */
   const guardar = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    console.log("DATA ENVIADA:", {
-      fecha: form.fechaReserva,
-      horaInicio: form.horaInicio,
-      horaFin: form.horaFin,
-      motivo: form.motivo,
-      destino: form.destino,
-      origen: form.origen,
-      servidores: form.servidores,
-      observaciones: form.observaciones,
-    });
-
     setError(null);
     setOk(null);
 
     if (!form.fechaReserva) return setError("Seleccione una fecha");
+    if (form.fechaReserva < fechaActualLocal()) {
+      return setError("No puede seleccionar una fecha anterior a hoy");
+    }
     if (!form.horaInicio || !form.horaFin) {
-      console.error("HORAS INVALIDAS", form);
       return setError("Seleccione un horario válido");
     }
-    if (!form.motivo.trim())
-      return setError("Ingrese el motivo de la solicitud");
+    const inicioSolicitud = new Date(`${form.fechaReserva}T${form.horaInicio}`);
+    if (inicioSolicitud.getTime() < Date.now() + 24 * 60 * 60 * 1000) {
+      return setError("La solicitud debe realizarse con al menos 24 horas de anticipación");
+    }
+    if (!form.motivo.trim()) return setError("Ingrese el motivo de la solicitud");
     if (!form.origen.trim()) return setError("Ingrese el origen del traslado");
-    if (!form.destino) return setError("Ingrese un destino");
+    if (!form.destino.trim()) return setError("Ingrese un destino");
+    if (form.horaFin <= form.horaInicio) {
+      return setError("La hora de retorno debe ser posterior a la hora de salida");
+    }
     if (!form.servidores.trim()) {
       return setError("Ingrese los servidores o acompanantes del traslado");
     }
@@ -101,21 +59,8 @@ export default function ReservaVehiculoForm() {
         servidores: form.servidores,
       });
 
-      setOk("✅ Reserva realizada correctamente");
-
-      setForm({
-        fechaReserva: "",
-        horaInicio: "",
-        horaFin: "",
-        motivo: "",
-        destino: "",
-        origen: "",
-        servidores: "",
-        observaciones: "",
-      });
-
-      setHoraInicioSel(null);
-      setHoraFinSel(null);
+      setOk("Solicitud enviada. Queda pendiente de revisión y aprobación.");
+      setSolicitudEnviada(true);
     } catch (e: unknown) {
       if (e instanceof Error) {
         setError(e.message);
@@ -138,13 +83,58 @@ export default function ReservaVehiculoForm() {
       <div className="reserva-layout reserva-layout--compact">
         <div className="reserva-content">
           <div className="form-panel">
+            {solicitudEnviada ? (
+              <div className="reservation-summary">
+                <div className="reservation-summary__card">
+                  <h3>Solicitud enviada</h3>
+                  <p className="reservation-summary__meta">
+                    Tu solicitud de vehículo fue recibida y está pendiente de
+                    revisión y aprobación. Recibirás la confirmación en{" "}
+                    <strong>Mis reservas → Vehículos</strong>.
+                  </p>
+                  <span className="status-pill status-pill--pending">
+                    Pendiente de aprobación
+                  </span>
+                  <div className="reservation-summary__actions">
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => navigate("/vehiculos/mis")}
+                    >
+                      Ver mis solicitudes
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => {
+                        setForm({
+                          fechaReserva: "",
+                          horaInicio: "",
+                          horaFin: "",
+                          motivo: "",
+                          destino: "",
+                          origen: "",
+                          servidores: "",
+                          observaciones: "",
+                        });
+                        setSolicitudEnviada(false);
+                        setOk(null);
+                      }}
+                    >
+                      Crear otra solicitud
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
             <form onSubmit={guardar} className="form-grid-2">
               <div className="field span-2">
                 <label>Fecha</label>
                 <input
                   type="date"
                   value={form.fechaReserva}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={fechaActualLocal()}
+                  required
                   onKeyDown={(e) => e.preventDefault()}
                   onClick={(e) => e.currentTarget.showPicker?.()}
                   onChange={(e) =>
@@ -154,44 +144,29 @@ export default function ReservaVehiculoForm() {
               </div>
 
               <div className="field span-2">
-                <label>Horario</label>
-
-                <div className="time-grid">
-                  {generarBloques().map((hora) => {
-                    const horaPasada = esBloquePasado(form.fechaReserva, hora);
-                    const esInicio = hora === horaInicioSel;
-                    const esFin = hora === horaFinSel;
-
-                    const seleccionada =
-                      horaInicioSel &&
-                      horaFinSel &&
-                      toMinutes(hora) >= toMinutes(horaInicioSel) &&
-                      toMinutes(hora) <= toMinutes(horaFinSel);
-
-                    return (
-                      <button
-                        key={hora}
-                        type="button"
-                        disabled={horaPasada}
-                        className={`time-slot
-                        
-                        ${seleccionada ? "selected" : ""}
-                        ${esInicio ? "start" : ""}
-                        ${esFin ? "end" : ""}
-                      `}
-                        onClick={() => seleccionarHora(hora)}
-                      >
-                        {hora}
-                      </button>
-                    );
-                  })}
+                <label>Horario requerido</label>
+                <div className="form-grid-2">
+                  <input
+                    type="time"
+                    step={1800}
+                    aria-label="Hora de salida"
+                    value={form.horaInicio}
+                    onChange={(e) => setForm({ ...form, horaInicio: e.target.value })}
+                    required
+                  />
+                  <input
+                    type="time"
+                    step={1800}
+                    aria-label="Hora de retorno"
+                    value={form.horaFin}
+                    onChange={(e) => setForm({ ...form, horaFin: e.target.value })}
+                    required
+                  />
                 </div>
-
-                {horaInicioSel && horaFinSel && (
-                  <p className="hint">
-                    {horaInicioSel} - {horaFinSel}
-                  </p>
-                )}
+                <p className="hint">
+                  Solicite con al menos 24 horas de anticipación. Los horarios
+                  fuera de 08:00 a 16:30 requieren autorización del Administrador Zonal.
+                </p>
               </div>
 
               <div className="field span-2">
@@ -245,11 +220,12 @@ export default function ReservaVehiculoForm() {
                 />
               </div>
 
-              <button className="actions span-2">Solicitar vehículo</button>
+              <button className="actions span-2" type="submit">Solicitar vehículo</button>
 
               {error && <p className="error span-2">{error}</p>}
               {ok && <p className="success-message span-2">{ok}</p>}
             </form>
+            )}
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ public class ReservaDTO {
     private LocalDate fecha;
     private LocalTime horaInicio;
     private LocalTime horaFin;
+    private Integer numeroPersonas = 1;
     private Boolean aceptaAcuerdo;
     private String correo;
     private String fotoPerfil;

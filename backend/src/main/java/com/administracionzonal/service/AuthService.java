@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.administracionzonal.dto.AuthResponseDTO;
@@ -12,7 +13,6 @@ import com.administracionzonal.dto.LoginRequest;
 import com.administracionzonal.dto.RegisterRequest;
 import com.administracionzonal.entity.Rol;
 import com.administracionzonal.entity.Usuario;
-import com.administracionzonal.repository.ReservaCanchaRepository;
 import com.administracionzonal.repository.ReservaRepository;
 import com.administracionzonal.repository.RolRepository;
 import com.administracionzonal.repository.UsuarioRepository;
@@ -27,12 +27,11 @@ public class AuthService {
         private final UsuarioRepository usuarioRepository;
         private final RolRepository rolRepository;
         private final ReservaRepository reservaRepository;
-        private final ReservaCanchaRepository reservaCanchaRepository;
         private final PasswordEncoder passwordEncoder;
         private final JwtUtil jwtUtil;
+        private final JdbcTemplate jdbc;
 
         public AuthResponseDTO login(LoginRequest request) {
-
                 Usuario usuario = usuarioRepository
                                 .findByCedula(request.getCedula())
                                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -41,6 +40,29 @@ public class AuthService {
                                 request.getPassword(),
                                 usuario.getPassword())) {
                         throw new RuntimeException("Credenciales invalidas");
+                }
+
+                List<Boolean> estadosInstitucionales = jdbc.query(
+                                        "SELECT activo FROM administracionzonal.usuarios_institucion WHERE id_usuario = ?",
+                                        (rs, rowNum) -> rs.getBoolean("activo"),
+                                        usuario.getIdUsuario());
+                if (!estadosInstitucionales.isEmpty() && !estadosInstitucionales.get(0)) {
+                                boolean procesoInstitucionalEnCurso = Boolean.TRUE.equals(jdbc.queryForObject(
+                                                """
+                                                SELECT EXISTS (
+                                                        SELECT 1
+                                                        FROM administracionzonal.usuario_proceso
+                                                        WHERE id_usuario = ?
+                                                        AND tipo IN ('INGRESO', 'SALIDA')
+                                                        AND estado = 'EN_PROCESO'
+                                                )
+                                                """,
+                                                Boolean.class,
+                                                usuario.getIdUsuario()));
+                                if (!procesoInstitucionalEnCurso) {
+                                        throw new RuntimeException(
+                                                        "Cuenta institucional inactiva. Consulte con Talento Humano.");
+                                }
                 }
 
                 List<String> roles = usuario.getRoles()
@@ -67,17 +89,13 @@ public class AuthService {
                 }
 
                 long faltasCoworking = 0;
-                long faltasCancha = 0;
-
                 if (!esAdmin && esBloqueable) {
                         faltasCoworking = reservaRepository.countByUsuario_CedulaAndNoAsistioTrue(usuario.getCedula());
-                        faltasCancha = reservaCanchaRepository
-                                        .countByUsuario_CedulaAndNoAsistioTrue(usuario.getCedula());
                 }
 
-                if (!esAdmin && esBloqueable && (faltasCoworking + faltasCancha) > 2) {
+                if (!esAdmin && esBloqueable && faltasCoworking > 2) {
                         usuario.setBloqueado(true);
-                        usuario.setMotivoBloqueo("Bloqueo automatico por mas de 2 inasistencias registradas");
+                        usuario.setMotivoBloqueo("Bloqueo automático por más de dos inasistencias en coworking");
                         usuario.setUpdatedAt(LocalDateTime.now());
                         usuario.setUpdatedBy("sistema");
                         usuarioRepository.save(usuario);

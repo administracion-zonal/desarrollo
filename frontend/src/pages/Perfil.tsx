@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import incognito from "../assets/incognito-ini.jpg";
 import ImageCropper from "../components/ImageCropper";
+import ModalPortal from "../components/ModalPortal";
 import { useAuth } from "../context/useAuth";
 import type { PerfilUsuario } from "../types/PerfilUsuario";
 import { apiFetch } from "../utils/api";
 
 export default function Perfil() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
 
   const [editando, setEditando] = useState(false);
@@ -234,7 +235,7 @@ export default function Perfil() {
       )}*/}
 
       {editando && perfil && (
-        <div className="modal-overlay">
+        <ModalPortal>
           <div className="modal">
             {/* HEADER */}
             <div className="modal-header">Actualizar datos</div>
@@ -381,7 +382,7 @@ export default function Perfil() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {imagenTemporal && (
@@ -396,31 +397,39 @@ export default function Perfil() {
               new File([blob], "perfil.jpg", { type: "image/jpeg" }),
             );
 
-            const res = await apiFetch(
-              `/api/usuarios/subir-foto/${user?.idUsuario}`,
-              {
-                method: "POST",
-                body: formData,
-              },
-            );
+            try {
+              const res = await apiFetch(
+                `/api/usuarios/subir-foto/${user?.idUsuario}`,
+                {
+                  method: "POST",
+                  body: formData,
+                },
+              );
+              const ruta = (await res.text()).trim();
 
-            if (!res.ok) {
-              alert("Error subiendo foto");
-              return;
+              if (!user || !ruta) {
+                throw new Error("El servidor no devolvió la ruta de la foto");
+              }
+
+              const usuarioActualizado = { ...user, fotoPerfil: ruta };
+              localStorage.setItem("user", JSON.stringify(usuarioActualizado));
+              localStorage.setItem("fotoPerfil", ruta);
+              setUser(usuarioActualizado);
+              setCacheBust(Date.now());
+              setImagenTemporal(null);
+            } catch (error) {
+              alert(
+                error instanceof Error
+                  ? `No se pudo actualizar la foto: ${error.message}`
+                  : "No se pudo actualizar la foto",
+              );
             }
-
-            const ruta = await res.text();
-
-            localStorage.setItem("fotoPerfil", ruta);
-
-            setCacheBust((prev) => prev + 1);
-            setImagenTemporal(null);
           }}
         />
       )}
 
       {modalPass && (
-        <div className="modal-overlay">
+        <ModalPortal>
           <div className="modal">
             <div className="modal-header">Cambiar contraseña</div>
 
@@ -511,7 +520,7 @@ export default function Perfil() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

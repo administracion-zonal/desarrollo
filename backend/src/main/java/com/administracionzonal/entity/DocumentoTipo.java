@@ -20,6 +20,15 @@ public class DocumentoTipo {
 
     private String tipoProceso;
 
+    @Column(name = "plantilla_archivo")
+    private String plantillaArchivo;
+
+    @Column(name = "plantilla_nombre")
+    private String plantillaNombre;
+
+    @Column(name = "plantilla_extension")
+    private String plantillaExtension;
+
     // GETTERS
 
     public Long getIdDocumentoTipo() {
@@ -32,5 +41,29 @@ public class DocumentoTipo {
 
     public String getTipoProceso() {
         return tipoProceso;
+    }
+
+    public String getPlantillaArchivo() {
+        return plantillaArchivo;
+    }
+
+    public void setPlantillaArchivo(String plantillaArchivo) {
+        this.plantillaArchivo = plantillaArchivo;
+    }
+
+    public String getPlantillaNombre() {
+        return plantillaNombre;
+    }
+
+    public void setPlantillaNombre(String plantillaNombre) {
+        this.plantillaNombre = plantillaNombre;
+    }
+
+    public String getPlantillaExtension() {
+        return plantillaExtension;
+    }
+
+    public void setPlantillaExtension(String plantillaExtension) {
+        this.plantillaExtension = plantillaExtension;
     }
 }

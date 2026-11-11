@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
+import { useAuth } from "../context/useAuth";
 
 export default function CambiarPassword() {
+  const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   const [passwordActual, setPasswordActual] = useState("");
   const [passwordNueva, setPasswordNueva] = useState("");
   const [confirmarPassword, setConfirmarPassword] = useState("");
@@ -26,7 +30,7 @@ export default function CambiarPassword() {
     }
 
     try {
-      const res = await apiFetch(`/auth/cambiar-password`, {
+      const res = await apiFetch(`/api/auth/cambiar-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,11 +49,20 @@ export default function CambiarPassword() {
         setPasswordActual("");
         setPasswordNueva("");
         setConfirmarPassword("");
+        if (user) {
+          const usuarioActualizado = { ...user, debeCambiarPassword: false };
+          localStorage.setItem("user", JSON.stringify(usuarioActualizado));
+          setUser(usuarioActualizado);
+          navigate(
+            user.roles.includes("SERVIDOR_AZVCH") ? "/checklist" : "/perfil",
+            { replace: true },
+          );
+        }
       } else {
         setError(texto);
       }
-    } catch {
-      setError("Error de conexión con el servidor");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Error de conexión con el servidor");
     }
   };
 

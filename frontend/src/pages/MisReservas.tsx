@@ -1,62 +1,30 @@
 import { QRCodeCanvas } from "qrcode.react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import ModalPortal from "../components/ModalPortal";
 import { useMisReservas } from "../hooks/useMisReservas";
 import type { ReservaUsuario } from "../types/ReservaUsuario";
 import { apiFetch } from "../utils/api";
+import { printReservationQr } from "../utils/printReservationQr";
 
 export default function MisReservas() {
   const { reservas, setReservas, loading, error } = useMisReservas();
 
   const [detalle, setDetalle] = useState<ReservaUsuario | null>(null);
+  const [errorImpresion, setErrorImpresion] = useState<string | null>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const imprimirQR = () => {
-    const canvas = document.querySelector("canvas");
-
-    if (!canvas) return;
-
-    const qrImage = canvas.toDataURL("image/png");
-
-    const ventana = window.open("", "_blank", "width=400,height=600");
-
-    if (!ventana) return;
-
-    ventana.document.write(`
-    <html>
-      <head>
-        <title>Reserva Coworking</title>
-        <style>
-          body{
-            font-family: Arial;
-            text-align:center;
-            padding:30px;
-          }
-          img{
-            width:220px;
-            margin-top:10px;
-          }
-        </style>
-      </head>
-      <body>
-
-        <h3>Tu código de acceso</h3>
-
-        <p>
-        Administración Zonal Valle de los Chillos
-        </p>
-
-        <img src="${qrImage}" />
-
-      </body>
-    </html>
-  `);
-
-    ventana.document.close();
-
-    ventana.focus();
-
-    setTimeout(() => {
-      ventana.print();
-    }, 500);
+    if (!detalle) return;
+    const printed = printReservationQr(qrRef.current, "Reserva de coworking", [
+      { label: "Fecha", value: detalle.fecha },
+      { label: "Horario", value: `${detalle.horaInicio} - ${detalle.horaFin}` },
+      { label: "Código", value: detalle.qrToken ?? "" },
+    ]);
+    setErrorImpresion(
+      printed
+        ? null
+        : "Permite las ventanas emergentes para imprimir el código QR.",
+    );
   };
 
   const cancelarReserva = async (id: number) => {
@@ -76,7 +44,19 @@ export default function MisReservas() {
       return;
     }
 
-    setReservas((prev) => prev.filter((r) => r.id !== id));
+    setReservas((prev) =>
+      prev.map((reserva) =>
+        reserva.id === id
+          ? {
+              ...reserva,
+              estado: "CANCELADO",
+              vigente: false,
+              puedeCancelar: false,
+              qrToken: undefined,
+            }
+          : reserva,
+      ),
+    );
   };
 
   if (loading) return <p>Cargando reservas...</p>;
@@ -92,47 +72,66 @@ export default function MisReservas() {
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
       {reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Horario</th>
-              <th>Área</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reservas.map((r) => (
-              <tr key={r.id}>
-                <td>{r.fecha}</td>
-                <td>
-                  {r.horaInicio} - {r.horaFin}
-                </td>
-                <td>{r.nombreArea}</td>
-                <td>
-                  <div className="table-actions">
-                    <button onClick={() => setDetalle(r)}>Ver</button>
-
-                    {r.puedeCancelar && (
-                      <button
-                        className="btn-danger-inline"
-                        onClick={() => cancelarReserva(r.id)}
-                      >
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-                </td>
+        <div className="table-responsive">
+          <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Horario</th>
+                <th>Área</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reservas.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.fecha}</td>
+                  <td>
+                    {r.horaInicio} - {r.horaFin}
+                  </td>
+                  <td>{r.nombreArea}</td>
+                  <td>
+                    <span
+                      className={`status-pill ${
+                        r.estado === "ASISTIO"
+                          ? "status-pill--success"
+                          : r.estado === "NO_ASISTIO" || r.estado === "CANCELADO"
+                            ? "status-pill--danger"
+                            : "status-pill--pending"
+                      }`}
+                    >
+                      {r.estado === "RESERVADO" ? "Reservada" : r.estado}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button onClick={() => {
+                        setErrorImpresion(null);
+                        setDetalle(r);
+                      }}>Ver</button>
+
+                      {r.puedeCancelar && (
+                        <button
+                          className="btn-danger-inline"
+                          onClick={() => cancelarReserva(r.id)}
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* MODAL DETALLE */}
       {detalle && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <ModalPortal>
+          <div className="modal modal--fullscreen">
             <div className="modal-header">Detalle de reserva</div>
 
             <div className="field">
@@ -156,13 +155,23 @@ export default function MisReservas() {
                   <label>Institución: </label>
                   <input value={detalle.nombreInstitucion} readOnly />
                 </div>
+                <div>
+                  <label>Estado: </label>
+                  <input
+                    value={detalle.estado === "RESERVADO" ? "Reservada" : detalle.estado}
+                    readOnly
+                  />
+                </div>
               </div>
               <label>Codigo QR: </label>
-              <center>
+              <div
+                ref={qrRef}
+                style={{ display: "grid", justifyItems: "center" }}
+              >
                 {detalle.vigente && detalle.qrToken && (
-                  <QRCodeCanvas value={detalle.qrToken!} size={150} />
+                  <QRCodeCanvas value={detalle.qrToken} size={150} />
                 )}
-              </center>
+              </div>
             </div>
 
             <div className="modal-footer">
@@ -178,8 +187,9 @@ export default function MisReservas() {
                 Cerrar
               </button>
             </div>
+            {errorImpresion && <p className="error" role="alert">{errorImpresion}</p>}
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -2,17 +2,14 @@
 .agreement-modal-container {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
-
+  box-sizing: border-box;
+  overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.75);
-
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-
-  z-index: 10000;
+  padding: clamp(8px, 2vh, 24px);
+  z-index: 100000;
 }
 
 /* TÍTULO */
@@ -49,19 +46,16 @@
 /* CUERPO PDF */
 .agreement-modal-body {
   flex: 1;
-
   width: 100%;
-  min-height: 50vh;
-  max-height: 62vh;
-
-  overflow-y: auto;
-
+  min-height: 0;
+  overflow: hidden;
   border: 1px solid #d6dbe3;
   border-radius: 10px;
   margin-bottom: 12px;
 }
 
 .agreement-modal-body iframe {
+  display: block;
   width: 100%;
   height: 100%;
   border: none;
@@ -108,32 +102,24 @@
 }
 
 .agreement-modal-content {
-  background-color: #ffffff; /* 🟦 blanco */
-  color: #0a2540; /* 🟦 azul marino institucional */
-
-  width: 100%;
-  max-width: 940px;
-  max-height: 92vh;
-
-  padding: 20px 24px;
-
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #0a2540;
+  width: min(96vw, 1440px);
+  height: min(94vh, 1000px);
+  padding: clamp(16px, 2.5vw, 32px);
   border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-
   display: flex;
   flex-direction: column;
 }
 
 @media (max-width: 700px) {
   .agreement-modal-content {
-    max-width: 100%;
+    width: 100%;
+    height: 96dvh;
     padding: 14px;
     border-radius: 12px;
-  }
-
-  .agreement-modal-body {
-    min-height: 56vh;
-    max-height: 66vh;
   }
 
   .agreement-modal-actions {
@@ -143,5 +129,11 @@
   .agreement-modal-actions .btn-outline,
   .agreement-modal-actions .btn-primary {
     flex: 1;
+  }
+}
+
+@media (max-height: 600px) {
+  .agreement-modal-content {
+    height: 96dvh;
   }
 }

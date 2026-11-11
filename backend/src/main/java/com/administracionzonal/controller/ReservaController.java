@@ -48,6 +48,8 @@ public class ReservaController {
         try {
             return ResponseEntity.ok(
                     reservaService.crearReservaPublica(dto));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)

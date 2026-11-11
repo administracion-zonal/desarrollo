@@ -10,6 +10,8 @@ import com.administracionzonal.entity.UsuarioDocumento;
 public interface UsuarioDocumentoRepository extends JpaRepository<UsuarioDocumento, Long> {
     List<UsuarioDocumento> findByIdUsuario(Long idUsuario);
 
+    List<UsuarioDocumento> findByIdUsuarioOrderByIdDesc(Long idUsuario);
+
     Optional<UsuarioDocumento> findByIdUsuarioAndDocumentoTipo_IdDocumentoTipo(
             Long idUsuario,
             Long idDocumentoTipo);

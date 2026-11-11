@@ -1,203 +1,303 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ChecklistTabla from "../components/ChecklistTabla";
 import {
+  descargarDocumento,
+  descargarPlantilla,
   finalizarProceso,
   getDocumentos,
+  getIngresoAprobado,
+  getProcesoActual,
   uploadDocumento,
 } from "../services/talentoHumanoService";
+import type {
+  DocumentoTH,
+  ProcesoUsuario,
+} from "../services/talentoHumanoService";
 
-/* =========================
-   TIPOS
-========================= */
-type Documento = {
-  id: number; // 🔥 NECESARIO
-  idDocumentoTipo: number;
-  nombre: string;
-  estado: string;
-  tipo: string;
-  rutaArchivo?: string; // 🔥 NUEVO
-};
-
-/* =========================
-   COMPONENTE
-========================= */
 export default function ChecklistWizard() {
-  // 🔐 Usuario logueado
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const idUsuario: number = user?.idUsuario;
+  const idUsuario: number | undefined = user?.idUsuario;
 
-  // 🧠 Estados
-  const [step, setStep] = useState<number>(0);
-  const [docsIngreso, setDocsIngreso] = useState<Documento[]>([]);
-  const [docsSalida, setDocsSalida] = useState<Documento[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [proceso, setProceso] = useState<ProcesoUsuario | null>(null);
+  const [documentos, setDocumentos] = useState<DocumentoTH[]>([]);
+  const [ingresoAprobado, setIngresoAprobado] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState<string | null>(null);
 
-  /* =========================
-     CARGAR DOCUMENTOS (CORRECTO)
-  ========================= */
-  useEffect(() => {
+  const documentosProceso = useMemo(
+    () => documentos.filter(
+      (documento) => documento.tipo === proceso?.tipo && documento.incluidoEnChecklist,
+    ),
+    [documentos, proceso],
+  );
+  const documentosHistorial = documentos.filter(
+    (documento) => documento.archivoDisponible && documento.estado === "APROBADA",
+  );
+  const documentosObligatorios = documentosProceso.filter(
+    (documento) => documento.obligatorio,
+  );
+  const requisitosObligatorios = Array.from(
+    new Set(documentosObligatorios.map((documento) => documento.idDocumentoTipo)),
+  );
+  const documentosAprobados = requisitosObligatorios.filter((idDocumentoTipo) =>
+    documentosProceso.some((documento) =>
+      documento.idDocumentoTipo === idDocumentoTipo
+      && documento.estado === "APROBADA"
+      && documento.archivoDisponible,
+    ),
+  ).length;
+  const documentosSubidosSinAprobar = documentosProceso.some(
+    (documento) => documento.archivoDisponible && documento.estado !== "APROBADA",
+  );
+  const progreso = requisitosObligatorios.length
+    ? Math.round((documentosAprobados / requisitosObligatorios.length) * 100)
+    : 0;
+  const puedeFinalizar =
+    proceso?.idChecklist !== null &&
+    requisitosObligatorios.length > 0 &&
+    !documentosSubidosSinAprobar &&
+    requisitosObligatorios.every((idDocumentoTipo) =>
+      documentosProceso.some((documento) =>
+        documento.idDocumentoTipo === idDocumentoTipo
+        && documento.estado === "APROBADA"
+        && documento.archivoDisponible,
+      ),
+    );
+
+  const cargar = useCallback(async () => {
     if (!idUsuario) return;
-
-    const fetchData = async () => {
-      try {
-        const res: Documento[] = await getDocumentos(idUsuario);
-
-        setDocsIngreso(res.filter((d) => d.tipo === "INGRESO"));
-        setDocsSalida(res.filter((d) => d.tipo === "SALIDA"));
-      } catch (error) {
-        console.error("Error cargando documentos", error);
-      }
-    };
-
-    fetchData();
+    setLoading(true);
+    setError(null);
+    try {
+      const [procesoActual, docs, aprobado] = await Promise.all([
+        getProcesoActual(),
+        getDocumentos(idUsuario),
+        getIngresoAprobado(),
+      ]);
+      setProceso(procesoActual);
+      setDocumentos(docs);
+      setIngresoAprobado(aprobado);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "No se pudo cargar el proceso");
+    } finally {
+      setLoading(false);
+    }
   }, [idUsuario]);
 
-  /* =========================
-     SUBIR DOCUMENTO
-  ========================= */
+  useEffect(() => {
+    void cargar();
+  }, [cargar]);
+
   const subir = async (
     e: React.ChangeEvent<HTMLInputElement>,
     idDocumentoTipo: number,
   ) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-
-    const formData = new FormData();
-    formData.append("file", e.target.files[0]);
-    formData.append("idUsuario", String(idUsuario));
-    formData.append("idDocumentoTipo", String(idDocumentoTipo));
-
-    try {
-      setLoading(true);
-
-      await uploadDocumento(formData);
-
-      // 🔥 recargar documentos
-      const res: Documento[] = await getDocumentos(idUsuario);
-      setDocsIngreso(res.filter((d) => d.tipo === "INGRESO"));
-      setDocsSalida(res.filter((d) => d.tipo === "SALIDA"));
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error subiendo documento", error);
-      setLoading(false);
-    }
-  };
-
-  /* =========================
-     VALIDACIONES
-  ========================= */
-  if (!idUsuario) {
-    return <div style={{ padding: 20 }}>❌ Usuario no identificado</div>;
-  }
-
-  const validarPaso = () => {
-    const lista = step === 0 ? docsIngreso : docsSalida;
-    return lista.length > 0 && lista.every((d) => d.estado === "APROBADA");
-  };
-
-  /* =========================
-     PROGRESO
-  ========================= */
-  const progreso = () => {
-    const lista = step === 0 ? docsIngreso : docsSalida;
-    if (lista.length === 0) return 0;
-
-    const completos = lista.filter((d) => d.estado === "APROBADA").length;
-    return Math.round((completos / lista.length) * 100);
-  };
-
-  /* =========================
-     NAVEGACIÓN
-  ========================= */
-  const siguiente = () => {
-    if (!validarPaso()) {
-      alert("⚠️ Debes completar todos los documentos");
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("El archivo supera el límite de 10 MB.");
+      e.target.value = "";
       return;
     }
-    setStep(1);
+    if (!/\.(pdf|doc|docx|xls|xlsx)$/i.test(file.name)) {
+      setError("Seleccione un archivo PDF, Word o Excel.");
+      e.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("idDocumentoTipo", String(idDocumentoTipo));
+
+    setLoading(true);
+    setError(null);
+    setMensaje(null);
+    try {
+      await uploadDocumento(formData);
+      setMensaje("Documento cargado. Queda pendiente de revisión.");
+      await cargar();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "No se pudo cargar el documento");
+    } finally {
+      setLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  const verDocumento = async (id: number, extension: string) => {
+    const ventana = window.open("about:blank", "_blank");
+    if (!ventana) {
+      setError("Permita ventanas emergentes para visualizar el documento.");
+      return;
+    }
+    try {
+      const blob = await descargarDocumento(id);
+      const url = URL.createObjectURL(blob);
+      ventana.document.title = `Documento ${extension.toUpperCase()}`;
+      ventana.location.href = url;
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e: unknown) {
+      ventana.close();
+      setError(e instanceof Error ? e.message : "No se pudo abrir el documento");
+    }
+  };
+
+  const descargarFormato = async (idDocumentoTipo: number, nombre?: string | null) => {
+    try {
+      const blob = await descargarPlantilla(idDocumentoTipo);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nombre || `formato-documento-${idDocumentoTipo}`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "No se pudo descargar el formato");
+    }
   };
 
   const finalizar = async () => {
+    if (!proceso || !idUsuario || proceso.idChecklist === null || !puedeFinalizar) return;
+    setLoading(true);
+    setError(null);
     try {
-      const res = await finalizarProceso({
+      const siguiente = await finalizarProceso({
         idUsuario,
-        idChecklist: 1,
-        tipo: "INGRESO",
+        idChecklist: proceso.idChecklist,
+        tipo: proceso.tipo,
       });
-
-      if (res.ok) {
-        alert("✅ Proceso completado correctamente");
-        window.location.href = "/perfil";
+      if (siguiente) {
+        setProceso(siguiente);
+        setMensaje(`Etapa completada. Continúe con: ${siguiente.nombreChecklist}.`);
+        await cargar();
       } else {
-        alert("❌ Error al finalizar el proceso");
+        setMensaje("Proceso completado correctamente.");
+        window.location.assign("/checklist");
       }
-    } catch (error) {
-      console.error(error);
-      alert("❌ Error de conexión");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "No se pudo finalizar el proceso");
+    } finally {
+      setLoading(false);
     }
   };
 
-  /* =========================
-     UI
-  ========================= */
+  if (!idUsuario) {
+    return <div style={{ padding: 20 }}>Usuario no identificado.</div>;
+  }
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>📋 Proceso Talento Humano</h2>
+    <div style={{ padding: 20 }}>
+      <h2>Proceso de Talento Humano</h2>
+      {loading && <p>Procesando...</p>}
+      {error && <p className="error">{error}</p>}
+      {mensaje && <p className="success-message">{mensaje}</p>}
 
-      {/* TEXTO INSTITUCIONAL */}
-      <p style={{ marginBottom: 20 }}>
-        Complete los siguientes documentos obligatorios para continuar con su
-        proceso institucional.
-      </p>
+      {!proceso && ingresoAprobado && !loading && !error && (
+        <section className="checklist-completed">
+          <span className="section-heading__eyebrow">Estado de vinculación</span>
+          <h3>Documentación aprobada</h3>
+          <p>Su proceso de ingreso finalizó. Los documentos aprobados se muestran solo para consulta.</p>
+          {documentosHistorial.length === 0 && <p>No hay documentos aprobados para mostrar.</p>}
+        </section>
+      )}
 
-      {/* PROGRESO */}
-      <div style={{ marginBottom: 20 }}>
-        <strong>Progreso: {progreso()}%</strong>
+      {!proceso && ingresoAprobado === false && !loading && !error && (
+        <p>No tiene un proceso activo. Consulte con Talento Humano.</p>
+      )}
 
-        <div
-          style={{
-            height: 10,
-            background: "#ccc",
-            borderRadius: 5,
-            marginTop: 5,
-          }}
-        >
-          <div
-            style={{
-              width: `${progreso()}%`,
-              height: "100%",
-              background: "green",
-              borderRadius: 5,
-            }}
-          />
-        </div>
-      </div>
+      {!proceso && ingresoAprobado && documentosHistorial.length > 0 && (
+        <section>
+          <h3>Documentos aprobados</h3>
+          <div className="table-responsive">
+            <table className="reservas-table">
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Proceso</th>
+                  <th>Estado</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documentosHistorial.map((documento) => (
+                  <tr key={documento.id}>
+                    <td>{documento.nombre}</td>
+                    <td>
+                      <span className="status-pill status-pill--success">Aprobado</span>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={() => verDocumento(documento.id, documento.archivoExtension)}
+                      >
+                        Visualizar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
-      {/* TABS */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-        <button disabled={step === 0}>Ingreso</button>
-        <button disabled={step === 1}>Salida</button>
-      </div>
+      {proceso && (
+        <>
+          <p>
+            Proceso: <strong>{proceso.nombreChecklist || proceso.tipo}</strong>
+          </p>
+          <div style={{ marginBottom: 20 }}>
+            <strong>
+              Documentación aprobada: {documentosAprobados}/
+              {requisitosObligatorios.length} ({progreso}%)
+            </strong>
+            <div
+              style={{
+                height: 10,
+                background: "#ccc",
+                borderRadius: 5,
+                marginTop: 5,
+              }}
+            >
+              <div
+                style={{
+                  width: `${progreso}%`,
+                  height: "100%",
+                  background: "green",
+                  borderRadius: 5,
+                }}
+              />
+            </div>
+          </div>
 
-      {/* CONTENIDO */}
-      {step === 0 && <ChecklistTabla items={docsIngreso} onUpload={subir} />}
+          {documentosProceso.length === 0 ? (
+            <p>No hay documentos configurados para este proceso.</p>
+          ) : (
+            <ChecklistTabla
+              items={documentosProceso}
+              onUpload={subir}
+              onView={verDocumento}
+              onDownloadTemplate={descargarFormato}
+            />
+          )}
 
-      {step === 1 && <ChecklistTabla items={docsSalida} onUpload={subir} />}
-
-      {/* BOTONES */}
-      <div style={{ marginTop: 20 }}>
-        {step === 0 && (
-          <button onClick={siguiente} disabled={loading}>
-            {loading ? "Procesando..." : "Siguiente"}
+          {proceso.idChecklist === null && (
+            <p>El proceso aún no tiene un checklist asociado. Contacte a Talento Humano.</p>
+          )}
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={finalizar}
+            disabled={loading || !puedeFinalizar}
+            style={{ marginTop: 20 }}
+          >
+            {loading ? "Procesando..." : "Finalizar proceso"}
           </button>
-        )}
-
-        {step === 1 && (
-          <button onClick={finalizar} disabled={loading}>
-            {loading ? "Procesando..." : "Finalizar"}
-          </button>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

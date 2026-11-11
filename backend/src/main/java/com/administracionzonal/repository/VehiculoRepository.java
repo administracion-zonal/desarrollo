@@ -3,6 +3,7 @@ package com.administracionzonal.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,9 +15,11 @@ public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
     Optional<Vehiculo> findByChoferIdUsuario(Long idUsuario);
 
     @Query("""
-                SELECT DISTINCT v.chofer
+                SELECT DISTINCT u
                 FROM Vehiculo v
-                WHERE v.chofer IS NOT NULL
+                JOIN v.chofer u
+                JOIN u.roles r
+                WHERE r.nombre = 'CHOFER'
             """)
-    List<Usuario> findChoferes();
+    List<Usuario> findChoferes(Sort sort);
 }

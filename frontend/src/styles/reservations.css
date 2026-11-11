@@ -230,6 +230,24 @@
     grid-template-columns: 1fr;
   }
 
+  .form-panel,
+  .area-preview {
+    padding: 1rem;
+  }
+
+  .reservation-summary__card {
+    padding: 1rem;
+  }
+
+  .reservation-summary__actions {
+    width: 100%;
+  }
+
+  .reservation-summary__actions button {
+    flex: 1 1 150px;
+    min-height: 44px;
+  }
+
   .time-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.45rem;

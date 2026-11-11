@@ -1,7 +1,9 @@
 import { QRCodeCanvas } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import ModalPortal from "../components/ModalPortal";
 import type { ReservaCancha } from "../types/ReservaCancha";
 import { apiFetch } from "../utils/api";
+import { printReservationQr } from "../utils/printReservationQr";
 
 const API = `/api/cancha/mis`;
 
@@ -9,6 +11,8 @@ export default function MisReservasCancha() {
   const [reservas, setReservas] = useState<ReservaCancha[]>([]);
 
   const [detalle, setDetalle] = useState<ReservaCancha | null>(null);
+  const [errorImpresion, setErrorImpresion] = useState<string | null>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const cancelarReserva = async (id: number) => {
     const token = localStorage.getItem("token");
@@ -28,7 +32,11 @@ export default function MisReservasCancha() {
       }
 
       // 🔥 ACTUALIZAR UI SIN RECARGAR
-      setReservas((prev) => prev.filter((r) => r.id !== id));
+      setReservas((prev) =>
+        prev.map((reserva) =>
+          reserva.id === id ? { ...reserva, estado: "CANCELADO" } : reserva,
+        ),
+      );
 
       // cerrar modal si estaba abierto
       if (detalle?.id === id) {
@@ -41,53 +49,17 @@ export default function MisReservasCancha() {
   };
 
   const imprimirQR = () => {
-    const canvas = document.querySelector("canvas");
-
-    if (!canvas) return;
-
-    const qrImage = canvas.toDataURL("image/png");
-
-    const ventana = window.open("", "_blank", "width=400,height=600");
-
-    if (!ventana) return;
-
-    ventana.document.write(`
-    <html>
-      <head>
-        <title>Reserva Cancha</title>
-        <style>
-          body{
-            font-family: Arial;
-            text-align:center;
-            padding:30px;
-          }
-          img{
-            width:220px;
-            margin-top:10px;
-          }
-        </style>
-      </head>
-      <body>
-
-        <h3>Tu código de acceso</h3>
-
-        <p>
-        Administración Zonal Valle de los Chillos
-        </p>
-
-        <img src="${qrImage}" />
-
-      </body>
-    </html>
-  `);
-
-    ventana.document.close();
-
-    ventana.focus();
-
-    setTimeout(() => {
-      ventana.print();
-    }, 500);
+    if (!detalle) return;
+    const printed = printReservationQr(qrRef.current, "Reserva de cancha", [
+      { label: "Fecha", value: detalle.fecha },
+      { label: "Horario", value: `${detalle.horaInicio} - ${detalle.horaFin}` },
+      { label: "Código", value: detalle.qrToken ?? "" },
+    ]);
+    setErrorImpresion(
+      printed
+        ? null
+        : "Permite las ventanas emergentes para imprimir el código QR.",
+    );
   };
 
   useEffect(() => {
@@ -117,68 +89,68 @@ export default function MisReservasCancha() {
       {reservas.length === 0 && <p>No tienes reservas registradas</p>}
 
       {reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Horario</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {reservas.map((r) => (
-              <tr key={r.id}>
-                <td>{r.fecha}</td>
-
-                <td>
-                  {r.horaInicio} - {r.horaFin}
-                </td>
-
-                {/* ✅ ESTADO VISUAL */}
-                <td>
-                  <span
-                    className={`status-pill ${
-                      r.estado === "ASISTIO"
-                        ? "status-pill--success"
-                        : r.estado === "NO_ASISTIO"
-                          ? "status-pill--danger"
-                          : "status-pill--pending"
-                    }`}
-                  >
-                    {r.estado === "RESERVADO" && "Pendiente"}
-                    {r.estado === "ASISTIO" && "Asistio"}
-                    {r.estado === "NO_ASISTIO" && "No asistio"}
-                  </span>
-                </td>
-
-                {/* ✅ ACCIONES */}
-
-                <td>
-                  <div className="table-actions">
-                    <button onClick={() => setDetalle(r)}>Ver</button>
-
-                    {r.estado === "RESERVADO" && (
-                      <button
-                        className="btn-danger-inline"
-                        onClick={() => cancelarReserva(r.id)}
-                      >
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-                </td>
+        <div className="table-responsive">
+          <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Horario</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {reservas.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.fecha}</td>
+                  <td>
+                    {r.horaInicio} - {r.horaFin}
+                  </td>
+                  <td>
+                    <span
+                      className={`status-pill ${
+                        r.estado === "ASISTIO"
+                          ? "status-pill--success"
+                          : r.estado === "NO_ASISTIO" || r.estado === "CANCELADO"
+                            ? "status-pill--danger"
+                            : "status-pill--pending"
+                      }`}
+                    >
+                      {r.estado === "RESERVADO" ? "Pendiente" : r.estado}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        onClick={() => {
+                          setErrorImpresion(null);
+                          setDetalle(r);
+                        }}
+                      >
+                        Ver
+                      </button>
+                      {r.estado === "RESERVADO" && (
+                        <button
+                          className="btn-danger-inline"
+                          onClick={() => cancelarReserva(r.id)}
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* MODAL DETALLE */}
       {detalle && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <ModalPortal>
+          <div className="modal modal--fullscreen">
             <div className="modal-header">Detalle de reserva</div>
 
             <div className="detail-grid">
@@ -200,6 +172,7 @@ export default function MisReservasCancha() {
                 <div
                   className="detail-item detail-item--full"
                   style={{ justifyItems: "center" }}
+                  ref={qrRef}
                 >
                   <span>Codigo QR</span>
                   <QRCodeCanvas value={detalle.qrToken} size={180} />
@@ -220,8 +193,9 @@ export default function MisReservasCancha() {
                 Cerrar
               </button>
             </div>
+            {errorImpresion && <p className="error" role="alert">{errorImpresion}</p>}
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

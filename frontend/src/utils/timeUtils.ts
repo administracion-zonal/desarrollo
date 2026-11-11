@@ -1,17 +1,21 @@
 export const HORA_MIN = "08:00";
-export const HORA_MAX = "16:00";
+export const HORA_MAX = "16:30";
 
 export const toMinutes = (hora: string) => {
   const [h, m] = hora.split(":").map(Number);
   return h * 60 + m;
 };
 
-export const generarBloques = () => {
+export const generarBloques = (
+  horaInicio = HORA_MIN,
+  horaFin = HORA_MAX,
+  incluirHoraFin = false,
+) => {
   const bloques: string[] = [];
-  let t = toMinutes(HORA_MIN);
-  const max = toMinutes(HORA_MAX);
+  let t = toMinutes(horaInicio);
+  const max = toMinutes(horaFin);
 
-  while (t < max) {
+  while (incluirHoraFin ? t <= max : t < max) {
     bloques.push(
       `${Math.floor(t / 60)
         .toString()

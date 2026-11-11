@@ -11,6 +11,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [mostrarModal, setMostrarModal] = useState(false);
+
+  const redirigirUsuario = (data: { debeCambiarPassword?: boolean }) => {
+    if (data.debeCambiarPassword) {
+      navigate("/cambiar-password", { replace: true });
+      return;
+    }
+
+    navigate("/perfil", { replace: true });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -44,13 +54,7 @@ export default function Login() {
       // SOLO si acepta
       setUser(data);
 
-      // 🚦 REDIRECCIÓN
-      if (data.debeCambiarPassword) {
-        navigate("/cambiar-password", { replace: true });
-        return;
-      }
-
-      navigate("/perfil", { replace: true });
+      await redirigirUsuario(data);
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {
@@ -63,9 +67,10 @@ export default function Login() {
 
   const aceptarAcuerdo = async () => {
     try {
-      await apiFetch("/api/usuarios/aceptar-acuerdo", {
+      const res = await apiFetch("/api/usuarios/aceptar-acuerdo", {
         method: "POST",
       });
+      if (!res.ok) throw new Error("No se pudo registrar la aceptación del acuerdo");
 
       // recuperar usuario temporal
       const tempUser = JSON.parse(localStorage.getItem("tempUser") || "{}");
@@ -81,11 +86,17 @@ export default function Login() {
       localStorage.removeItem("tempUser");
 
       setMostrarModal(false);
-
-      navigate("/perfil", { replace: true });
-    } catch {
-      setError("Error al aceptar acuerdo");
+      await redirigirUsuario(tempUser);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Error al aceptar acuerdo");
     }
+  };
+
+  const cancelarAcuerdo = () => {
+    localStorage.removeItem("tempUser");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setMostrarModal(false);
   };
 
   return (
@@ -98,7 +109,7 @@ export default function Login() {
           maxLength={10}
           placeholder="Cédula"
           value={cedula}
-          onChange={(e) => setCedula(e.target.value)}
+          onChange={(e) => setCedula(e.target.value.replace(/\D/g, ""))}
         />
 
         <input
@@ -120,7 +131,7 @@ export default function Login() {
       {/* MODAL DE ACUERDO */}
       <AcuerdoResponsabilidadModal
         open={mostrarModal}
-        onClose={() => setMostrarModal(false)}
+        onClose={cancelarAcuerdo}
         onAccept={aceptarAcuerdo}
       />
     </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import acuerdoPdf from "../../assets/documentos/acuerdo.pdf?url";
 import "./AcuerdoResponsabilidadModal.css";
 
@@ -24,8 +25,13 @@ export default function AcuerdoResponsabilidadModal({
 
   if (!open) return null;
 
-  return (
-    <div className="agreement-modal-container">
+  return createPortal(
+    <div
+      className="agreement-modal-container"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Acuerdo de responsabilidad"
+    >
       <div className="agreement-modal-content">
         <div className="agreement-modal-header-inline">
           <h3>Acuerdo de responsabilidad</h3>
@@ -68,7 +74,6 @@ export default function AcuerdoResponsabilidadModal({
               try {
                 setGuardando(true);
                 await onAccept();
-                onClose();
               } finally {
                 setGuardando(false);
               }
@@ -78,6 +83,7 @@ export default function AcuerdoResponsabilidadModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

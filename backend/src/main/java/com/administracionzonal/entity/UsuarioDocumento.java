@@ -30,6 +30,9 @@ public class UsuarioDocumento {
     @Column(name = "ruta_archivo")
     private String rutaArchivo;
 
+    @Column(name = "observacion_revision", columnDefinition = "text")
+    private String observacionRevision;
+
     // =========================
     // GETTERS Y SETTERS
     // =========================
@@ -68,5 +71,13 @@ public class UsuarioDocumento {
 
     public void setRutaArchivo(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
+    }
+
+    public String getObservacionRevision() {
+        return observacionRevision;
+    }
+
+    public void setObservacionRevision(String observacionRevision) {
+        this.observacionRevision = observacionRevision;
     }
 }

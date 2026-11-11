@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { getIngresoAprobado } from "../services/talentoHumanoService";
 
 import { permisos } from "../utils/permisos";
 
@@ -21,6 +22,41 @@ export default function Menu() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [estadoIngreso, setEstadoIngreso] = useState<{
+    idUsuario: number | undefined;
+    aprobado: boolean | null;
+    error: boolean;
+  }>({ idUsuario: user?.idUsuario, aprobado: null, error: false });
+  const esServidorInstitucional =
+    user?.roles.includes("SERVIDOR_AZVCH") === true &&
+    user.roles.includes("ADMIN") !== true;
+  const ingresoAprobado = estadoIngreso.idUsuario === user?.idUsuario
+    ? estadoIngreso.aprobado
+    : null;
+  const errorIngresoAprobado = estadoIngreso.idUsuario === user?.idUsuario
+    && estadoIngreso.error;
+
+  useEffect(() => {
+    if (!esServidorInstitucional) return;
+
+    let vigente = true;
+    const idUsuario = user?.idUsuario;
+    getIngresoAprobado()
+      .then((aprobado) => {
+        if (vigente) {
+          setEstadoIngreso({ idUsuario, aprobado, error: false });
+        }
+      })
+      .catch(() => {
+        if (vigente) {
+          setEstadoIngreso({ idUsuario, aprobado: false, error: true });
+        }
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [esServidorInstitucional, user?.idUsuario]);
 
   const p = user ? permisos(user) : null;
 
@@ -45,6 +81,14 @@ export default function Menu() {
     if (!p) return [];
     const items: MenuGroup[] = [];
 
+    if (esServidorInstitucional && ingresoAprobado !== true) {
+      return [{
+        id: "ingreso-pendiente",
+        label: "Ingreso institucional",
+        links: [{ label: "Carga de documentos", to: "/checklist" }],
+      }];
+    }
+
     if (p.puedeAdminCoworking || p.puedeAdminCanchas) {
       items.push({
         id: "dashboard",
@@ -57,7 +101,7 @@ export default function Menu() {
             ? [{ label: "Admin cancha", to: "/dashboard-cancha" }]
             : []),
           ...(p.puedeAdminVehiculos
-            ? [{ label: "Admin vehiculos", to: "/vehiculos/admin" }]
+            ? [{ label: "Admin vehiculos", to: "/admin/vehiculos" }]
             : []),
         ],
       });
@@ -99,7 +143,7 @@ export default function Menu() {
       items.push({
         id: "vehiculos-admin",
         label: "Vehiculos admin",
-        links: [{ label: "Solicitudes", to: "/vehiculos/admin" }],
+        links: [{ label: "Solicitudes", to: "/admin/vehiculos" }],
       });
     }
 
@@ -111,8 +155,24 @@ export default function Menu() {
       });
     }
 
+    if (esServidorInstitucional) {
+      items.push({
+        id: "procesos-th",
+        label: "Certificados",
+        links: [{ label: "Capacitaciones", to: "/checklist" }],
+      });
+    }
+
+    if (user?.roles.includes("COMPRAS_PUBLICAS") || user?.roles.includes("ADMIN")) {
+      items.push({
+        id: "compras-publicas",
+        label: "Compras Públicas",
+        links: [{ label: "Expedientes", to: "/compras-publicas" }],
+      });
+    }
+
     return items;
-  }, [p]);
+  }, [esServidorInstitucional, ingresoAprobado, p, user]);
 
   if (!user) return null;
 
@@ -124,6 +184,11 @@ export default function Menu() {
   const toggleGroup = (groupId: string) => {
     setOpenGroup((current) => (current === groupId ? null : groupId));
   };
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setOpenGroup(null);
+  }, [location.pathname]);
 
   const isGroupActive = (group: MenuGroup) =>
     group.links.some((item) => location.pathname.startsWith(item.to));
@@ -166,14 +231,23 @@ export default function Menu() {
           </button>
 
           <nav className={`menu${menuOpen ? " is-open" : ""}`}>
-            <NavLink
-              to="/perfil"
-              className={({ isActive }) =>
-                `menu-link${isActive ? " is-active" : ""}`
-              }
-            >
-              Perfil
-            </NavLink>
+            {esServidorInstitucional &&
+              ingresoAprobado !== true &&
+              errorIngresoAprobado && (
+                <p className="menu-access-message" role="alert">
+                  No se pudo verificar el estado del ingreso. El menú permanecerá limitado a la carga de documentos.
+                </p>
+              )}
+            {(!esServidorInstitucional || ingresoAprobado === true) && (
+              <NavLink
+                to="/perfil"
+                className={({ isActive }) =>
+                  `menu-link${isActive ? " is-active" : ""}`
+                }
+              >
+                Perfil
+              </NavLink>
+            )}
 
             {groups.map((group) => (
               <div
@@ -181,12 +255,6 @@ export default function Menu() {
                 className={`menu-group${openGroup === group.id ? " is-open" : ""}${
                   isGroupActive(group) ? " is-active" : ""
                 }`}
-                onMouseEnter={() => setOpenGroup(group.id)}
-                onMouseLeave={() =>
-                  setOpenGroup((current) =>
-                    current === group.id ? null : current,
-                  )
-                }
               >
                 <button
                   type="button"

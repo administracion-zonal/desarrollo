@@ -2,6 +2,7 @@ package com.administracionzonal.controller;
 
 import java.time.LocalDate;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +27,13 @@ public class PublicReservaController {
     // 🔓 CREAR RESERVA (SIN LOGIN)
     @PostMapping("/reservar")
     public ResponseEntity<?> crearReserva(@RequestBody ReservaDTO dto) {
-        return ResponseEntity.ok(reservaService.crearReservaPublica(dto));
+        try {
+            return ResponseEntity.ok(reservaService.crearReservaPublica(dto));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
     // 🔓 VER DISPONIBILIDAD

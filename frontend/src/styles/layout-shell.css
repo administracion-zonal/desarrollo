@@ -235,9 +235,10 @@ a {
 .btn-outline,
 .actions,
 .menu-logout {
-  padding: 0.8rem 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+padding: 0.68rem 1rem;
+font-size: 0.94rem;
+font-weight: 700;
+letter-spacing: 0.01em;
 }
 
 .btn:hover,
@@ -256,10 +257,15 @@ a {
 button:disabled,
 .actions:disabled,
 .btn-primary:disabled {
-  opacity: 0.55;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+.btn-primary:disabled {
+  background: #e2e8f0;
+  color: #334155;
+  opacity: 1;
 }
 
 .page-shell > h2:first-child,

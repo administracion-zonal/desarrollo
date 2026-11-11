@@ -4,10 +4,11 @@ import { useAuth } from "../context/useAuth";
 import type { DisponibilidadResponse } from "../types/DisponibilidadResponse";
 import type { Reserva } from "../types/Reserva";
 import { apiFetch } from "../utils/api";
-import { esDiaHabil, esFinDeSemana } from "../utils/dateUtils";
+import { esDiaHabil, esFinDeSemana, fechaActualLocal } from "../utils/dateUtils";
 import { solapada } from "../utils/reservaUtils";
 import { esBloquePasado, generarBloques, toMinutes } from "../utils/timeUtils";
 import { validarCedula } from "../utils/validaciones";
+import { printReservationQr } from "../utils/printReservationQr";
 
 const API_RESERVAS = `/api/public/reservas`;
 export default function ReservaForm() {
@@ -21,9 +22,11 @@ export default function ReservaForm() {
     horaInicio: "",
     horaFin: "",
     nombreArea: "",
+    numeroPersonas: 1,
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [errorImpresion, setErrorImpresion] = useState<string | null>(null);
 
   const [horasBloqueadas, setHorasBloqueadas] = useState<string[]>([]);
   const [reservaCreada, setReservaCreada] = useState<Reserva | null>(null);
@@ -35,7 +38,8 @@ export default function ReservaForm() {
   const BACKEND_URL = `${import.meta.env.VITE_API_URL}`;
   const qrRef = useRef<HTMLDivElement>(null);
   const HORA_MIN = "08:00";
-  const HORA_MAX = "16:00";
+  const HORA_MAX = "16:30";
+  const maxPersonas = form.nombreArea === "SALA_REUNIONES" ? 9 : 4;
 
   const areaImages: Record<string, string> = {
     SALA_REUNIONES: `${BACKEND_URL}/uploads/areas/SALA_REUNIONES.jpeg`,
@@ -48,10 +52,12 @@ export default function ReservaForm() {
 
   const seleccionarHora = (hora: string) => {
     if (esBloquePasado(form.fecha, hora)) return;
-    if (bloqueBloqueado(hora)) return;
+    const puestosSolicitados =
+      form.nombreArea === "SALA_REUNIONES" ? 1 : form.numeroPersonas;
 
     // Primer click → inicio
     if (!horaInicioSel) {
+      if ((cuposPorBloque[hora] ?? 0) < puestosSolicitados) return;
       setHoraInicioSel(hora);
       setHoraFinSel(null);
       setForm((prev) => ({ ...prev, horaInicio: "", horaFin: "" }));
@@ -80,7 +86,7 @@ export default function ReservaForm() {
       const h = `${Math.floor(t / 60)
         .toString()
         .padStart(2, "0")}:${(t % 60).toString().padStart(2, "0")}`;
-      if (bloqueBloqueado(h)) return;
+      if ((cuposPorBloque[h] ?? 0) < puestosSolicitados) return;
     }
 
     // OK
@@ -93,53 +99,33 @@ export default function ReservaForm() {
   };
 
   const imprimirQR = () => {
-    const canvas = document.querySelector("canvas");
+    const printed = printReservationQr(qrRef.current, "Reserva de coworking", [
+      { label: "Fecha", value: reservaCreada?.fecha ?? "" },
+      {
+        label: "Horario",
+        value: `${reservaCreada?.horaInicio ?? ""} - ${reservaCreada?.horaFin ?? ""}`,
+      },
+      { label: "Código", value: reservaCreada?.qrToken ?? "" },
+    ]);
+    setErrorImpresion(
+      printed
+        ? null
+        : "No se pudo abrir la ventana de impresión. Permite las ventanas emergentes e inténtalo otra vez.",
+    );
+  };
 
-    if (!canvas) return;
-
-    const qrImage = canvas.toDataURL("image/png");
-
-    const ventana = window.open("", "_blank", "width=400,height=600");
-
-    if (!ventana) return;
-
-    ventana.document.write(`
-    <html>
-      <head>
-        <title>Reserva Coworking</title>
-        <style>
-          body{
-            font-family: Arial;
-            text-align:center;
-            padding:30px;
-          }
-          img{
-            width:220px;
-            margin-top:10px;
-          }
-        </style>
-      </head>
-      <body>
-
-        <h3>Tu código de acceso</h3>
-
-        <p>
-        Administración Zonal Valle de los Chillos
-        </p>
-
-        <img src="${qrImage}" />
-
-      </body>
-    </html>
-  `);
-
-    ventana.document.close();
-
-    ventana.focus();
-
-    setTimeout(() => {
-      ventana.print();
-    }, 500);
+  const volverAlFormulario = () => {
+    setReservaCreada(null);
+    setErrorImpresion(null);
+    setHoraInicioSel(null);
+    setHoraFinSel(null);
+    setCuposPorBloque({});
+    setForm((prev) => ({
+      ...prev,
+      fecha: "",
+      horaInicio: "",
+      horaFin: "",
+    }));
   };
 
   /* ================= DISPONIBILIDAD ================= */
@@ -174,9 +160,11 @@ export default function ReservaForm() {
     setForm((prev) => ({
       ...prev,
       [name]:
-        name === "nombres" || name === "nombreInstitucion"
-          ? value.toUpperCase()
-          : value,
+        name === "numeroPersonas"
+          ? Number(value)
+          : name === "nombres" || name === "nombreInstitucion"
+            ? value.toUpperCase()
+            : value,
     }));
   };
 
@@ -189,7 +177,8 @@ export default function ReservaForm() {
     const token = localStorage.getItem("token");
 
     //const res = await apiFetch(API_RESERVAS, {
-    const res = await apiFetch(`${API_RESERVAS}/reservar`, {
+    try {
+      const res = await apiFetch(`${API_RESERVAS}/reservar`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -198,10 +187,11 @@ export default function ReservaForm() {
       body: JSON.stringify(payload),
     });
 
-    if (res.ok) {
       setReservaCreada(await res.json());
-    } else {
-      setError("Error al registrar la reserva");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "No se pudo crear la reserva",
+      );
     }
   };
 
@@ -216,7 +206,7 @@ export default function ReservaForm() {
     }
 
     if (form.horaInicio < HORA_MIN || form.horaFin > HORA_MAX) {
-      setError("Horario permitido de 08:00 a 16:00");
+      setError("Horario permitido de 08:00 a 16:30");
       return;
     }
 
@@ -239,10 +229,23 @@ export default function ReservaForm() {
       form.nombres.trim() !== "" &&
       form.nombreInstitucion.trim() !== "" &&
       form.nombreArea !== "" &&
+      form.numeroPersonas >= 1 &&
+      form.numeroPersonas <= maxPersonas &&
       form.fecha !== "" &&
       form.horaInicio !== "" &&
       form.horaFin !== "" &&
-      !solapada(form.horaInicio, form.horaFin, horasBloqueadas)
+      !solapada(form.horaInicio, form.horaFin, horasBloqueadas) &&
+      Array.from(
+        { length: (toMinutes(form.horaFin) - toMinutes(form.horaInicio)) / 30 },
+        (_, index) => toMinutes(form.horaInicio) + index * 30,
+      ).every((minutes) => {
+        const hour = `${Math.floor(minutes / 60)
+          .toString()
+          .padStart(2, "0")}:${(minutes % 60).toString().padStart(2, "0")}`;
+        const puestosSolicitados =
+          form.nombreArea === "SALA_REUNIONES" ? 1 : form.numeroPersonas;
+        return (cuposPorBloque[hour] ?? 0) >= puestosSolicitados;
+      })
     );
   };
 
@@ -272,6 +275,7 @@ export default function ReservaForm() {
                           setForm((prev) => ({
                             ...prev,
                             nombreArea: value,
+                            numeroPersonas: 1,
                             fecha: "",
                             horaInicio: "",
                             horaFin: "",
@@ -293,6 +297,25 @@ export default function ReservaForm() {
                       </select>
                     </div>
 
+                    {form.nombreArea && (
+                      <div className="field span-2">
+                        <label htmlFor="numeroPersonas">
+                          {form.nombreArea === "SALA_REUNIONES"
+                            ? "Personas en la reunión (máximo 9)"
+                            : "Puestos a reservar (máximo 4)"}
+                        </label>
+                        <input
+                          id="numeroPersonas"
+                          name="numeroPersonas"
+                          type="number"
+                          min={1}
+                          max={maxPersonas}
+                          value={form.numeroPersonas}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    )}
+
                     <div className="field span-2">
                       <label>Institución a la que pertenece</label>
                       <input
@@ -308,7 +331,7 @@ export default function ReservaForm() {
                         type="date"
                         name="fecha"
                         value={form.fecha}
-                        min={new Date().toISOString().split("T")[0]}
+                        min={fechaActualLocal()}
                         onKeyDown={(e) => e.preventDefault()} // evita escribir manual
                         onChange={(e) => {
                           const value = e.target.value;
@@ -332,7 +355,7 @@ export default function ReservaForm() {
                       <label>Horario y cupos disponible</label>
 
                       <div className="time-grid">
-                        {generarBloques().map((hora) => {
+                        {generarBloques(HORA_MIN, HORA_MAX, true).map((hora) => {
                           const bloqueada = bloqueBloqueado(hora);
                           const horaPasada = esBloquePasado(form.fecha, hora);
                           const esInicio = hora === horaInicioSel;
@@ -351,9 +374,10 @@ export default function ReservaForm() {
                               key={hora}
                               type="button"
                               disabled={
-                                bloqueada ||
-                                cuposDisponibles === 0 ||
-                                horaPasada
+                                horaPasada ||
+                                (hora === HORA_MAX
+                                  ? !horaInicioSel
+                                  : cuposDisponibles < (form.nombreArea === "SALA_REUNIONES" ? 1 : form.numeroPersonas))
                               }
                               className={`time-slot
                               ${bloqueada ? "blocked" : ""}
@@ -442,7 +466,16 @@ export default function ReservaForm() {
                     <button className="btn" onClick={imprimirQR}>
                       Imprimir QR
                     </button>
+                    <button
+                      className="btn-secondary"
+                      onClick={volverAlFormulario}
+                    >
+                      Volver al formulario
+                    </button>
                   </div>
+                  {errorImpresion && (
+                    <p className="error">{errorImpresion}</p>
+                  )}
                 </div>
               )}
             </>

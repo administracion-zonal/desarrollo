@@ -9,6 +9,7 @@ import Menu from "./components/Menu";
 import AuthProvider from "./context/AuthProvider";
 import { useAuth } from "./context/useAuth";
 import AdminSolicitudesVehiculo from "./pages/AdminSolicitudesVehiculo";
+import AdminComprasPublicas from "./pages/AdminComprasPublicas";
 import CambiarPassword from "./pages/CambiarPassword";
 import ChecklistWizard from "./pages/ChecklistWizard";
 import ChoferReservasAsignadas from "./pages/ChoferReservasAsignadas";
@@ -51,20 +52,29 @@ function PrivateRoute({ children }: Props) {
 ========================= */
 function AppContent() {
   const { user } = useAuth();
+  const rutaInicio = user
+    ? user.debeCambiarPassword
+      ? "/cambiar-password"
+      : "/perfil"
+    : "/login";
 
   return (
     <div className="app-content">
       {user && <Menu />}
 
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to={rutaInicio} replace />} />
 
         <Route
           path="/login"
           element={
-            <PublicLayout>
-              <Login />
-            </PublicLayout>
+            user ? (
+              <Navigate to={rutaInicio} replace />
+            ) : (
+              <PublicLayout>
+                <Login />
+              </PublicLayout>
+            )
           }
         />
 
@@ -206,6 +216,17 @@ function AppContent() {
             <PrivateRoute>
               <PrivateLayout>
                 <GestionTH />
+              </PrivateLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/compras-publicas"
+          element={
+            <PrivateRoute>
+              <PrivateLayout>
+                <AdminComprasPublicas />
               </PrivateLayout>
             </PrivateRoute>
           }

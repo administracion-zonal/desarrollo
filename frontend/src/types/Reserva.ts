@@ -2,7 +2,7 @@ import type { Usuario } from "./Usuario";
 
 export type Reserva = {
   id: number;
-  usuario: Usuario;
+  usuario?: Usuario;
   nombreInstitucion: string;
   nombreArea: string;
   fecha: string;

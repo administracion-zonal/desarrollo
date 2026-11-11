@@ -20,6 +20,7 @@ import com.administracionzonal.entity.Usuario;
 import com.administracionzonal.repository.UsuarioRepository;
 import com.administracionzonal.service.SolicitudVehiculoService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -33,7 +34,7 @@ public class SolicitudVehiculoController {
     /* ================= CREAR SOLICITUD ================= */
     @PostMapping
     public ResponseEntity<?> crearSolicitud(
-            @RequestBody SolicitudVehiculoRequest req,
+            @Valid @RequestBody SolicitudVehiculoRequest req,
             Authentication auth) {
 
         // 🔐 obtener usuario desde JWT
@@ -44,8 +45,8 @@ public class SolicitudVehiculoController {
 
         // Parsear fecha y hora desde String a LocalDate/LocalTime
         LocalDate fecha = LocalDate.parse(req.getFecha());
-        LocalTime horaInicio = LocalTime.parse(req.getHoraInicio() + ":00");
-        LocalTime horaFin = LocalTime.parse(req.getHoraFin() + ":00");
+        LocalTime horaInicio = LocalTime.parse(req.getHoraInicio());
+        LocalTime horaFin = LocalTime.parse(req.getHoraFin());
 
         service.crearSolicitud(
                 usuario,
@@ -59,10 +60,6 @@ public class SolicitudVehiculoController {
                 req.getServidores()
 
         );
-        System.out.println("REQ 👉 " + req);
-        System.out.println(req.getFecha());
-        System.out.println(req.getHoraInicio());
-        System.out.println(req.getHoraFin());
         return ResponseEntity.ok(Map.of("message", "OK"));
     }
 
@@ -77,10 +74,8 @@ public class SolicitudVehiculoController {
     @PostMapping("/{id}/aprobar")
     public ResponseEntity<?> aprobar(
             @PathVariable Long id,
-            @RequestBody AprobarSolicitudRequest request,
+            @Valid @RequestBody AprobarSolicitudRequest request,
             Authentication auth) {
-
-        System.out.println("APROBANDO 👉 " + id + " chofer: " + request.getIdChofer());
 
         service.aprobarSolicitud(id, request.getIdChofer(), auth.getName());
 
@@ -91,10 +86,17 @@ public class SolicitudVehiculoController {
     @PostMapping("/{id}/rechazar")
     public ResponseEntity<?> rechazar(
             @PathVariable Long id,
-            @RequestBody(required = false) RechazarSolicitudRequest request) {
+            @RequestBody(required = false) RechazarSolicitudRequest request,
+            Authentication auth) {
         return ResponseEntity.ok(service.rechazarSolicitud(
                 id,
-                request != null ? request.getObservacionRechazo() : null));
+                request != null ? request.getObservacionRechazo() : null,
+                auth.getName()));
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelar(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(service.cancelarSolicitud(id, auth.getName()));
     }
 
     @GetMapping("/mis")

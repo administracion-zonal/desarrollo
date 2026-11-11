@@ -77,6 +77,12 @@ public class Usuario {
     @Column(name = "motivo_bloqueo")
     private String motivoBloqueo;
 
+    @Column(name = "cancha_bloqueado", nullable = false)
+    private Boolean canchaBloqueado = false;
+
+    @Column(name = "motivo_bloqueo_cancha")
+    private String motivoBloqueoCancha;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuarios_roles", schema = "administracionzonal", joinColumns = @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario"), inverseJoinColumns = @JoinColumn(name = "id_rol", referencedColumnName = "id_rol"))
     private Set<Rol> roles = new HashSet<>();

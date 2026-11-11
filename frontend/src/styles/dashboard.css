@@ -9,6 +9,13 @@
   box-shadow: var(--shadow-soft);
 }
 
+.table-responsive {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
 .reservas-table thead {
   background: linear-gradient(
     135deg,
@@ -20,7 +27,7 @@
 
 .reservas-table th,
 .reservas-table td {
-  padding: 1rem 0.95rem;
+  padding: 0.75rem 0.7rem;
   text-align: left;
   vertical-align: top;
 }
@@ -47,6 +54,13 @@
   background: rgba(216, 251, 246, 0.4);
 }
 
+.reservas-table tbody .document-group-row th {
+  background: #eaf1fa;
+  color: #23364d;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
 .reservas-table td > button,
 .reservas-table td > a {
   margin-right: 0.5rem;
@@ -60,18 +74,29 @@
 }
 
 .table-actions button {
-  min-height: 40px;
+  min-height: 36px;
   border-radius: 10px;
   border: 1px solid #b8c7da;
   background: #f4f7fc;
   color: #16263a;
   font-weight: 700;
-  padding: 0.5rem 0.85rem;
+  font-size: 0.84rem;
+  line-height: 1.25;
+  padding: 0.45rem 0.65rem;
 }
 
 .table-actions .btn-primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
   border-color: transparent;
   color: #ffffff;
+  white-space: normal;
+}
+
+.table-actions .btn-primary:disabled {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #334155;
+  opacity: 1;
 }
 
 .table-input {
@@ -124,6 +149,170 @@
   gap: 1rem;
 }
 
+.progress-summary {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.progress-summary progress {
+  width: 100%;
+  min-height: 12px;
+  accent-color: var(--brand-strong);
+}
+
+.required-label {
+  display: block;
+  margin-top: 0.35rem;
+  color: #9a6700;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.optional-label {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.checklist-sections {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.checklist-section,
+.checklist-completed {
+  padding: 1.2rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.checklist-section__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.checklist-section__heading h3,
+.checklist-completed h3 {
+  margin: 0.2rem 0 0;
+  color: var(--text-strong);
+}
+
+.checklist-section__heading p,
+.checklist-completed p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.checklist-template-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.checklist-template-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.checklist-template-card > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.checklist-template-card span,
+.checklist-observation {
+  color: var(--text-soft);
+  font-size: 0.88rem;
+}
+
+.checklist-template-card .btn-secondary,
+.checklist-table .btn-secondary {
+  border: 0;
+  background: var(--brand-strong);
+  color: #fff;
+}
+
+.checklist-table .table-actions .btn-primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+  color: #fff;
+}
+
+.checklist-observation {
+  max-width: 24rem;
+  margin: 0.5rem 0 0;
+}
+
+.template-manager {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.template-row,
+.employment-status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: #fbfdff;
+}
+
+.template-row > div,
+.employment-status-card > div:first-child {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.template-row span,
+.employment-status-card span:not(.status-pill) {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.file-upload-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--brand-strong);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.file-upload-button input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.employment-status-card {
+  flex-wrap: wrap;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -152,6 +341,14 @@
 .status-pill--info {
   background: #dbeafe;
   color: #1d4ed8;
+}
+
+@media (max-width: 720px) {
+  .checklist-section__heading,
+  .checklist-template-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 .modal-lead {
@@ -209,7 +406,9 @@
 .modal-container {
   position: fixed !important;
   inset: 0 !important;
-  padding: 1.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: clamp(0.5rem, 2vw, 1.25rem);
   background: rgba(10, 22, 40, 0.54);
   backdrop-filter: blur(8px);
   display: flex;
@@ -220,15 +419,30 @@
 
 .modal,
 .modal-content {
+  box-sizing: border-box;
   width: min(760px, 100%);
-  max-height: min(86vh, 960px);
-  overflow: auto;
-  padding: 1.5rem;
+  max-height: min(92vh, 960px);
+  overflow-y: auto;
+  padding: clamp(1rem, 2vw, 1.5rem);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.98);
   color: var(--text-main);
   box-shadow: 0 28px 70px rgba(15, 23, 42, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.88);
+}
+
+.modal--fullscreen {
+  width: min(920px, 100%);
+  max-height: min(92vh, 960px);
+  border-radius: 20px;
+}
+
+.modal-overlay:has(.modal--fullscreen) {
+  overscroll-behavior: contain;
+}
+
+body:has(.modal-overlay) {
+  overflow: hidden;
 }
 
 .modal-header {
@@ -255,6 +469,13 @@
   margin-top: 1.25rem;
 }
 
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 0.75rem 0 0;
+  background: rgba(255, 255, 255, 0.98);
+}
+
 .modal .btn-secondary {
   background: #eaf0f8;
   color: #20344d;
@@ -267,25 +488,38 @@
   color: #ffffff;
 }
 
+.table-actions .btn-primary {
+  min-width: 120px;
+  box-shadow: 0 8px 18px rgba(21, 94, 239, 0.22);
+}
+
 @media (max-width: 760px) {
   .reservas-table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+    min-width: 640px;
   }
 
   .modal-overlay,
   .modal-container {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   .modal,
   .modal-content {
-    padding: 1.1rem;
-    border-radius: 20px;
+    max-height: calc(100dvh - 1rem);
+    padding: 1rem;
+    border-radius: 16px;
   }
 
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .template-row,
+  .employment-status-card {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

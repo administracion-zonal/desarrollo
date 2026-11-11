@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import ModalPortal from "../components/ModalPortal";
 import type { ReservaAdmin as Reserva } from "../types/ReservaAdmin";
 import { apiFetch } from "../utils/api";
 import { formatearFecha } from "../utils/validaciones";
@@ -17,12 +18,13 @@ export default function Dashboard() {
   const [reservaQR, setReservaQR] = useState<Reserva | null>(null);
   const [codigoQR, setCodigoQR] = useState("");
   const [mensajeQR, setMensajeQR] = useState<string | null>(null);
+  const [validandoQR, setValidandoQR] = useState(false);
 
   const [busqueda, setBusqueda] = useState("");
 
   const marcarAsistencia = async (id: number) => {
     try {
-      await apiFetch(`/reservas/${id}/asistir`, {
+      await apiFetch(`/api/reservas/${id}/asistir`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,10 +41,18 @@ export default function Dashboard() {
   };
 
   const validarQR = async () => {
-    if (!codigoQR || !reservaQR) return;
+    const codigo = codigoQR.trim();
+    if (!codigo || !reservaQR || validandoQR) return;
+    if (!reservaQR.qrToken || codigo !== reservaQR.qrToken) {
+      setMensajeQR("❌ El código no corresponde a la reserva seleccionada");
+      return;
+    }
 
     try {
-      const res = await apiFetch(`/reservas/validar-qr/${codigoQR}`, {
+      setValidandoQR(true);
+      const res = await apiFetch(
+        `/api/reservas/validar-qr/${encodeURIComponent(codigo)}`,
+        {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,6 +73,8 @@ export default function Dashboard() {
       }
     } catch {
       setMensajeQR("Error de conexión");
+    } finally {
+      setValidandoQR(false);
     }
   };
 
@@ -135,18 +147,7 @@ export default function Dashboard() {
         if (!res.ok) throw new Error();
         return res.json();
       })
-      .then((data) => {
-        const ordenadas = data.sort((a: Reserva, b: Reserva) => {
-          const fa = `${a.fecha} ${a.horaInicio}`;
-          const fb = `${b.fecha} ${b.horaInicio}`;
-
-          if (fa > fb) return -1;
-          if (fa < fb) return 1;
-          return 0;
-        });
-
-        setReservas(ordenadas);
-      })
+      .then((data) => setReservas(data))
 
       .catch(() => setError("No se pudieron cargar las reservas"))
 
@@ -169,78 +170,70 @@ export default function Dashboard() {
       )}
 
       {!loading && reservas.length > 0 && (
-        <table className="reservas-table">
-          <thead>
-            <tr>
-              <th>
-                Cédula
-                <br />
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                  className="table-input"
-                />
-              </th>
-              <th>Nombres</th>
+        <div className="table-responsive">
+          <table className="reservas-table">
+            <thead>
+              <tr>
+                <th>
+                  Cédula
+                  <br />
+                  <input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    className="table-input"
+                  />
+                </th>
+                <th>Nombres</th>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reservasFiltradas.map((reserva) => {
+                const estado = obtenerEstadoReserva(reserva);
+                const estadoVisual = {
+                  VALIDADA: {
+                    label: "Validada correctamente",
+                    className: "status-pill--success",
+                  },
+                  ASISTIDA_FINALIZADA: {
+                    label: "Asistida y finalizada",
+                    className: "status-pill--info",
+                  },
+                  NO_ASISTIO: {
+                    label: "No asistió",
+                    className: "status-pill--danger",
+                  },
+                  FUTURA: {
+                    label: "Se validará el día indicado",
+                    className: "status-pill--pending",
+                  },
+                  DISPONIBLE_VALIDAR: {
+                    label: "Pendiente de validación",
+                    className: "status-pill--pending",
+                  },
+                }[estado];
 
-              <th>Fecha</th>
-              <th>Hora Inicio</th>
-              <th>Hora Fin</th>
-
-              <th>Asistencia</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reservasFiltradas.map((reserva) => (
-              <tr key={reserva.id}>
-                <td>{reserva.cedula}</td>
-                <td>{reserva.nombres}</td>
-
-                <td>{formatearFecha(reserva.fecha)}</td>
-                <td>{reserva.horaInicio}</td>
-                <td>{reserva.horaFin}</td>
-
-                <td>
-                  {(() => {
-                    const estado = obtenerEstadoReserva(reserva);
-
-                    if (estado === "VALIDADA") {
-                      return (
-                        <span className="status-pill status-pill--success">
-                          Validada correctamente
-                        </span>
-                      );
-                    }
-
-                    if (estado === "ASISTIDA_FINALIZADA") {
-                      return (
-                        <span className="status-pill status-pill--info">
-                          Asistida y finalizada
-                        </span>
-                      );
-                    }
-
-                    if (estado === "NO_ASISTIO") {
-                      return (
-                        <span className="status-pill status-pill--danger">
-                          No asistio
-                        </span>
-                      );
-                    }
-
-                    if (estado === "FUTURA") {
-                      return (
-                        <span className="status-pill status-pill--pending">
-                          Se validara el dia indicado
-                        </span>
-                      );
-                    }
-
-                    if (estado === "DISPONIBLE_VALIDAR") {
-                      return (
-                        <div className="table-actions">
+                return (
+                  <tr key={reserva.id}>
+                    <td>{reserva.cedula}</td>
+                    <td>{reserva.nombres}</td>
+                    <td>{formatearFecha(reserva.fecha)}</td>
+                    <td>{reserva.horaInicio}</td>
+                    <td>{reserva.horaFin}</td>
+                    <td>
+                      <span className={`status-pill ${estadoVisual.className}`}>
+                        {estadoVisual.label}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        {estado === "DISPONIBLE_VALIDAR" && (
                           <button
                             onClick={() => {
                               setReservaQR(reserva);
@@ -249,24 +242,21 @@ export default function Dashboard() {
                           >
                             Validar QR
                           </button>
-
-                          <button onClick={() => setDetalle(reserva)}>
-                            Ver
-                          </button>
-                        </div>
-                      );
-                    }
-                  })()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                        )}
+                        <button onClick={() => setDetalle(reserva)}>Ver</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {detalle && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <ModalPortal>
+          <div className="modal modal--fullscreen">
             <div className="modal-header">Detalle de reserva</div>
 
             <div className="detail-grid">
@@ -311,11 +301,11 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {mostrarQR && (
-        <div className="modal-overlay">
+        <ModalPortal>
           <div className="modal">
             <div className="modal-header">Validar QR</div>
 
@@ -330,8 +320,12 @@ export default function Dashboard() {
             />
 
             <div className="modal-footer">
-              <button className="btn-primary" onClick={validarQR}>
-                Validar
+              <button
+                className="btn-primary"
+                onClick={validarQR}
+                disabled={validandoQR || !codigoQR.trim()}
+              >
+                {validandoQR ? "Validando..." : "Validar"}
               </button>
 
               <button
@@ -344,7 +338,7 @@ export default function Dashboard() {
 
             {mensajeQR && <p className="hint">{mensajeQR}</p>}
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

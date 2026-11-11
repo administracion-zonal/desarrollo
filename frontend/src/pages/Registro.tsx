@@ -8,7 +8,7 @@ import {
   validarPassword,
 } from "../utils/validaciones";
 
-const API = `/auth/register`;
+const API = `/api/auth/register`;
 
 export default function Register() {
   const [error, setError] = useState<string | null>(null);
@@ -55,38 +55,41 @@ export default function Register() {
   const registrarUsuario = async () => {
     setError(null);
 
-    const res = await apiFetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        tipoRegistro,
-        aceptaAcuerdo: true,
-      }),
-    });
+    try {
+      const res = await apiFetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          tipoRegistro,
+          aceptaAcuerdo: true,
+        }),
+      });
 
-    const text = await res.text();
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
 
-    if (!res.ok) {
-      if (text.toLowerCase().includes("cédula")) {
-        setError("❌ Cédula ya registrada");
-      } else if (text.toLowerCase().includes("correo")) {
-        setError("❌ Correo ya registrado");
+      setSuccess("✅ Registro exitoso. Redirigiendo...");
+
+      setTimeout(() => {
+        window.location.href = "/perfil";
+      }, 1500);
+    } catch (e: unknown) {
+      const mensaje = e instanceof Error ? e.message : "";
+      const mensajeNormalizado = mensaje
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+      if (mensajeNormalizado.includes("cedula") && mensajeNormalizado.includes("registr")) {
+        setError("Esta cédula ya tiene una cuenta registrada. Inicia sesión o verifica la cédula ingresada.");
+      } else if (mensajeNormalizado.includes("correo") && mensajeNormalizado.includes("registr")) {
+        setError("Este correo ya tiene una cuenta registrada. Inicia sesión o utiliza otro correo.");
       } else {
-        setError(text);
+        setError(mensaje || "No se pudo completar el registro. Verifica los datos e inténtalo nuevamente.");
       }
-      return;
+      setMostrarModal(false);
     }
-
-    const data = JSON.parse(text);
-
-    localStorage.setItem("token", data.token);
-
-    setSuccess("✅ Registro exitoso. Redirigiendo...");
-
-    setTimeout(() => {
-      window.location.href = "/perfil";
-    }, 1500);
   };
 
   /* =========================
@@ -193,7 +196,7 @@ export default function Register() {
 
         <button type="submit">Registrarse</button>
 
-        {error && <p className="login-error">{error}</p>}
+        {error && <p className="login-error" role="alert">{error}</p>}
         {success && (
           <p className="auth-message auth-message--success">{success}</p>
         )}
